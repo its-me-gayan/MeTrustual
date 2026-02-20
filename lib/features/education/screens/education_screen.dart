@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:easy_localization/easy_localization.dart';
-import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/providers/dynamic_content_provider.dart';
+import '../../../core/widgets/app_bottom_nav.dart';
 
 class EducationScreen extends ConsumerWidget {
   const EducationScreen({super.key});
@@ -13,63 +13,61 @@ class EducationScreen extends ConsumerWidget {
     final educationAsync = ref.watch(educationContentProvider);
 
     return Scaffold(
+      extendBody: true,
       body: SafeArea(
-        child: Stack(
-          children: [
-            SingleChildScrollView(
-              padding: const EdgeInsets.fromLTRB(22, 20, 22, 100),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'learn_title'.tr(),
-                    style: Theme.of(context).textTheme.titleLarge,
-                  ),
-                  const SizedBox(height: 16),
-                  _buildSearchBox(),
-                  const SizedBox(height: 16),
-                  _buildCategoryScroll(),
-                  const SizedBox(height: 20),
-                  educationAsync.when(
-                    data: (articles) {
-                      if (articles.isEmpty) {
-                        return const Center(
-                          child: Text('No articles found. Admin panel coming soon! 🌸'),
-                        );
-                      }
-                      return Column(
-                        children: articles.map((article) {
-                          return _buildArticleCard(
-                            article['icon'] ?? '📖',
-                            article['tag'] ?? 'Info',
-                            article['title'] ?? 'Untitled',
-                            article['meta'] ?? '',
-                            _getColorFromHex(article['tagColor'] ?? '#F7A8B8'),
-                          );
-                        }).toList(),
-                      );
-                    },
-                    loading: () => const Center(child: CircularProgressIndicator()),
-                    error: (err, stack) => Text('Error loading education: $err'),
-                  ),
-                  const SizedBox(height: 12),
-                  const Center(
-                    child: Padding(
-                      padding: EdgeInsets.symmetric(vertical: 12),
-                      child: Text(
-                        '🌍 30+ languages supported',
-                        style: TextStyle(fontSize: 11, color: AppColors.textMuted, fontWeight: FontWeight.w700),
-                      ),
-                    ),
-                  ),
-                ],
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(22, 20, 22, 120),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'learn_title'.tr(),
+                style: Theme.of(context).textTheme.titleLarge,
               ),
-            ),
-            Positioned(bottom: 0, left: 0, right: 0, child: _buildBottomNav(context, 3)),
-            Positioned(bottom: 44, left: MediaQuery.of(context).size.width / 2 - 26, child: _buildFAB(context)),
-          ],
+              const SizedBox(height: 16),
+              _buildSearchBox(),
+              const SizedBox(height: 16),
+              _buildCategoryScroll(),
+              const SizedBox(height: 20),
+              educationAsync.when(
+                data: (articles) {
+                  if (articles.isEmpty) {
+                    return const Center(
+                      child: Text('No articles found. Admin panel coming soon! 🌸'),
+                    );
+                  }
+                  return Column(
+                    children: articles.map((article) {
+                      return _buildArticleCard(
+                        article['icon'] ?? '📖',
+                        article['tag'] ?? 'Info',
+                        article['title'] ?? 'Untitled',
+                        article['meta'] ?? '',
+                        _getColorFromHex(article['tagColor'] ?? '#F7A8B8'),
+                      );
+                    }).toList(),
+                  );
+                },
+                loading: () => const Center(child: CircularProgressIndicator()),
+                error: (err, stack) => Text('Error loading education: $err'),
+              ),
+              const SizedBox(height: 12),
+              const Center(
+                child: Padding(
+                  padding: EdgeInsets.symmetric(vertical: 12),
+                  child: Text(
+                    '🌍 30+ languages supported',
+                    style: TextStyle(fontSize: 11, color: AppColors.textMuted, fontWeight: FontWeight.w700),
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
+      bottomNavigationBar: const AppBottomNav(activeIndex: 3),
+      floatingActionButton: const AppFAB(),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
     );
   }
 
@@ -175,58 +173,6 @@ class EducationScreen extends ConsumerWidget {
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildBottomNav(BuildContext context, int activeIndex) {
-    return Container(
-      height: 80,
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        border: Border(top: BorderSide(color: AppColors.border, width: 1.5)),
-        borderRadius: BorderRadius.vertical(bottom: Radius.circular(44)),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: [
-          _buildNavItem(context, '🏠', 'Home', activeIndex == 0, '/home'),
-          _buildNavItem(context, '🌸', 'Log', activeIndex == 1, '/log'),
-          const SizedBox(width: 52),
-          _buildNavItem(context, '✨', 'Insights', activeIndex == 2, '/insights'),
-          _buildNavItem(context, '📖', 'Learn', activeIndex == 3, '/education'),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildNavItem(BuildContext context, String icon, String label, bool isActive, String route) {
-    return GestureDetector(
-      onTap: () => context.go(route),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Text(icon, style: const TextStyle(fontSize: 20)),
-          const SizedBox(height: 3),
-          Text(label.toUpperCase(), style: TextStyle(fontSize: 9, fontWeight: FontWeight.w800, color: isActive ? AppColors.primaryRose : const Color(0xFFE0B0B0), letterSpacing: 0.4)),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildFAB(BuildContext context) {
-    return GestureDetector(
-      onTap: () => context.go('/log'),
-      child: Container(
-        width: 52,
-        height: 52,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          gradient: AppColors.primaryGradient,
-          border: Border.all(color: Colors.white, width: 3),
-          boxShadow: [BoxShadow(color: AppColors.primaryRose.withOpacity(0.45), offset: const Offset(0, 6), blurRadius: 20)],
-        ),
-        child: const Icon(Icons.add, color: Colors.white, size: 30),
       ),
     );
   }

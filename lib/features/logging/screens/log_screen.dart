@@ -45,6 +45,8 @@ class _LogScreenState extends ConsumerState<LogScreen> {
     final symptomsAsync = ref.watch(symptomsProvider);
 
     return Scaffold(
+      // Ensure the keyboard doesn't push the layout up in a way that breaks the design
+      resizeToAvoidBottomInset: true, 
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 20),
@@ -170,6 +172,7 @@ class _LogScreenState extends ConsumerState<LogScreen> {
                   ),
                 ),
               ),
+              const SizedBox(height: 40), // Extra space for keyboard scrolling
             ],
           ),
         ),
@@ -244,16 +247,9 @@ class _LogScreenState extends ConsumerState<LogScreen> {
             color: isSelected ? const Color(0xFFF0FAF4) : Colors.white,
             borderRadius: BorderRadius.circular(14),
             border: Border.all(
-              color: isSelected ? const Color(0xFFA8D0B8) : AppColors.border,
+              color: isSelected ? const Color(0xFF64B482).withOpacity(0.5) : AppColors.border,
               width: 2,
             ),
-            boxShadow: isSelected ? [
-              BoxShadow(
-                color: const Color(0xFF64B482).withOpacity(0.15),
-                offset: const Offset(0, 4),
-                blurRadius: 12,
-              )
-            ] : null,
           ),
           alignment: Alignment.center,
           child: Text(emoji, style: const TextStyle(fontSize: 22)),
