@@ -1,13 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/providers/dynamic_content_provider.dart';
 
-class EducationScreen extends StatelessWidget {
+class EducationScreen extends ConsumerWidget {
   const EducationScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final educationAsync = ref.watch(educationContentProvider);
+
     return Scaffold(
       body: SafeArea(
         child: Stack(
@@ -26,11 +30,28 @@ class EducationScreen extends StatelessWidget {
                   const SizedBox(height: 16),
                   _buildCategoryScroll(),
                   const SizedBox(height: 20),
-                  _buildArticleCard('🔬', 'Puberty', 'Your cycle — the 4 phases explained', '5 min · WHO Source', AppColors.sageGreen),
-                  _buildArticleCard('🌿', 'Pain', 'Natural ways to ease period pain', '4 min · Evidence-based', AppColors.primaryRose),
-                  _buildArticleCard('❌', 'Myths', '10 period myths — debunked!', '6 min · Global', Colors.orange),
-                  _buildArticleCard('🩺', 'Doctor', 'When to see a doctor about your period', '3 min · Medical Guide', Colors.blue),
-                  _buildArticleCard('💰', 'Hygiene', 'Affordable period products worldwide', '5 min · Global Resources', AppColors.lavender),
+                  educationAsync.when(
+                    data: (articles) {
+                      if (articles.isEmpty) {
+                        return const Center(
+                          child: Text('No articles found. Admin panel coming soon! 🌸'),
+                        );
+                      }
+                      return Column(
+                        children: articles.map((article) {
+                          return _buildArticleCard(
+                            article['icon'] ?? '📖',
+                            article['tag'] ?? 'Info',
+                            article['title'] ?? 'Untitled',
+                            article['meta'] ?? '',
+                            _getColorFromHex(article['tagColor'] ?? '#F7A8B8'),
+                          );
+                        }).toList(),
+                      );
+                    },
+                    loading: () => const Center(child: CircularProgressIndicator()),
+                    error: (err, stack) => Text('Error loading education: $err'),
+                  ),
                   const SizedBox(height: 12),
                   const Center(
                     child: Padding(
@@ -50,6 +71,14 @@ class EducationScreen extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  Color _getColorFromHex(String hexColor) {
+    hexColor = hexColor.replaceAll('#', '');
+    if (hexColor.length == 6) {
+      hexColor = 'FF$hexColor';
+    }
+    return Color(int.parse(hexColor, radix: 16));
   }
 
   Widget _buildSearchBox() {

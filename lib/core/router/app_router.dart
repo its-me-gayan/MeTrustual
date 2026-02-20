@@ -5,6 +5,7 @@ import '../../features/logging/screens/log_screen.dart';
 import '../../features/insights/screens/insights_screen.dart';
 import '../../features/education/screens/education_screen.dart';
 import '../../features/privacy/screens/privacy_screen.dart';
+import '../../features/profile/screens/profile_screen.dart';
 
 final GoRouter appRouter = GoRouter(
   initialLocation: '/onboarding',
@@ -32,6 +33,10 @@ final GoRouter appRouter = GoRouter(
     GoRoute(
       path: '/privacy',
       builder: (context, state) => const PrivacyScreen(),
+    ),
+    GoRoute(
+      path: '/profile',
+      builder: (context, state) => const ProfileScreen(),
     ),
   ],
 );

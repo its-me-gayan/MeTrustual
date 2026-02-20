@@ -6,7 +6,6 @@ import '../widgets/cycle_circle.dart';
 import '../widgets/mini_calendar.dart';
 import '../widgets/next_period_card.dart';
 import '../providers/home_provider.dart';
-import '../../../models/user_profile_model.dart';
 import '../../../core/providers/firebase_providers.dart';
 
 class HomeScreen extends ConsumerWidget {
@@ -27,21 +26,44 @@ class HomeScreen extends ConsumerWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    'Good morning ☀️',
-                    style: TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.textMuted,
-                    ),
-                  ),
-                  Text(
-                    '${user?.displayName ?? 'Aisha'} 👋',
-                    style: const TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.w900,
-                      color: AppColors.textDark,
-                    ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'Good morning ☀️',
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w700,
+                              color: AppColors.textMuted,
+                            ),
+                          ),
+                          Text(
+                            '${user?.displayName ?? 'Aisha'} 👋',
+                            style: const TextStyle(
+                              fontSize: 24,
+                              fontWeight: FontWeight.w900,
+                              color: AppColors.textDark,
+                            ),
+                          ),
+                        ],
+                      ),
+                      GestureDetector(
+                        onTap: () => context.go('/profile'),
+                        child: Container(
+                          width: 44,
+                          height: 44,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: Colors.white,
+                            border: Border.all(color: AppColors.border, width: 1.5),
+                          ),
+                          child: const Icon(Icons.person_outline, color: AppColors.textMid),
+                        ),
+                      ),
+                    ],
                   ),
                   const SizedBox(height: 20),
                   _buildCycleDisplay(homeData),
@@ -85,7 +107,7 @@ class HomeScreen extends ConsumerWidget {
 
   Widget _buildStatsRow(Map<String, dynamic>? homeData) {
     final avgCycle = homeData?['prediction']?.averageLength ?? 28;
-    final avgPeriod = 5; // This could also be calculated from history
+    final avgPeriod = 5; 
     
     return Row(
       children: [
@@ -93,7 +115,7 @@ class HomeScreen extends ConsumerWidget {
         const SizedBox(width: 8),
         _buildStatPill('$avgPeriod', 'Period Days', color: const Color(0xFFC9A0D0)),
         const SizedBox(width: 8),
-        _buildStatPill('12', 'Logged', color: const Color(0xFF8AB88A)), // Example logged count
+        _buildStatPill('12', 'Logged', color: const Color(0xFF8AB88A)), 
       ],
     );
   }
@@ -153,7 +175,7 @@ class HomeScreen extends ConsumerWidget {
         children: [
           _buildNavItem(context, '🏠', 'Home', activeIndex == 0, '/home'),
           _buildNavItem(context, '🌸', 'Log', activeIndex == 1, '/log'),
-          const SizedBox(width: 52), // Space for FAB
+          const SizedBox(width: 52), 
           _buildNavItem(context, '✨', 'Insights', activeIndex == 2, '/insights'),
           _buildNavItem(context, '📖', 'Learn', activeIndex == 3, '/education'),
         ],
