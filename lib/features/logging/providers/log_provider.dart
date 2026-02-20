@@ -1,5 +1,6 @@
+import 'dart:convert';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../core/providers/firebase_providers.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../../models/daily_log_model.dart';
 
 final logProvider = StateNotifierProvider<LogNotifier, AsyncValue<void>>((ref) {
@@ -8,45 +9,47 @@ final logProvider = StateNotifierProvider<LogNotifier, AsyncValue<void>>((ref) {
 
 class LogNotifier extends StateNotifier<AsyncValue<void>> {
   final Ref _ref;
+
   LogNotifier(this._ref) : super(const AsyncValue.data(null));
 
   Future<void> saveLog(DailyLog log) async {
     state = const AsyncValue.loading();
     try {
-      final firestore = _ref.read(firestoreProvider);
-      final auth = _ref.read(firebaseAuthProvider);
-      final uid = auth.currentUser?.uid;
+      final prefs = await SharedPreferences.getInstance();
 
-      if (uid == null) throw Exception('User not logged in');
+      // Load existing logs
+      final existing = prefs.getString('daily_logs');
+      final Map<String, dynamic> logsMap = existing != null
+          ? Map<String, dynamic>.from(jsonDecode(existing))
+          : {};
 
-      await firestore
-          .collection('users')
-          .doc(uid)
-          .collection('logs')
-          .doc(log.id)
-          .set(log.toFirestore());
-      
+      // Save/overwrite log for that day
+      logsMap[log.id] = log.toFirestore();
+      await prefs.setString('daily_logs', jsonEncode(logsMap));
+
       state = const AsyncValue.data(null);
     } catch (e, st) {
       state = AsyncValue.error(e, st);
     }
   }
 
-  Stream<List<DailyLog>> watchLogs() {
-    final firestore = _ref.read(firestoreProvider);
-    final auth = _ref.read(firebaseAuthProvider);
-    final uid = auth.currentUser?.uid;
+  Future<List<DailyLog>> getLogs() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final existing = prefs.getString('daily_logs');
+      if (existing == null) return [];
 
-    if (uid == null) return Stream.value([]);
+      final Map<String, dynamic> logsMap =
+          Map<String, dynamic>.from(jsonDecode(existing));
 
-    return firestore
-        .collection('users')
-        .doc(uid)
-        .collection('logs')
-        .orderBy('date', descending: true)
-        .limit(90)
-        .snapshots()
-        .map((snapshot) =>
-            snapshot.docs.map((doc) => DailyLog.fromFirestore(doc)).toList());
+      final logs =
+          logsMap.entries.map((e) => DailyLog.fromMap(e.key, e.value)).toList();
+
+      // Sort by date descending
+      logs.sort((a, b) => b.date.compareTo(a.date));
+      return logs.take(90).toList();
+    } catch (e) {
+      return [];
+    }
   }
 }

@@ -1,12 +1,10 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-
 class DailyLog {
-  final String id; // YYYY-MM-DD
+  final String id;
   final DateTime date;
-  final String flow; // heavy/medium/light/spotting/none
-  final String mood; // low/okay/good/great/tense
+  final String flow;
+  final String mood;
   final List<String> symptoms;
-  final int painLevel; // 0-10
+  final int painLevel;
   final int waterGlasses;
   final int sleepHours;
   final String note;
@@ -19,34 +17,18 @@ class DailyLog {
     required this.flow,
     required this.mood,
     required this.symptoms,
-    required this.painLevel,
-    required this.waterGlasses,
-    required this.sleepHours,
-    required this.note,
-    required this.createdAt,
-    required this.updatedAt,
-  });
-
-  factory DailyLog.fromFirestore(DocumentSnapshot doc) {
-    final data = doc.data() as Map<String, dynamic>;
-    return DailyLog(
-      id: doc.id,
-      date: (data['date'] as Timestamp).toDate(),
-      flow: data['flow'] ?? 'none',
-      mood: data['mood'] ?? 'okay',
-      symptoms: List<String>.from(data['symptoms'] ?? []),
-      painLevel: data['painLevel'] ?? 0,
-      waterGlasses: data['waterGlasses'] ?? 0,
-      sleepHours: data['sleepHours'] ?? 0,
-      note: data['note'] ?? '',
-      createdAt: (data['createdAt'] as Timestamp).toDate(),
-      updatedAt: (data['updatedAt'] as Timestamp).toDate(),
-    );
-  }
+    this.painLevel = 0,
+    this.waterGlasses = 0,
+    this.sleepHours = 0,
+    this.note = '',
+    DateTime? createdAt,
+    DateTime? updatedAt,
+  })  : createdAt = createdAt ?? DateTime.now(),
+        updatedAt = updatedAt ?? DateTime.now();
 
   Map<String, dynamic> toFirestore() {
     return {
-      'date': Timestamp.fromDate(date),
+      'date': date.toIso8601String(),
       'flow': flow,
       'mood': mood,
       'symptoms': symptoms,
@@ -54,8 +36,24 @@ class DailyLog {
       'waterGlasses': waterGlasses,
       'sleepHours': sleepHours,
       'note': note,
-      'createdAt': Timestamp.fromDate(createdAt),
-      'updatedAt': Timestamp.fromDate(updatedAt),
+      'createdAt': createdAt.toIso8601String(),
+      'updatedAt': updatedAt.toIso8601String(),
     };
+  }
+
+  factory DailyLog.fromMap(String id, Map<String, dynamic> data) {
+    return DailyLog(
+      id: id,
+      date: DateTime.parse(data['date']),
+      flow: data['flow'] ?? 'none',
+      mood: data['mood'] ?? 'okay',
+      symptoms: List<String>.from(data['symptoms'] ?? []),
+      painLevel: data['painLevel'] ?? 0,
+      waterGlasses: data['waterGlasses'] ?? 0,
+      sleepHours: data['sleepHours'] ?? 0,
+      note: data['note'] ?? '',
+      createdAt: DateTime.parse(data['createdAt']),
+      updatedAt: DateTime.parse(data['updatedAt']),
+    );
   }
 }

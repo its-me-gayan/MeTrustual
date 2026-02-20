@@ -24,7 +24,7 @@ class _LogScreenState extends ConsumerState<LogScreen> {
       id: DateTime.now().toIso8601String().split('T')[0],
       date: DateTime.now(),
       flow: selectedFlow,
-      moods: [selectedMood],
+      mood: selectedMood, // ✅ fixed: was 'moods: [selectedMood]'
       symptoms: selectedSymptoms,
       note: _noteController.text,
     );
@@ -119,7 +119,10 @@ class _LogScreenState extends ConsumerState<LogScreen> {
               TextField(
                 controller: _noteController,
                 maxLines: 3,
-                style: const TextStyle(fontWeight: FontWeight.w600, color: Color(0xFF5A3838), fontSize: 14),
+                style: const TextStyle(
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFF5A3838),
+                    fontSize: 14),
                 decoration: InputDecoration(
                   hintText: 'How are you really feeling? (just for you)',
                   hintStyle: const TextStyle(color: Color(0xFFDDBEC0)),
@@ -128,15 +131,18 @@ class _LogScreenState extends ConsumerState<LogScreen> {
                   contentPadding: const EdgeInsets.all(14),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(16),
-                    borderSide: const BorderSide(color: AppColors.border, width: 1.5),
+                    borderSide:
+                        const BorderSide(color: AppColors.border, width: 1.5),
                   ),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(16),
-                    borderSide: const BorderSide(color: AppColors.border, width: 1.5),
+                    borderSide:
+                        const BorderSide(color: AppColors.border, width: 1.5),
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(16),
-                    borderSide: const BorderSide(color: AppColors.lightRose, width: 1.5),
+                    borderSide: const BorderSide(
+                        color: AppColors.lightRose, width: 1.5),
                   ),
                 ),
               ),
@@ -161,9 +167,9 @@ class _LogScreenState extends ConsumerState<LogScreen> {
                       backgroundColor: Colors.transparent,
                       shadowColor: Colors.transparent,
                     ),
-                    child: logState.isLoading 
-                      ? const CircularProgressIndicator(color: Colors.white)
-                      : Text('log_save'.tr()),
+                    child: logState.isLoading
+                        ? const CircularProgressIndicator(color: Colors.white)
+                        : Text('log_save'.tr()),
                   ),
                 ),
               ),
@@ -203,13 +209,15 @@ class _LogScreenState extends ConsumerState<LogScreen> {
               color: isSelected ? AppColors.primaryRose : AppColors.border,
               width: 2,
             ),
-            boxShadow: isSelected ? [
-              BoxShadow(
-                color: AppColors.primaryRose.withOpacity(0.18),
-                offset: const Offset(0, 4),
-                blurRadius: 14,
-              )
-            ] : null,
+            boxShadow: isSelected
+                ? [
+                    BoxShadow(
+                      color: AppColors.primaryRose.withOpacity(0.18),
+                      offset: const Offset(0, 4),
+                      blurRadius: 14,
+                    )
+                  ]
+                : null,
           ),
           child: Column(
             children: [
@@ -220,7 +228,8 @@ class _LogScreenState extends ConsumerState<LogScreen> {
                 style: TextStyle(
                   fontSize: 10,
                   fontWeight: FontWeight.w800,
-                  color: isSelected ? AppColors.primaryRose : AppColors.textMuted,
+                  color:
+                      isSelected ? AppColors.primaryRose : AppColors.textMuted,
                 ),
               ),
             ],
@@ -244,13 +253,15 @@ class _LogScreenState extends ConsumerState<LogScreen> {
               color: isSelected ? const Color(0xFFA8D0B8) : AppColors.border,
               width: 2,
             ),
-            boxShadow: isSelected ? [
-              BoxShadow(
-                color: const Color(0xFF64B482).withOpacity(0.15),
-                offset: const Offset(0, 4),
-                blurRadius: 12,
-              )
-            ] : null,
+            boxShadow: isSelected
+                ? [
+                    BoxShadow(
+                      color: const Color(0xFF64B482).withOpacity(0.15),
+                      offset: const Offset(0, 4),
+                      blurRadius: 12,
+                    )
+                  ]
+                : null,
           ),
           alignment: Alignment.center,
           child: Text(emoji, style: const TextStyle(fontSize: 22)),
@@ -287,7 +298,8 @@ class _LogScreenState extends ConsumerState<LogScreen> {
           style: TextStyle(
             fontSize: 12,
             fontWeight: FontWeight.w700,
-            color: isSelected ? const Color(0xFF9870C0) : const Color(0xFFC0A0A8),
+            color:
+                isSelected ? const Color(0xFF9870C0) : const Color(0xFFC0A0A8),
           ),
         ),
       ),
