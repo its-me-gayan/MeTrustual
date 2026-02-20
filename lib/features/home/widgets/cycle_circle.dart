@@ -17,7 +17,7 @@ class CycleCircle extends StatelessWidget {
       child: Stack(
         alignment: Alignment.center,
         children: [
-          // Outer dashed ring (simulated with a container and border)
+          // Outer dashed ring — removed borderRadius, BoxShape.circle handles it
           Container(
             width: 186,
             height: 186,
@@ -28,7 +28,6 @@ class CycleCircle extends StatelessWidget {
                 width: 2,
                 style: BorderStyle.solid,
               ),
-              borderRadius: BorderRadius.circular(93),
             ),
           ),
           // Main Circle
@@ -72,7 +71,8 @@ class CycleCircle extends StatelessWidget {
                 ),
                 const SizedBox(height: 6),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
                   decoration: BoxDecoration(
                     color: AppColors.primaryRose,
                     borderRadius: BorderRadius.circular(20),

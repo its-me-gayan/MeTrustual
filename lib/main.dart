@@ -1,16 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:easy_localization/easy_localization.dart';
+// import 'package:firebase_core/firebase_core.dart';
+// import 'firebase_options.dart';
 import 'core/theme/app_theme.dart';
 import 'core/router/app_router.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await EasyLocalization.ensureInitialized();
-  
-  // Note: Firebase initialization would go here in a real environment
-  // await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-  
+
+  // TODO: Configure with actual Firebase credentials
+  // await Firebase.initializeApp(
+  //   options: DefaultFirebaseOptions.currentPlatform,
+  // );
+
   runApp(
     EasyLocalization(
       supportedLocales: const [

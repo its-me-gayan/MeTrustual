@@ -1,4 +1,3 @@
-import 'dart:math';
 import 'package:flutter/material.dart';
 import '../../../core/theme/app_colors.dart';
 
@@ -63,7 +62,8 @@ class NextPeriodCard extends StatelessWidget {
                   value: 0.85,
                   strokeWidth: 5,
                   backgroundColor: AppColors.border,
-                  valueColor: const AlwaysStoppedAnimation<Color>(AppColors.primaryRose),
+                  valueColor: const AlwaysStoppedAnimation<Color>(
+                      AppColors.primaryRose),
                   strokeCap: StrokeCap.round,
                 ),
               ),

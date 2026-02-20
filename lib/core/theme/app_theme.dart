@@ -14,12 +14,12 @@ class AppTheme {
         onPrimary: Colors.white,
       ),
       scaffoldBackgroundColor: AppColors.background,
-      cardTheme: CardTheme(
+      cardTheme: const CardThemeData(
         color: Colors.white,
         elevation: 0,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(18),
-          side: const BorderSide(color: AppColors.border, width: 1.5),
+          borderRadius: BorderRadius.all(Radius.circular(18)),
+          side: BorderSide(color: AppColors.border, width: 1.5),
         ),
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
@@ -27,7 +27,8 @@ class AppTheme {
           backgroundColor: AppColors.primaryRose,
           foregroundColor: Colors.white,
           elevation: 0,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
           padding: const EdgeInsets.symmetric(vertical: 15),
           textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
         ),
