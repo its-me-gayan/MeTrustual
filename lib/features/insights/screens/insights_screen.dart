@@ -1,13 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../home/providers/home_provider.dart';
 
-class InsightsScreen extends StatelessWidget {
+class InsightsScreen extends ConsumerWidget {
   const InsightsScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final homeData = ref.watch(homeDataProvider);
+
     return Scaffold(
       body: SafeArea(
         child: Stack(
@@ -22,13 +26,13 @@ class InsightsScreen extends StatelessWidget {
                     style: Theme.of(context).textTheme.titleLarge,
                   ),
                   const SizedBox(height: 16),
-                  _buildBigInsight(),
+                  _buildBigInsight(homeData),
                   const SizedBox(height: 16),
-                  _buildChartCard(),
+                  _buildChartCard(homeData),
                   const SizedBox(height: 10),
                   _buildSymptomCard(),
                   const SizedBox(height: 10),
-                  _buildUpcomingCard(),
+                  _buildUpcomingCard(homeData),
                 ],
               ),
             ),
@@ -40,7 +44,13 @@ class InsightsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildBigInsight() {
+  Widget _buildBigInsight(Map<String, dynamic>? homeData) {
+    final avgCycle = homeData?['prediction']?.averageLength ?? 28;
+    String message = 'Start logging your cycle to see personalized insights! 💕';
+    if (homeData != null) {
+      message = 'Your average cycle is $avgCycle days. Your body knows what it\'s doing 💕';
+    }
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(18),
@@ -49,26 +59,27 @@ class InsightsScreen extends StatelessWidget {
         borderRadius: BorderRadius.circular(22),
         border: Border.all(color: const Color(0xFFFCD0D8), width: 1.5),
       ),
-      child: const Column(
+      child: Column(
         children: [
-          Text('🌿', style: TextStyle(fontSize: 40)),
-          SizedBox(height: 6),
-          Text(
-            'You\'re very regular!',
+          const Text('🌿', style: TextStyle(fontSize: 40)),
+          const SizedBox(height: 6),
+          const Text(
+            'Cycle Status',
             style: TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: AppColors.textDark),
           ),
-          SizedBox(height: 4),
+          const SizedBox(height: 4),
           Text(
-            'Your cycles have been 27–30 days for 6 months. Your body knows what it\'s doing 💕',
+            message,
             textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 12, color: AppColors.textMid, fontWeight: FontWeight.w600, height: 1.5),
+            style: const TextStyle(fontSize: 12, color: AppColors.textMid, fontWeight: FontWeight.w600, height: 1.5),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildChartCard() {
+  Widget _buildChartCard(Map<String, dynamic>? homeData) {
+    // In a real app, this would use data from homeData['cycles']
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -188,7 +199,18 @@ class InsightsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildUpcomingCard() {
+  Widget _buildUpcomingCard(Map<String, dynamic>? homeData) {
+    final prediction = homeData?['prediction'];
+    final nextPeriod = prediction != null 
+        ? DateFormat('MMM dd').format(prediction.nextPeriodDate)
+        : '---';
+    final fertileStart = prediction != null 
+        ? DateFormat('MMM dd').format(prediction.fertileWindowStart)
+        : '---';
+    final fertileEnd = prediction != null 
+        ? DateFormat('MMM dd').format(prediction.fertileWindowEnd)
+        : '---';
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -204,9 +226,9 @@ class InsightsScreen extends StatelessWidget {
             style: TextStyle(fontSize: 13, fontWeight: FontWeight.w900, color: AppColors.textDark),
           ),
           const SizedBox(height: 12),
-          _buildUpcomingRow('🩸 Next period', 'Mar 6 · 85%', AppColors.primaryRose),
-          _buildUpcomingRow('🌿 Fertile window', 'Feb 18–23', AppColors.sageGreen),
-          _buildUpcomingRow('◎ Ovulation', 'Today!', AppColors.lavender),
+          _buildUpcomingRow('🩸 Next period', '$nextPeriod · 85%', AppColors.primaryRose),
+          _buildUpcomingRow('🌿 Fertile window', '$fertileStart–$fertileEnd', AppColors.sageGreen),
+          _buildUpcomingRow('◎ Ovulation', prediction != null ? 'Predicted' : '---', AppColors.lavender),
         ],
       ),
     );

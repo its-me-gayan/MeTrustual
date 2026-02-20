@@ -1,25 +1,47 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_colors.dart';
+import '../providers/log_provider.dart';
+import '../../../models/daily_log_model.dart';
 
-class LogScreen extends StatefulWidget {
+class LogScreen extends ConsumerStatefulWidget {
   const LogScreen({super.key});
 
   @override
-  State<LogScreen> createState() => _LogScreenState();
+  ConsumerState<LogScreen> createState() => _LogScreenState();
 }
 
-class _LogScreenState extends State<LogScreen> {
+class _LogScreenState extends ConsumerState<LogScreen> {
   String selectedFlow = 'medium';
   String selectedMood = 'low';
   List<String> selectedSymptoms = ['Cramps', 'Headache'];
-  final TextEditingController _noteController = TextEditingController(
-    text: 'Feeling a bit drained but okay. Took ibuprofen for cramps.',
-  );
+  final TextEditingController _noteController = TextEditingController();
+
+  Future<void> _saveLog() async {
+    final log = DailyLog(
+      id: DateTime.now().toIso8601String().split('T')[0],
+      date: DateTime.now(),
+      flow: selectedFlow,
+      moods: [selectedMood],
+      symptoms: selectedSymptoms,
+      note: _noteController.text,
+    );
+
+    await ref.read(logProvider.notifier).saveLog(log);
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('log_saved'.tr())),
+      );
+      context.go('/home');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
+    final logState = ref.watch(logProvider);
+
     return Scaffold(
       body: SafeArea(
         child: SingleChildScrollView(
@@ -41,7 +63,7 @@ class _LogScreenState extends State<LogScreen> {
                 ],
               ),
               Text(
-                'Thursday · Feb 20, 2026',
+                DateFormat('EEEE · MMM dd, yyyy').format(DateTime.now()),
                 style: const TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w800,
@@ -90,7 +112,6 @@ class _LogScreenState extends State<LogScreen> {
                   _buildSymptomChip('🌊 Bloating'),
                   _buildSymptomChip('💆 Back Pain'),
                   _buildSymptomChip('🍫 Cravings'),
-                  _buildSymptomChip('✚ Add more', isAction: true),
                 ],
               ),
               const SizedBox(height: 24),
@@ -135,17 +156,14 @@ class _LogScreenState extends State<LogScreen> {
                     ],
                   ),
                   child: ElevatedButton(
-                    onPressed: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('log_saved'.tr())),
-                      );
-                      context.go('/home');
-                    },
+                    onPressed: logState.isLoading ? null : _saveLog,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.transparent,
                       shadowColor: Colors.transparent,
                     ),
-                    child: Text('log_save'.tr()),
+                    child: logState.isLoading 
+                      ? const CircularProgressIndicator(color: Colors.white)
+                      : Text('log_save'.tr()),
                   ),
                 ),
               ),
@@ -241,13 +259,12 @@ class _LogScreenState extends State<LogScreen> {
     );
   }
 
-  Widget _buildSymptomChip(String label, {bool isAction = false}) {
-    final isSelected = selectedSymptoms.contains(label.split(' ').last);
+  Widget _buildSymptomChip(String label) {
+    final key = label.split(' ').last;
+    final isSelected = selectedSymptoms.contains(key);
     return GestureDetector(
       onTap: () {
-        if (isAction) return;
         setState(() {
-          final key = label.split(' ').last;
           if (selectedSymptoms.contains(key)) {
             selectedSymptoms.remove(key);
           } else {

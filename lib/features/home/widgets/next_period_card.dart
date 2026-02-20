@@ -1,12 +1,24 @@
-import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:easy_localization/easy_localization.dart';
 import '../../../core/theme/app_colors.dart';
+import '../providers/home_provider.dart';
 
-class NextPeriodCard extends StatelessWidget {
+class NextPeriodCard extends ConsumerWidget {
   const NextPeriodCard({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final homeData = ref.watch(homeDataProvider);
+    final prediction = homeData?['prediction'];
+    
+    final nextDate = prediction != null 
+        ? DateFormat('MMMM d').format(prediction.nextPeriodDate)
+        : '---';
+    final daysUntil = prediction != null 
+        ? prediction.nextPeriodDate.difference(DateTime.now()).inDays
+        : 0;
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -21,10 +33,10 @@ class NextPeriodCard extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          const Column(
+          Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
+              const Text(
                 'NEXT PERIOD',
                 style: TextStyle(
                   fontSize: 10,
@@ -33,19 +45,19 @@ class NextPeriodCard extends StatelessWidget {
                   letterSpacing: 0.4,
                 ),
               ),
-              SizedBox(height: 2),
+              const SizedBox(height: 2),
               Text(
-                'March 6 🩸',
-                style: TextStyle(
+                '$nextDate 🩸',
+                style: const TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w900,
                   color: AppColors.textDark,
                 ),
               ),
-              SizedBox(height: 1),
+              const SizedBox(height: 1),
               Text(
-                'In 14 days',
-                style: TextStyle(
+                daysUntil > 0 ? 'In $daysUntil days' : 'Today!',
+                style: const TextStyle(
                   fontSize: 11,
                   fontWeight: FontWeight.w700,
                   color: AppColors.textMuted,
@@ -56,14 +68,14 @@ class NextPeriodCard extends StatelessWidget {
           Stack(
             alignment: Alignment.center,
             children: [
-              SizedBox(
+              const SizedBox(
                 width: 50,
                 height: 50,
                 child: CircularProgressIndicator(
                   value: 0.85,
                   strokeWidth: 5,
                   backgroundColor: AppColors.border,
-                  valueColor: const AlwaysStoppedAnimation<Color>(AppColors.primaryRose),
+                  valueColor: AlwaysStoppedAnimation<Color>(AppColors.primaryRose),
                   strokeCap: StrokeCap.round,
                 ),
               ),

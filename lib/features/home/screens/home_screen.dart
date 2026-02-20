@@ -1,15 +1,23 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_colors.dart';
 import '../widgets/cycle_circle.dart';
 import '../widgets/mini_calendar.dart';
 import '../widgets/next_period_card.dart';
+import '../providers/home_provider.dart';
+import '../../../models/user_profile_model.dart';
+import '../../../core/providers/firebase_providers.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final homeData = ref.watch(homeDataProvider);
+    final auth = ref.watch(firebaseAuthProvider);
+    final user = auth.currentUser;
+
     return Scaffold(
       body: SafeArea(
         child: Stack(
@@ -27,26 +35,18 @@ class HomeScreen extends StatelessWidget {
                       color: AppColors.textMuted,
                     ),
                   ),
-                  const Text(
-                    'Aisha 👋',
-                    style: TextStyle(
+                  Text(
+                    '${user?.displayName ?? 'Aisha'} 👋',
+                    style: const TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.w900,
                       color: AppColors.textDark,
                     ),
                   ),
                   const SizedBox(height: 20),
-                  const CycleCircle(day: 14, phase: 'Fertile 🌿'),
+                  _buildCycleDisplay(homeData),
                   const SizedBox(height: 24),
-                  Row(
-                    children: [
-                      _buildStatPill('28', 'Avg Cycle'),
-                      const SizedBox(width: 8),
-                      _buildStatPill('5', 'Period Days', color: const Color(0xFFC9A0D0)),
-                      const SizedBox(width: 8),
-                      _buildStatPill('12', 'Logged', color: const Color(0xFF8AB88A)),
-                    ],
-                  ),
+                  _buildStatsRow(homeData),
                   const SizedBox(height: 24),
                   const MiniCalendar(),
                   const SizedBox(height: 24),
@@ -68,6 +68,33 @@ class HomeScreen extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildCycleDisplay(Map<String, dynamic>? homeData) {
+    if (homeData == null) {
+      return const CycleCircle(day: 0, phase: 'No data yet 🌸');
+    }
+    
+    final lastCycle = homeData['lastCycle'];
+    final phase = homeData['phase'] as String;
+    final cycleDay = DateTime.now().difference(lastCycle.startDate).inDays + 1;
+
+    return CycleCircle(day: cycleDay, phase: phase);
+  }
+
+  Widget _buildStatsRow(Map<String, dynamic>? homeData) {
+    final avgCycle = homeData?['prediction']?.averageLength ?? 28;
+    final avgPeriod = 5; // This could also be calculated from history
+    
+    return Row(
+      children: [
+        _buildStatPill('$avgCycle', 'Avg Cycle'),
+        const SizedBox(width: 8),
+        _buildStatPill('$avgPeriod', 'Period Days', color: const Color(0xFFC9A0D0)),
+        const SizedBox(width: 8),
+        _buildStatPill('12', 'Logged', color: const Color(0xFF8AB88A)), // Example logged count
+      ],
     );
   }
 
