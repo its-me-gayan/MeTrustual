@@ -142,9 +142,8 @@ class HomeScreen extends StatelessWidget {
         children: [
           Text(
             icon,
-            style: TextStyle(
+            style: const TextStyle(
               fontSize: 20,
-              transform: isActive ? (Matrix4.identity()..scale(1.15)) : null,
             ),
           ),
           const SizedBox(height: 3),

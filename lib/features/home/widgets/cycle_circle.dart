@@ -22,11 +22,11 @@ class CycleCircle extends StatelessWidget {
             width: 186,
             height: 186,
             decoration: BoxDecoration(
-              shape: BoxShape.center,
+              shape: BoxShape.circle,
               border: Border.all(
                 color: AppColors.primaryRose.withOpacity(0.2),
                 width: 2,
-                style: BorderStyle.solid, // Flutter doesn't have native dashed border easily
+                style: BorderStyle.solid,
               ),
               borderRadius: BorderRadius.circular(93),
             ),

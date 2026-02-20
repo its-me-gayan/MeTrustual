@@ -252,7 +252,7 @@ class InsightsScreen extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Text(icon, style: TextStyle(fontSize: 20, transform: isActive ? (Matrix4.identity()..scale(1.15)) : null)),
+          Text(icon, style: const TextStyle(fontSize: 20)),
           const SizedBox(height: 3),
           Text(label.toUpperCase(), style: TextStyle(fontSize: 9, fontWeight: FontWeight.w800, color: isActive ? AppColors.primaryRose : const Color(0xFFE0B0B0), letterSpacing: 0.4)),
         ],

@@ -11,7 +11,6 @@ class AppTheme {
         primary: AppColors.primaryRose,
         secondary: AppColors.lightRose,
         surface: AppColors.cardBg,
-        background: AppColors.background,
         onPrimary: Colors.white,
       ),
       scaffoldBackgroundColor: AppColors.background,
