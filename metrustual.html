@@ -1,0 +1,767 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MeTrustual</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+
+body {
+  background: #fef6f0;
+  font-family: 'Nunito', sans-serif;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  min-height: 100vh;
+  padding: 32px 16px 60px;
+}
+
+/* ── PHONE ── */
+.phone {
+  width: 360px;
+  min-height: 740px;
+  background: #fff8f5;
+  border-radius: 44px;
+  overflow: hidden;
+  box-shadow: 0 24px 60px rgba(200,100,100,0.15), 0 4px 16px rgba(200,100,100,0.08);
+  position: relative;
+  border: 1.5px solid rgba(255,200,190,0.5);
+}
+
+/* notch */
+.notch {
+  background: #fff8f5;
+  display: flex;
+  justify-content: center;
+  padding: 10px 0 4px;
+}
+.notch-inner {
+  width: 90px; height: 22px;
+  background: #f0e0da;
+  border-radius: 0 0 14px 14px;
+}
+
+/* status bar */
+.status {
+  display: flex;
+  justify-content: space-between;
+  padding: 2px 22px 6px;
+  font-size: 0.65rem;
+  font-weight: 800;
+  color: #c9a0a0;
+}
+
+/* ── SCREENS ── */
+.screen { display: none; padding: 0 22px 110px; }
+.screen.active { display: block; animation: pop 0.3s ease; }
+@keyframes pop { from { opacity:0; transform:scale(0.98); } to { opacity:1; transform:scale(1); } }
+
+/* ── BOTTOM NAV ── */
+.nav {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  background: white;
+  border-top: 1.5px solid #fce8e4;
+  display: flex;
+  padding: 10px 0 18px;
+  border-radius: 0 0 44px 44px;
+}
+.nav-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  cursor: pointer;
+  font-size: 0.55rem;
+  font-weight: 800;
+  color: #e0b0b0;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+.nav-item span { font-size: 1.3rem; transition: transform 0.2s; }
+.nav-item.on { color: #d97b8a; }
+.nav-item.on span { transform: scale(1.15); }
+
+/* FAB */
+.fab {
+  position: absolute;
+  bottom: 44px; left: 50%;
+  transform: translateX(-50%);
+  width: 52px; height: 52px;
+  background: linear-gradient(135deg, #f09090, #d97b8a);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.6rem; color: white;
+  box-shadow: 0 6px 20px rgba(217,123,138,0.45);
+  cursor: pointer;
+  border: 3px solid white;
+  transition: transform 0.2s;
+  z-index: 20;
+}
+.fab:hover { transform: translateX(-50%) scale(1.08); }
+
+/* ── HOME ── */
+.greeting {
+  font-size: 0.8rem;
+  color: #d0a0a8;
+  font-weight: 700;
+  margin-bottom: 2px;
+}
+.name {
+  font-size: 1.4rem;
+  font-weight: 900;
+  color: #3d2828;
+  margin-bottom: 18px;
+}
+
+/* Big cycle circle */
+.circle-wrap {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+.cycle-circle {
+  width: 170px; height: 170px;
+  border-radius: 50%;
+  background: linear-gradient(145deg, #fce8e8, #fdd5d5);
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  box-shadow: 0 8px 30px rgba(217,123,138,0.2), 0 0 0 10px rgba(252,232,232,0.5);
+  position: relative;
+}
+.cycle-circle::before {
+  content: '';
+  position: absolute;
+  inset: -8px;
+  border-radius: 50%;
+  border: 2px dashed rgba(217,123,138,0.2);
+}
+.day-num {
+  font-size: 3.2rem;
+  font-weight: 900;
+  color: #d97b8a;
+  line-height: 1;
+}
+.day-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #e0a0a8;
+  margin-top: 2px;
+}
+.phase-label {
+  font-size: 0.65rem;
+  font-weight: 800;
+  color: white;
+  background: #d97b8a;
+  padding: 3px 10px;
+  border-radius: 20px;
+  margin-top: 6px;
+}
+
+/* 3 pills */
+.pills-row {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  margin-bottom: 22px;
+}
+.pill {
+  flex: 1;
+  background: white;
+  border-radius: 16px;
+  padding: 12px 8px;
+  text-align: center;
+  box-shadow: 0 2px 10px rgba(200,100,100,0.08);
+  border: 1.5px solid #fce8e4;
+}
+.pill-val {
+  font-size: 1.3rem;
+  font-weight: 900;
+  color: #d97b8a;
+}
+.pill-lbl {
+  font-size: 0.6rem;
+  font-weight: 700;
+  color: #d0a8b0;
+  margin-top: 3px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+/* mini calendar */
+.cal-title {
+  font-size: 0.82rem;
+  font-weight: 800;
+  color: #3d2828;
+  margin-bottom: 10px;
+}
+.cal {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+}
+.ch { font-size: 0.58rem; text-align: center; color: #d0a8b0; font-weight: 800; text-transform: uppercase; padding: 2px 0; }
+.cd {
+  aspect-ratio: 1;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.7rem; font-weight: 700;
+  color: #c0a0a8;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.cd:hover { background: #fce8e4; }
+.cd.p { background: rgba(252,168,168,0.3); color: #d97b8a; }
+.cd.f { background: rgba(168,220,168,0.25); color: #6a9e6a; }
+.cd.t { background: #d97b8a; color: white; box-shadow: 0 3px 10px rgba(217,123,138,0.3); }
+.cd.e { cursor: default; }
+
+/* next period banner */
+.next-banner {
+  background: linear-gradient(135deg, #fff0f2, #fce8f0);
+  border: 1.5px solid #fcd0d8;
+  border-radius: 18px;
+  padding: 14px 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 16px;
+}
+.nb-left .lbl { font-size: 0.65rem; font-weight: 800; color: #d0a0a8; text-transform: uppercase; letter-spacing: 0.4px; }
+.nb-left .val { font-size: 1.1rem; font-weight: 900; color: #3d2828; margin-top: 2px; }
+.nb-left .sub { font-size: 0.68rem; color: #d0a0b0; font-weight: 700; margin-top: 1px; }
+.nb-ring { position: relative; width: 50px; height: 50px; }
+.nb-ring svg { transform: rotate(-90deg); }
+.nb-pct { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); font-size: 0.65rem; font-weight: 900; color: #d97b8a; }
+
+/* ── LOG ── */
+.log-date {
+  font-size: 0.72rem; font-weight: 800; color: #d0a0a8;
+  text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 16px;
+}
+.section {
+  font-size: 0.72rem; font-weight: 900; color: #c0a0a8;
+  text-transform: uppercase; letter-spacing: 0.6px;
+  margin-bottom: 10px; margin-top: 20px;
+}
+.section:first-of-type { margin-top: 0; }
+
+/* flow dots */
+.flow-row { display: flex; gap: 10px; justify-content: space-between; margin-bottom: 4px; }
+.flow-btn {
+  flex: 1; padding: 14px 4px;
+  background: white; border-radius: 16px;
+  text-align: center; cursor: pointer;
+  border: 2px solid #fce8e4;
+  transition: all 0.2s;
+}
+.flow-btn:hover { border-color: #f0b0b8; transform: translateY(-2px); }
+.flow-btn.on { border-color: #d97b8a; background: linear-gradient(135deg, #fff5f6, white); box-shadow: 0 4px 14px rgba(217,123,138,0.18); }
+.flow-icon { font-size: 1.5rem; }
+.flow-lbl { font-size: 0.6rem; font-weight: 800; color: #d0a8b0; margin-top: 4px; text-transform: uppercase; }
+.flow-btn.on .flow-lbl { color: #d97b8a; }
+
+/* mood row */
+.mood-row { display: flex; gap: 8px; justify-content: space-between; }
+.mood-btn {
+  flex: 1; padding: 12px 4px;
+  background: white; border-radius: 14px;
+  text-align: center; cursor: pointer;
+  border: 2px solid #fce8e4;
+  transition: all 0.2s;
+  font-size: 1.4rem;
+}
+.mood-btn:hover { transform: scale(1.08); }
+.mood-btn.on { border-color: #a8d0b8; background: #f0faf4; box-shadow: 0 4px 12px rgba(100,180,130,0.15); }
+
+/* symptom chips */
+.chips { display: flex; flex-wrap: wrap; gap: 7px; }
+.chip {
+  padding: 8px 14px;
+  background: white;
+  border: 1.5px solid #fce8e4;
+  border-radius: 20px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #c0a0a8;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.chip:hover { border-color: #f0b0c0; color: #d97b8a; }
+.chip.on { border-color: #c8b0e0; background: #f5f0fc; color: #9870c0; }
+
+/* note */
+.note {
+  width: 100%;
+  background: white;
+  border: 1.5px solid #fce8e4;
+  border-radius: 16px;
+  padding: 12px 14px;
+  font-size: 0.8rem;
+  font-family: 'Nunito', sans-serif;
+  color: #5a3838;
+  resize: none;
+  outline: none;
+  min-height: 68px;
+  transition: border-color 0.2s;
+  font-weight: 600;
+}
+.note:focus { border-color: #f0b0b8; }
+.note::placeholder { color: #ddbec0; }
+
+/* save btn */
+.save-btn {
+  width: 100%;
+  padding: 15px;
+  background: linear-gradient(135deg, #f09090, #d97b8a);
+  color: white;
+  border: none;
+  border-radius: 18px;
+  font-size: 0.9rem;
+  font-weight: 800;
+  cursor: pointer;
+  font-family: 'Nunito', sans-serif;
+  box-shadow: 0 6px 18px rgba(217,123,138,0.35);
+  transition: all 0.2s;
+  margin-top: 18px;
+}
+.save-btn:hover { transform: translateY(-2px); box-shadow: 0 10px 26px rgba(217,123,138,0.4); }
+
+/* ── INSIGHTS ── */
+.big-insight {
+  background: linear-gradient(135deg, #fce8e8, #fce8f8);
+  border-radius: 22px;
+  padding: 18px;
+  margin-bottom: 16px;
+  text-align: center;
+  border: 1.5px solid #fcd0d8;
+}
+.bi-emoji { font-size: 2.5rem; margin-bottom: 6px; }
+.bi-title { font-size: 1rem; font-weight: 900; color: #3d2828; margin-bottom: 4px; }
+.bi-sub { font-size: 0.75rem; color: #c0a0a8; font-weight: 600; line-height: 1.5; }
+
+.insight-card {
+  background: white;
+  border-radius: 18px;
+  padding: 15px 16px;
+  margin-bottom: 10px;
+  border: 1.5px solid #fce8e4;
+  box-shadow: 0 2px 10px rgba(200,100,100,0.06);
+}
+.ic-head { font-size: 0.78rem; font-weight: 900; color: #3d2828; margin-bottom: 10px; }
+
+/* bars */
+.bar-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+.bar-row:last-child { margin-bottom: 0; }
+.bar-name { font-size: 0.72rem; font-weight: 700; color: #c0a0a8; min-width: 68px; }
+.bar-track { flex: 1; height: 8px; background: #fce8e4; border-radius: 4px; overflow: hidden; }
+.bar-fill { height: 100%; border-radius: 4px; }
+.bar-num { font-size: 0.7rem; font-weight: 800; color: #d97b8a; min-width: 28px; text-align: right; }
+
+/* chart bars */
+.mini-chart { display: flex; align-items: flex-end; gap: 6px; height: 70px; margin-bottom: 6px; }
+.mc-bar { flex: 1; border-radius: 6px 6px 0 0; background: linear-gradient(0deg,#f09090,#fdd0d0); cursor: pointer; transition: filter 0.2s; }
+.mc-bar:hover { filter: brightness(0.9); }
+.mc-bar.hi { background: linear-gradient(0deg, #d97b8a, #f0a0b0); }
+.mc-labels { display: flex; gap: 6px; }
+.mc-lbl { flex: 1; text-align: center; font-size: 0.58rem; font-weight: 800; color: #d0b0b8; text-transform: uppercase; }
+
+/* upcoming */
+.upcoming-row {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 11px 13px;
+  border-radius: 13px;
+  margin-bottom: 7px;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+.upcoming-row:last-child { margin-bottom: 0; }
+.ur-period { background: rgba(252,168,168,0.15); border: 1px solid rgba(252,168,168,0.3); color: #c87878; }
+.ur-fertile { background: rgba(168,220,168,0.15); border: 1px solid rgba(168,220,168,0.3); color: #6a9e6a; }
+.ur-ov { background: rgba(197,184,216,0.15); border: 1px solid rgba(197,184,216,0.3); color: #9870c0; }
+
+/* ── LEARN ── */
+.search-box {
+  width: 100%;
+  padding: 11px 16px;
+  background: white;
+  border: 1.5px solid #fce8e4;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-family: 'Nunito', sans-serif;
+  outline: none;
+  color: #5a3838;
+  font-weight: 600;
+  margin-bottom: 14px;
+  transition: border-color 0.2s;
+}
+.search-box:focus { border-color: #f0b0b8; }
+.search-box::placeholder { color: #ddbec0; }
+
+.cat-scroll { display: flex; gap: 7px; overflow-x: auto; margin-bottom: 14px; scrollbar-width: none; }
+.cat-btn {
+  padding: 7px 15px; background: white; border-radius: 20px;
+  font-size: 0.72rem; font-weight: 800; cursor: pointer;
+  border: 1.5px solid #fce8e4; transition: all 0.2s;
+  white-space: nowrap; color: #c0a0a8; flex-shrink: 0;
+}
+.cat-btn:hover { border-color: #f0b0b8; color: #d97b8a; }
+.cat-btn.on { border-color: #d97b8a; background: linear-gradient(135deg,#fff5f6,white); color: #d97b8a; }
+
+.article {
+  background: white;
+  border-radius: 18px;
+  padding: 14px 15px;
+  margin-bottom: 10px;
+  border: 1.5px solid #fce8e4;
+  display: flex; gap: 12px; align-items: center;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.article:hover { border-color: #f0b0b8; transform: translateX(3px); }
+.art-icon { font-size: 1.8rem; flex-shrink: 0; }
+.art-tag { display: inline-block; padding: 2px 9px; border-radius: 10px; font-size: 0.6rem; font-weight: 800; margin-bottom: 4px; }
+.tag-g { background: rgba(168,220,168,0.25); color: #5a8e5a; }
+.tag-p { background: rgba(252,168,168,0.2); color: #c87878; }
+.tag-m { background: rgba(197,184,216,0.25); color: #8870b0; }
+.tag-h { background: rgba(255,220,140,0.3); color: #a07820; }
+.tag-d { background: rgba(140,200,230,0.25); color: #3a80a0; }
+.art-title { font-size: 0.8rem; font-weight: 800; color: #3d2828; line-height: 1.35; }
+.art-meta { font-size: 0.65rem; color: #d0b0b8; font-weight: 700; margin-top: 3px; }
+
+/* ── PRIVACY ── */
+.trust-box {
+  background: linear-gradient(135deg, #f0faf4, #f5f0fc);
+  border: 1.5px solid rgba(168,197,160,0.3);
+  border-radius: 22px;
+  padding: 22px 18px;
+  text-align: center;
+  margin-bottom: 16px;
+}
+.trust-emoji { font-size: 2.8rem; margin-bottom: 8px; }
+.trust-title { font-size: 1rem; font-weight: 900; color: #3d2828; margin-bottom: 6px; }
+.trust-text { font-size: 0.75rem; color: #8a7080; line-height: 1.6; font-weight: 600; }
+.trust-badges { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; margin-top: 12px; }
+.tbadge { padding: 5px 11px; background: white; border-radius: 20px; font-size: 0.62rem; font-weight: 800; color: #a08090; border: 1px solid #ece0e8; }
+
+.priv-card {
+  background: white;
+  border-radius: 18px;
+  padding: 14px 16px;
+  margin-bottom: 10px;
+  border: 1.5px solid #fce8e4;
+}
+.priv-head { font-size: 0.8rem; font-weight: 900; color: #3d2828; margin-bottom: 10px; }
+.toggle-row {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid #fce8e4;
+}
+.toggle-row:last-child { border-bottom: none; padding-bottom: 0; }
+.trow-label { font-size: 0.78rem; font-weight: 700; color: #5a3838; }
+.trow-sub { font-size: 0.65rem; color: #d0b0b8; margin-top: 2px; font-weight: 600; }
+.toggle { width: 42px; height: 24px; border-radius: 12px; background: #fce8e4; cursor: pointer; position: relative; transition: background 0.25s; flex-shrink: 0; }
+.toggle.on { background: linear-gradient(135deg, #f09090, #d97b8a); }
+.toggle::after { content: ''; position: absolute; top: 3px; left: 3px; width: 18px; height: 18px; border-radius: 50%; background: white; transition: transform 0.25s; box-shadow: 0 1px 4px rgba(0,0,0,0.12); }
+.toggle.on::after { transform: translateX(18px); }
+
+.out-btn { width: 100%; padding: 12px; background: white; border: 1.5px solid #f0b0b8; color: #d97b8a; border-radius: 16px; font-size: 0.82rem; font-weight: 800; cursor: pointer; font-family: 'Nunito', sans-serif; transition: all 0.2s; margin-top: 7px; }
+.out-btn:hover { background: #fff5f6; }
+.del-btn { width: 100%; padding: 12px; background: rgba(220,80,80,0.06); border: 1.5px solid rgba(220,80,80,0.2); color: #c05050; border-radius: 16px; font-size: 0.82rem; font-weight: 800; cursor: pointer; font-family: 'Nunito', sans-serif; transition: all 0.2s; margin-top: 7px; }
+
+/* page title */
+.page-title { font-size: 1.3rem; font-weight: 900; color: #3d2828; margin-bottom: 16px; }
+
+/* ── ONBOARDING ── */
+.ob-screen {
+  min-height: 740px;
+  background: linear-gradient(170deg, #fff8f5, #fef0f5);
+  display: flex; flex-direction: column;
+  align-items: center;
+  padding: 20px 24px 100px;
+  text-align: center;
+}
+.ob-big { font-size: 4rem; margin-bottom: 14px; }
+.ob-h { font-size: 1.6rem; font-weight: 900; color: #3d2828; line-height: 1.2; margin-bottom: 8px; }
+.ob-h em { color: #d97b8a; font-style: italic; }
+.ob-p { font-size: 0.82rem; color: #b09090; font-weight: 600; line-height: 1.65; margin-bottom: 22px; }
+
+.lang-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; width: 100%; margin-bottom: 18px; }
+.lang-btn { padding: 11px 12px; background: white; border: 1.5px solid #fce8e4; border-radius: 14px; font-size: 0.78rem; font-weight: 800; color: #b09090; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 8px; }
+.lang-btn:hover, .lang-btn.on { border-color: #d97b8a; color: #d97b8a; background: #fff5f6; }
+
+.ob-toggle { display: flex; justify-content: space-between; align-items: center; width: 100%; background: white; border-radius: 14px; padding: 12px 14px; margin-bottom: 8px; border: 1.5px solid #fce8e4; }
+.ob-tl { font-size: 0.8rem; font-weight: 800; color: #5a3838; text-align: left; }
+.ob-ts { font-size: 0.65rem; color: #d0b0b8; font-weight: 600; margin-top: 2px; }
+
+.ob-btn { width: 100%; padding: 15px; background: linear-gradient(135deg, #f09090, #d97b8a); color: white; border: none; border-radius: 18px; font-size: 0.92rem; font-weight: 900; cursor: pointer; font-family: 'Nunito', sans-serif; box-shadow: 0 6px 20px rgba(217,123,138,0.35); transition: all 0.2s; margin-top: 6px; }
+.ob-btn:hover { transform: translateY(-2px); }
+</style>
+</head>
+<body>
+
+<div class="phone">
+  <div class="notch"><div class="notch-inner"></div></div>
+  <div class="status"><span>9:41</span><span>🔋 📶</span></div>
+
+  <!-- ── ONBOARDING ── -->
+  <div id="s-ob" class="screen active" style="padding:0">
+    <div class="ob-screen">
+      <div class="ob-big">🌸</div>
+      <div class="ob-h">Hey there,<br><em>lovely!</em></div>
+      <div class="ob-p">Track your cycle simply.<br>Your data stays private. Always. 🔒</div>
+
+      <div class="lang-row">
+        <div class="lang-btn on" onclick="selLang(this)">🇬🇧 English</div>
+        <div class="lang-btn" onclick="selLang(this)">🇲🇾 Melayu</div>
+        <div class="lang-btn" onclick="selLang(this)">🇪🇸 Español</div>
+        <div class="lang-btn" onclick="selLang(this)">🇮🇳 हिन्दी</div>
+        <div class="lang-btn" onclick="selLang(this)">🇸🇦 العربية</div>
+        <div class="lang-btn" onclick="selLang(this)">🌐 More…</div>
+      </div>
+
+      <div class="ob-toggle">
+        <div><div class="ob-tl">🔒 Keep it private</div><div class="ob-ts">No account, stays on your phone</div></div>
+        <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+      </div>
+      <div class="ob-toggle">
+        <div><div class="ob-tl">☁️ Backup my data</div><div class="ob-ts">Encrypted, only you can see it</div></div>
+        <div class="toggle" onclick="this.classList.toggle('on')"></div>
+      </div>
+
+      <div style="background:rgba(168,220,168,0.15);border:1px solid rgba(168,197,160,0.3);border-radius:14px;padding:12px 14px;width:100%;margin:12px 0;text-align:left">
+        <div style="font-size:0.75rem;font-weight:800;color:#5a8e6a">🛡️ Our promise to you</div>
+        <div style="font-size:0.7rem;color:#8aae8a;font-weight:600;margin-top:3px;line-height:1.5">No ads. No selling your data. No judgement. Delete everything anytime.</div>
+      </div>
+
+      <button class="ob-btn" onclick="go('home')">Let's go! 🌸</button>
+    </div>
+  </div>
+
+  <!-- ── HOME ── -->
+  <div id="s-home" class="screen">
+    <div class="greeting">Good morning ☀️</div>
+    <div class="name">Aisha 👋</div>
+
+    <div class="circle-wrap">
+      <div class="cycle-circle">
+        <div class="day-num">14</div>
+        <div class="day-label">Cycle Day</div>
+        <div class="phase-label">Fertile 🌿</div>
+      </div>
+    </div>
+
+    <div class="pills-row">
+      <div class="pill">
+        <div class="pill-val">28</div>
+        <div class="pill-lbl">Avg Cycle</div>
+      </div>
+      <div class="pill">
+        <div class="pill-val" style="color:#c9a0d0">5</div>
+        <div class="pill-lbl">Period Days</div>
+      </div>
+      <div class="pill">
+        <div class="pill-val" style="color:#8ab88a">12</div>
+        <div class="pill-lbl">Logged</div>
+      </div>
+    </div>
+
+    <div class="cal-title">February 2026 🗓️</div>
+    <div class="cal">
+      <div class="ch">Su</div><div class="ch">Mo</div><div class="ch">Tu</div><div class="ch">We</div><div class="ch">Th</div><div class="ch">Fr</div><div class="ch">Sa</div>
+      <div class="cd e"></div><div class="cd e"></div><div class="cd e"></div><div class="cd e"></div><div class="cd e"></div><div class="cd e"></div><div class="cd">1</div>
+      <div class="cd p">2</div><div class="cd p">3</div><div class="cd p">4</div><div class="cd p">5</div><div class="cd p">6</div><div class="cd">7</div><div class="cd">8</div>
+      <div class="cd">9</div><div class="cd f">10</div><div class="cd f">11</div><div class="cd f">12</div><div class="cd f">13</div><div class="cd t">14</div><div class="cd f">15</div>
+      <div class="cd">16</div><div class="cd">17</div><div class="cd">18</div><div class="cd">19</div><div class="cd">20</div><div class="cd">21</div><div class="cd">22</div>
+      <div class="cd">23</div><div class="cd">24</div><div class="cd">25</div><div class="cd">26</div><div class="cd">27</div><div class="cd">28</div><div class="cd"></div>
+    </div>
+
+    <div class="next-banner">
+      <div class="nb-left">
+        <div class="lbl">Next Period</div>
+        <div class="val">March 6 🩸</div>
+        <div class="sub">In 14 days</div>
+      </div>
+      <div class="nb-ring">
+        <svg width="50" height="50" viewBox="0 0 50 50">
+          <circle cx="25" cy="25" r="19" fill="none" stroke="#fce8e4" stroke-width="5"/>
+          <circle cx="25" cy="25" r="19" fill="none" stroke="#d97b8a" stroke-width="5" stroke-dasharray="119" stroke-dashoffset="18" stroke-linecap="round"/>
+        </svg>
+        <div class="nb-pct">85%</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── LOG ── -->
+  <div id="s-log" class="screen">
+    <div class="page-title">How are you? 🌸</div>
+    <div class="log-date">Thursday · Feb 20, 2026</div>
+
+    <div class="section">Flow today?</div>
+    <div class="flow-row">
+      <div class="flow-btn" onclick="sel(this,'.flow-btn')"><div class="flow-icon">🔴</div><div class="flow-lbl">Heavy</div></div>
+      <div class="flow-btn on" onclick="sel(this,'.flow-btn')"><div class="flow-icon">🟠</div><div class="flow-lbl">Medium</div></div>
+      <div class="flow-btn" onclick="sel(this,'.flow-btn')"><div class="flow-icon">🟡</div><div class="flow-lbl">Light</div></div>
+      <div class="flow-btn" onclick="sel(this,'.flow-btn')"><div class="flow-icon">🤍</div><div class="flow-lbl">None</div></div>
+    </div>
+
+    <div class="section">Mood?</div>
+    <div class="mood-row">
+      <div class="mood-btn on" onclick="sel(this,'.mood-btn')">😔</div>
+      <div class="mood-btn" onclick="sel(this,'.mood-btn')">😐</div>
+      <div class="mood-btn" onclick="sel(this,'.mood-btn')">🙂</div>
+      <div class="mood-btn" onclick="sel(this,'.mood-btn')">😊</div>
+      <div class="mood-btn" onclick="sel(this,'.mood-btn')">🥰</div>
+    </div>
+
+    <div class="section">Symptoms?</div>
+    <div class="chips">
+      <div class="chip on" onclick="this.classList.toggle('on')">🌀 Cramps</div>
+      <div class="chip on" onclick="this.classList.toggle('on')">🤕 Headache</div>
+      <div class="chip" onclick="this.classList.toggle('on')">😴 Tired</div>
+      <div class="chip" onclick="this.classList.toggle('on')">🤢 Nausea</div>
+      <div class="chip" onclick="this.classList.toggle('on')">🌊 Bloating</div>
+      <div class="chip" onclick="this.classList.toggle('on')">💆 Back Pain</div>
+      <div class="chip" onclick="this.classList.toggle('on')">🍫 Cravings</div>
+      <div class="chip" onclick="this.classList.toggle('on')">✚ Add more</div>
+    </div>
+
+    <div class="section">Note to self 🌷</div>
+    <textarea class="note" placeholder="How are you really feeling? (just for you)">Feeling a bit drained but okay. Took ibuprofen for cramps.</textarea>
+
+    <button class="save-btn">Save ✓</button>
+  </div>
+
+  <!-- ── INSIGHTS ── -->
+  <div id="s-insights" class="screen">
+    <div class="page-title">Your Story ✨</div>
+
+    <div class="big-insight">
+      <div class="bi-emoji">🌿</div>
+      <div class="bi-title">You're very regular!</div>
+      <div class="bi-sub">Your cycles have been 27–30 days for 6 months. Your body knows what it's doing 💕</div>
+    </div>
+
+    <div class="insight-card">
+      <div class="ic-head">📊 Cycle Length — Last 6 months</div>
+      <div class="mini-chart">
+        <div class="mc-bar" style="height:65%"></div>
+        <div class="mc-bar" style="height:78%"></div>
+        <div class="mc-bar" style="height:72%"></div>
+        <div class="mc-bar hi" style="height:82%"></div>
+        <div class="mc-bar" style="height:74%"></div>
+        <div class="mc-bar" style="height:76%;opacity:0.7"></div>
+      </div>
+      <div class="mc-labels">
+        <div class="mc-lbl">Sep</div><div class="mc-lbl">Oct</div><div class="mc-lbl">Nov</div>
+        <div class="mc-lbl">Dec</div><div class="mc-lbl">Jan</div><div class="mc-lbl">Feb</div>
+      </div>
+    </div>
+
+    <div class="insight-card">
+      <div class="ic-head">🌸 Most common symptoms</div>
+      <div class="bar-row"><div class="bar-name">Cramps</div><div class="bar-track"><div class="bar-fill" style="width:80%;background:linear-gradient(90deg,#fdd0d0,#d97b8a)"></div></div><div class="bar-num">8</div></div>
+      <div class="bar-row"><div class="bar-name">Fatigue</div><div class="bar-track"><div class="bar-fill" style="width:58%;background:linear-gradient(90deg,#e0c8f0,#a880c8)"></div></div><div class="bar-num" style="color:#a880c8">6</div></div>
+      <div class="bar-row"><div class="bar-name">Headache</div><div class="bar-track"><div class="bar-fill" style="width:38%;background:linear-gradient(90deg,#c8e8d0,#6a9e7a)"></div></div><div class="bar-num" style="color:#6a9e7a">4</div></div>
+    </div>
+
+    <div class="insight-card">
+      <div class="ic-head">🔮 What's coming up</div>
+      <div class="upcoming-row ur-period"><span>🩸 Next period</span><span>Mar 6 · 85%</span></div>
+      <div class="upcoming-row ur-fertile"><span>🌿 Fertile window</span><span>Feb 18–23</span></div>
+      <div class="upcoming-row ur-ov"><span>◎ Ovulation</span><span>Today!</span></div>
+    </div>
+  </div>
+
+  <!-- ── LEARN ── -->
+  <div id="s-learn" class="screen">
+    <div class="page-title">Learn 📖</div>
+    <input class="search-box" type="text" placeholder="🔍 Search...">
+    <div class="cat-scroll">
+      <div class="cat-btn on" onclick="selCat(this)">All</div>
+      <div class="cat-btn" onclick="selCat(this)">🌸 Puberty</div>
+      <div class="cat-btn" onclick="selCat(this)">🧼 Hygiene</div>
+      <div class="cat-btn" onclick="selCat(this)">❌ Myths</div>
+      <div class="cat-btn" onclick="selCat(this)">💊 Pain</div>
+      <div class="cat-btn" onclick="selCat(this)">🏥 Doctor</div>
+    </div>
+    <div class="article"><div class="art-icon">🔬</div><div><div class="art-tag tag-g">Puberty</div><div class="art-title">Your cycle — the 4 phases explained</div><div class="art-meta">5 min · WHO Source</div></div></div>
+    <div class="article"><div class="art-icon">🌿</div><div><div class="art-tag tag-p">Pain</div><div class="art-title">Natural ways to ease period pain</div><div class="art-meta">4 min · Evidence-based</div></div></div>
+    <div class="article"><div class="art-icon">❌</div><div><div class="art-tag tag-m">Myths</div><div class="art-title">10 period myths — debunked!</div><div class="art-meta">6 min · Global</div></div></div>
+    <div class="article"><div class="art-icon">🩺</div><div><div class="art-tag tag-d">Doctor</div><div class="art-title">When to see a doctor about your period</div><div class="art-meta">3 min · Medical Guide</div></div></div>
+    <div class="article"><div class="art-icon">💰</div><div><div class="art-tag tag-h">Hygiene</div><div class="art-title">Affordable period products worldwide</div><div class="art-meta">5 min · Global Resources</div></div></div>
+    <div style="text-align:center;font-size:0.7rem;color:#d0b0b8;font-weight:700;padding:12px 0;border-top:1px solid #fce8e4;margin-top:4px">🌍 30+ languages supported</div>
+  </div>
+
+  <!-- ── PRIVACY ── -->
+  <div id="s-priv" class="screen">
+    <div class="page-title">Your Privacy 🛡️</div>
+    <div class="trust-box">
+      <div class="trust-emoji">🔐</div>
+      <div class="trust-title">Your data belongs to you</div>
+      <div class="trust-text">We never sell your health data or show you ads. Everything is encrypted and you can delete it all anytime.</div>
+      <div class="trust-badges">
+        <div class="tbadge">🔐 Encrypted</div>
+        <div class="tbadge">🚫 No Ads</div>
+        <div class="tbadge">🏠 Local-first</div>
+        <div class="tbadge">⚖️ GDPR</div>
+      </div>
+    </div>
+
+    <div class="priv-card">
+      <div class="priv-head">Your choices</div>
+      <div class="toggle-row"><div><div class="trow-label">📱 Keep data on my phone</div><div class="trow-sub">Never leaves your device</div></div><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+      <div class="toggle-row"><div><div class="trow-label">☁️ Encrypted cloud backup</div><div class="trow-sub">Only you can access it</div></div><div class="toggle" onclick="this.classList.toggle('on')"></div></div>
+      <div class="toggle-row"><div><div class="trow-label">🔒 Biometric lock</div><div class="trow-sub">Face ID or fingerprint</div></div><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+    </div>
+
+    <div class="priv-card">
+      <div class="priv-head">Export or delete</div>
+      <button class="out-btn">📥 Download my data</button>
+      <button class="del-btn">🗑️ Delete everything</button>
+    </div>
+  </div>
+
+  <!-- FAB -->
+  <div class="fab" onclick="go('log')">＋</div>
+
+  <!-- BOTTOM NAV -->
+  <div class="nav">
+    <div class="nav-item on" id="ni-home" onclick="go('home')"><span>🏠</span>Home</div>
+    <div class="nav-item" id="ni-log" onclick="go('log')"><span>🌸</span>Log</div>
+    <div class="nav-item" style="visibility:hidden"><span>＋</span></div>
+    <div class="nav-item" id="ni-insights" onclick="go('insights')"><span>✨</span>Insights</div>
+    <div class="nav-item" id="ni-learn" onclick="go('learn')"><span>📖</span>Learn</div>
+  </div>
+</div>
+
+<script>
+const screens = ['ob','home','log','insights','learn','priv'];
+const navMap = { home:'ni-home', log:'ni-log', insights:'ni-insights', learn:'ni-learn' };
+
+function go(name) {
+  screens.forEach(s => {
+    const el = document.getElementById('s-'+s);
+    if(el) el.classList.remove('active');
+  });
+  const target = document.getElementById('s-'+name);
+  if(target) target.classList.add('active');
+
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('on'));
+  if(navMap[name]) document.getElementById(navMap[name])?.classList.add('on');
+
+  document.querySelector('.fab').style.display = name === 'log' ? 'none' : 'flex';
+}
+
+function sel(el, selector) {
+  el.closest('.screen').querySelectorAll(selector).forEach(b => b.classList.remove('on'));
+  el.classList.add('on');
+}
+function selLang(el) { document.querySelectorAll('.lang-btn').forEach(b=>b.classList.remove('on')); el.classList.add('on'); }
+function selCat(el) { document.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('on')); el.classList.add('on'); }
+</script>
+</body>
+</html>
