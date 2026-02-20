@@ -1,0 +1,18 @@
+{
+  "appName": "MeTrustual",
+  "onboarding_title": "¡Hola, hermosa!",
+  "onboarding_subtitle": "Registra tu ciclo fácilmente.\nTus datos son privados. Siempre.",
+  "onboarding_cta": "¡Vamos! 🌸",
+  "home_good_morning": "Buenos días ☀️",
+  "home_cycle_day": "Día del Ciclo",
+  "home_next_period": "Próxima Regla",
+  "home_in_days": "En {} días",
+  "log_title": "¿Cómo estás? 🌸",
+  "log_flow_label": "¿Flujo hoy?",
+  "log_save": "Guardar ✓",
+  "log_saved": "¡Guardado! 🌸",
+  "flow_heavy": "Abundante",
+  "flow_medium": "Normal",
+  "flow_light": "Escaso",
+  "flow_none": "Ninguno"
+}
