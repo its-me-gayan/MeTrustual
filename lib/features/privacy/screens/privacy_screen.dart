@@ -27,7 +27,8 @@ class _PrivacyScreenState extends State<PrivacyScreen> {
               Row(
                 children: [
                   IconButton(
-                    icon: const Icon(Icons.arrow_back_ios, color: AppColors.textDark, size: 20),
+                    icon: const Icon(Icons.arrow_back_ios,
+                        color: AppColors.textDark, size: 20),
                     onPressed: () => context.go('/home'),
                   ),
                   Text(
@@ -42,18 +43,29 @@ class _PrivacyScreenState extends State<PrivacyScreen> {
               _buildPrivacyCard(
                 'Your choices',
                 [
-                  _buildToggleRow('📱 Keep data on my phone', 'Never leaves your device', localOnly, (v) => setState(() => localOnly = v)),
-                  _buildToggleRow('☁️ Encrypted cloud backup', 'Only you can access it', cloudBackup, (v) => setState(() => cloudBackup = v)),
-                  _buildToggleRow('🔒 Biometric lock', 'Face ID or fingerprint', biometricLock, (v) => setState(() => biometricLock = v)),
+                  _buildToggleRow(
+                      '📱 Keep data on my phone',
+                      'Never leaves your device',
+                      localOnly,
+                      (v) => setState(() => localOnly = v)),
+                  _buildToggleRow(
+                      '☁️ Encrypted cloud backup',
+                      'Only you can access it',
+                      cloudBackup,
+                      (v) => setState(() => cloudBackup = v)),
+                  _buildToggleRow('🔒 Biometric lock', 'Face ID or fingerprint',
+                      biometricLock, (v) => setState(() => biometricLock = v)),
                 ],
               ),
               const SizedBox(height: 20),
               _buildPrivacyCard(
                 'Export or delete',
                 [
-                  _buildActionButton('📥 Download my data', AppColors.textMid, false),
+                  _buildActionButton(
+                      '📥 Download my data', AppColors.textMid, false),
                   const SizedBox(height: 12),
-                  _buildActionButton('🗑️ Delete everything', Colors.redAccent, true),
+                  _buildActionButton(
+                      '🗑️ Delete everything', Colors.redAccent, true),
                 ],
               ),
             ],
@@ -77,13 +89,20 @@ class _PrivacyScreenState extends State<PrivacyScreen> {
           const SizedBox(height: 10),
           Text(
             'privacy_promise'.tr(),
-            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: AppColors.textDark),
+            style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w900,
+                color: AppColors.textDark),
           ),
           const SizedBox(height: 6),
           const Text(
             'We never sell your health data or show you ads. Everything is encrypted and you can delete it all anytime.',
             textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 12, color: AppColors.textMid, fontWeight: FontWeight.w600, height: 1.5),
+            style: TextStyle(
+                fontSize: 12,
+                color: AppColors.textMid,
+                fontWeight: FontWeight.w600,
+                height: 1.5),
           ),
           const SizedBox(height: 16),
           Wrap(
@@ -105,8 +124,15 @@ class _PrivacyScreenState extends State<PrivacyScreen> {
   Widget _buildBadge(String text) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(8), border: Border.all(color: AppColors.border)),
-      child: Text(text, style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w800, color: AppColors.textMid)),
+      decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: AppColors.border)),
+      child: Text(text,
+          style: const TextStyle(
+              fontSize: 10,
+              fontWeight: FontWeight.w800,
+              color: AppColors.textMid)),
     );
   }
 
@@ -123,7 +149,10 @@ class _PrivacyScreenState extends State<PrivacyScreen> {
         children: [
           Text(
             title,
-            style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w900, color: AppColors.textDark),
+            style: const TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w900,
+                color: AppColors.textDark),
           ),
           const SizedBox(height: 16),
           ...children,
@@ -132,7 +161,8 @@ class _PrivacyScreenState extends State<PrivacyScreen> {
     );
   }
 
-  Widget _buildToggleRow(String title, String sub, bool value, ValueChanged<bool> onChanged) {
+  Widget _buildToggleRow(
+      String title, String sub, bool value, ValueChanged<bool> onChanged) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
       child: Row(
@@ -141,12 +171,23 @@ class _PrivacyScreenState extends State<PrivacyScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(title, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w800, color: AppColors.textDark)),
-                Text(sub, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: AppColors.textMuted)),
+                Text(title,
+                    style: const TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w800,
+                        color: AppColors.textDark)),
+                Text(sub,
+                    style: const TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.textMuted)),
               ],
             ),
           ),
-          Switch(value: value, onChanged: onChanged, activeColor: AppColors.primaryRose),
+          Switch(
+              value: value,
+              onChanged: onChanged,
+              activeThumbColor: AppColors.primaryRose),
         ],
       ),
     );
@@ -162,7 +203,8 @@ class _PrivacyScreenState extends State<PrivacyScreen> {
           foregroundColor: color,
           elevation: 0,
           side: isOutline ? BorderSide(color: color.withOpacity(0.3)) : null,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         ),
         child: Text(label),
       ),

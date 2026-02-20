@@ -31,96 +31,72 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     return Scaffold(
       body: Container(
         width: double.infinity,
+        height: double.infinity,
         decoration: const BoxDecoration(
           gradient: AppColors.onboardingGradient,
         ),
         child: SafeArea(
-          child: SingleChildScrollView(
+          child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 24),
             child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                const SizedBox(height: 40),
-                const Text('🌸', style: TextStyle(fontSize: 64)),
-                const SizedBox(height: 16),
+                // ── Header ──
+                const Spacer(flex: 2),
+                const Text('🌸', style: TextStyle(fontSize: 52)),
+                const SizedBox(height: 8),
                 Text(
                   'onboarding_title'.tr(),
                   textAlign: TextAlign.center,
                   style: Theme.of(context).textTheme.displayLarge,
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: 4),
                 Text(
                   'onboarding_subtitle'.tr(),
                   textAlign: TextAlign.center,
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                         color: AppColors.textMid,
-                        fontSize: 16,
+                        fontSize: 13,
                       ),
                 ),
-                const SizedBox(height: 32),
-                GridView.builder(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2,
-                    childAspectRatio: 3,
-                    crossAxisSpacing: 12,
-                    mainAxisSpacing: 12,
-                  ),
-                  itemCount: languages.length,
-                  itemBuilder: (context, index) {
-                    final lang = languages[index];
-                    final isSelected = selectedLang == lang['code'];
-                    return GestureDetector(
-                      onTap: () {
-                        setState(() {
-                          selectedLang = lang['code']!;
-                          if (lang['code'] != 'more') {
-                            context.setLocale(Locale(lang['code']!));
-                          }
-                        });
-                      },
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: isSelected ? AppColors.petalLight.withOpacity(0.3) : Colors.white,
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(
-                            color: isSelected ? AppColors.primaryRose : AppColors.border,
-                            width: 1.5,
-                          ),
-                        ),
-                        alignment: Alignment.center,
-                        child: Text(
-                          '${lang['flag']} ${lang['name']}',
-                          style: TextStyle(
-                            fontWeight: FontWeight.w800,
-                            color: isSelected ? AppColors.primaryRose : AppColors.textDark,
-                          ),
-                        ),
-                      ),
-                    );
-                  },
-                ),
-                const SizedBox(height: 32),
+                const Spacer(flex: 2),
+
+                // ── Language Grid (3 rows x 2 cols using Row/Column) ──
+                _buildLangRow(languages[0], languages[1]),
+                const SizedBox(height: 10),
+                _buildLangRow(languages[2], languages[3]),
+                const SizedBox(height: 10),
+                _buildLangRow(languages[4], languages[5]),
+
+                const Spacer(flex: 2),
+
+                // ── Toggle Cards ──
                 _buildToggleCard(
                   title: '🔒 Keep it private',
                   subtitle: 'No account, stays on your phone',
                   value: keepPrivate,
                   onChanged: (val) => setState(() => keepPrivate = val),
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: 10),
                 _buildToggleCard(
                   title: '☁️ Backup my data',
                   subtitle: 'Encrypted, only you can see it',
                   value: backupData,
                   onChanged: (val) => setState(() => backupData = val),
                 ),
-                const SizedBox(height: 24),
+
+                const Spacer(flex: 2),
+
+                // ── Promise Card ──
                 Container(
-                  padding: const EdgeInsets.all(16),
+                  width: double.infinity,
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                   decoration: BoxDecoration(
                     color: AppColors.sageGreen.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(18),
-                    border: Border.all(color: AppColors.sageGreen.withOpacity(0.2)),
+                    borderRadius: BorderRadius.circular(16),
+                    border:
+                        Border.all(color: AppColors.sageGreen.withOpacity(0.2)),
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -130,22 +106,25 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                         style: TextStyle(
                           color: AppColors.sageGreen,
                           fontWeight: FontWeight.w900,
-                          fontSize: 13,
+                          fontSize: 12,
                         ),
                       ),
-                      const SizedBox(height: 4),
+                      const SizedBox(height: 2),
                       Text(
                         'No ads. No selling your data. No judgement. Delete everything anytime.',
                         style: TextStyle(
                           color: AppColors.sageGreen.withOpacity(0.8),
                           fontWeight: FontWeight.w600,
-                          fontSize: 12,
+                          fontSize: 11,
                         ),
                       ),
                     ],
                   ),
                 ),
-                const SizedBox(height: 32),
+
+                const Spacer(flex: 2),
+
+                // ── CTA Button ──
                 SizedBox(
                   width: double.infinity,
                   child: Container(
@@ -162,7 +141,9 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                     ),
                     child: ElevatedButton(
                       onPressed: () async {
-                        await ref.read(onboardingProvider.notifier).completeOnboarding(
+                        await ref
+                            .read(onboardingProvider.notifier)
+                            .completeOnboarding(
                               language: selectedLang,
                               anonymousMode: keepPrivate,
                               cloudSync: backupData,
@@ -172,14 +153,61 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.transparent,
                         shadowColor: Colors.transparent,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
                       ),
                       child: Text('onboarding_cta'.tr()),
                     ),
                   ),
                 ),
-                const SizedBox(height: 40),
+
+                const Spacer(flex: 3),
               ],
             ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLangRow(Map<String, String> left, Map<String, String> right) {
+    return Row(
+      children: [
+        Expanded(child: _buildLangTile(left)),
+        const SizedBox(width: 10),
+        Expanded(child: _buildLangTile(right)),
+      ],
+    );
+  }
+
+  Widget _buildLangTile(Map<String, String> lang) {
+    final isSelected = selectedLang == lang['code'];
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          selectedLang = lang['code']!;
+          if (lang['code'] != 'more') {
+            context.setLocale(Locale(lang['code']!));
+          }
+        });
+      },
+      child: Container(
+        height: 44,
+        decoration: BoxDecoration(
+          color:
+              isSelected ? AppColors.petalLight.withOpacity(0.3) : Colors.white,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(
+            color: isSelected ? AppColors.primaryRose : AppColors.border,
+            width: 1.5,
+          ),
+        ),
+        alignment: Alignment.center,
+        child: Text(
+          '${lang['flag']} ${lang['name']}',
+          style: TextStyle(
+            fontWeight: FontWeight.w800,
+            fontSize: 13,
+            color: isSelected ? AppColors.primaryRose : AppColors.textDark,
           ),
         ),
       ),
@@ -193,10 +221,10 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     required ValueChanged<bool> onChanged,
   }) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(16),
         border: Border.all(color: AppColors.border, width: 1.5),
       ),
       child: Row(
@@ -207,11 +235,17 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
               children: [
                 Text(
                   title,
-                  style: const TextStyle(fontWeight: FontWeight.w800, color: AppColors.textDark),
+                  style: const TextStyle(
+                      fontWeight: FontWeight.w800,
+                      fontSize: 13,
+                      color: AppColors.textDark),
                 ),
                 Text(
                   subtitle,
-                  style: const TextStyle(fontSize: 12, color: AppColors.textMuted, fontWeight: FontWeight.w600),
+                  style: const TextStyle(
+                      fontSize: 11,
+                      color: AppColors.textMuted,
+                      fontWeight: FontWeight.w600),
                 ),
               ],
             ),
@@ -219,7 +253,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           Switch(
             value: value,
             onChanged: onChanged,
-            activeColor: AppColors.primaryRose,
+            activeThumbColor: AppColors.primaryRose,
           ),
         ],
       ),
