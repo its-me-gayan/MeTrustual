@@ -11,12 +11,18 @@ class NextPeriodCard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final homeData = ref.watch(homeDataProvider);
     final prediction = homeData?['prediction'];
-    
-    final nextDate = prediction != null 
-        ? DateFormat('MMM d').format(prediction.nextPeriodDate)
+    // ✅ fixed: cast prediction to Map to access keys safely
+    final predictionMap = prediction as Map<String, dynamic>?;
+
+    final nextDate = predictionMap != null
+        ? DateFormat('MMMM d')
+            .format(DateTime.parse(predictionMap['nextPeriodDate']))
         : '---';
-    final daysUntil = prediction != null 
-        ? prediction.nextPeriodDate.difference(DateTime.now()).inDays
+
+    final daysUntil = predictionMap != null
+        ? DateTime.parse(predictionMap['nextPeriodDate'])
+            .difference(DateTime.now())
+            .inDays
         : 0;
 
     return Container(
