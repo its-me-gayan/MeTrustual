@@ -11,91 +11,102 @@ class NextPeriodCard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final homeData = ref.watch(homeDataProvider);
     final prediction = homeData?['prediction'];
-
-    // ✅ fixed: cast prediction to Map to access keys safely
-    final predictionMap = prediction as Map<String, dynamic>?;
-
-    final nextDate = predictionMap != null
-        ? DateFormat('MMMM d')
-            .format(DateTime.parse(predictionMap['nextPeriodDate']))
+    
+    final nextDate = prediction != null 
+        ? DateFormat('MMMM d').format(prediction.nextPeriodDate)
         : '---';
-
-    final daysUntil = predictionMap != null
-        ? DateTime.parse(predictionMap['nextPeriodDate'])
-            .difference(DateTime.now())
-            .inDays
+    final daysUntil = prediction != null 
+        ? prediction.nextPeriodDate.difference(DateTime.now()).inDays
         : 0;
 
     return Container(
-      padding: const EdgeInsets.all(16),
+      width: double.infinity,
+      padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [Color(0xFFFFF0F2), Color(0xFFFCE8F0)],
+          colors: [Color(0xFFFFECEF), Color(0xFFFFF8F9)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: const Color(0xFFFCD0D8), width: 1.5),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: const Color(0xFFFFD1D9), width: 2),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFFFF4D6D).withOpacity(0.08),
+            offset: const Offset(0, 8),
+            blurRadius: 24,
+          ),
+        ],
       ),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                'NEXT PERIOD',
-                style: TextStyle(
-                  fontSize: 10,
-                  fontWeight: FontWeight.w800,
-                  color: AppColors.textMuted,
-                  letterSpacing: 0.4,
-                ),
-              ),
-              const SizedBox(height: 2),
-              Text(
-                '$nextDate 🩸',
-                style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w900,
-                  color: AppColors.textDark,
-                ),
-              ),
-              const SizedBox(height: 1),
-              Text(
-                daysUntil > 0 ? 'In $daysUntil days' : 'Today!',
-                style: const TextStyle(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.textMuted,
-                ),
-              ),
-            ],
-          ),
-          Stack(
+          Container(
+            width: 56,
+            height: 56,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              shape: BoxShape.circle,
+              border: Border.all(color: const Color(0xFFFFD1D9), width: 2),
+            ),
             alignment: Alignment.center,
-            children: [
-              const SizedBox(
-                width: 50,
-                height: 50,
-                child: CircularProgressIndicator(
-                  value: 0.85,
-                  strokeWidth: 5,
-                  backgroundColor: AppColors.border,
-                  valueColor:
-                      AlwaysStoppedAnimation<Color>(AppColors.primaryRose),
-                  strokeCap: StrokeCap.round,
+            child: const Text('🩸', style: TextStyle(fontSize: 26)),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'NEXT PERIOD EXPECTED',
+                  style: TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w900,
+                    color: Color(0xFFFF758F),
+                    letterSpacing: 0.8,
+                  ),
                 ),
-              ),
-              const Text(
-                '85%',
-                style: TextStyle(
-                  fontSize: 10,
-                  fontWeight: FontWeight.w900,
-                  color: AppColors.primaryRose,
+                const SizedBox(height: 2),
+                Text(
+                  nextDate,
+                  style: const TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.w900,
+                    color: AppColors.textDark,
+                  ),
                 ),
+                const SizedBox(height: 2),
+                Text(
+                  daysUntil > 0 ? 'In $daysUntil days' : 'Starting today!',
+                  style: const TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.textMuted,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+            decoration: BoxDecoration(
+              color: const Color(0xFFFF4D6D),
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFFFF4D6D).withOpacity(0.3),
+                  offset: const Offset(0, 4),
+                  blurRadius: 12,
+                ),
+              ],
+            ),
+            child: const Text(
+              '85%',
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w900,
+                color: Colors.white,
               ),
-            ],
+            ),
           ),
         ],
       ),

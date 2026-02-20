@@ -19,7 +19,7 @@ class HomeScreen extends ConsumerWidget {
     final user = auth.currentUser;
 
     return Scaffold(
-      extendBody: true, // Allows the body to flow behind the bottom nav
+      extendBody: true,
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.fromLTRB(22, 20, 22, 120),
@@ -65,14 +65,15 @@ class HomeScreen extends ConsumerWidget {
                   ),
                 ],
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 24),
+              // Moved NextPeriodCard to the top
+              const NextPeriodCard(),
+              const SizedBox(height: 24),
               _buildCycleDisplay(homeData),
               const SizedBox(height: 24),
               _buildStatsRow(homeData),
               const SizedBox(height: 24),
               const MiniCalendar(),
-              const SizedBox(height: 24),
-              const NextPeriodCard(),
             ],
           ),
         ),
