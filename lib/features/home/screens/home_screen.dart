@@ -66,10 +66,21 @@ class HomeScreen extends ConsumerWidget {
                 ],
               ),
               const SizedBox(height: 24),
-              // Moved NextPeriodCard to the top
-              const NextPeriodCard(),
-              const SizedBox(height: 24),
-              _buildCycleDisplay(homeData),
+              // Side-by-side layout for Cycle and Next Period
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    flex: 5,
+                    child: _buildCycleDisplay(homeData),
+                  ),
+                  const SizedBox(width: 16),
+                  const Expanded(
+                    flex: 4,
+                    child: NextPeriodCard(),
+                  ),
+                ],
+              ),
               const SizedBox(height: 24),
               _buildStatsRow(homeData),
               const SizedBox(height: 24),

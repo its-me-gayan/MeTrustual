@@ -13,96 +13,79 @@ class NextPeriodCard extends ConsumerWidget {
     final prediction = homeData?['prediction'];
     
     final nextDate = prediction != null 
-        ? DateFormat('MMMM d').format(prediction.nextPeriodDate)
+        ? DateFormat('MMM d').format(prediction.nextPeriodDate)
         : '---';
     final daysUntil = prediction != null 
         ? prediction.nextPeriodDate.difference(DateTime.now()).inDays
         : 0;
 
     return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(18),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFFFFECEF), Color(0xFFFFF8F9)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
+        color: const Color(0xFFFFF8F9),
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: const Color(0xFFFFD1D9), width: 2),
+        border: Border.all(color: const Color(0xFFFFD1D9), width: 1.5),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFFFF4D6D).withOpacity(0.08),
-            offset: const Offset(0, 8),
-            blurRadius: 24,
+            color: const Color(0xFFFF4D6D).withOpacity(0.05),
+            offset: const Offset(0, 4),
+            blurRadius: 12,
           ),
         ],
       ),
-      child: Row(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
+          const Text(
+            'NEXT PERIOD',
+            style: TextStyle(
+              fontSize: 9,
+              fontWeight: FontWeight.w900,
+              color: Color(0xFFFF758F),
+              letterSpacing: 0.8,
+            ),
+          ),
+          const SizedBox(height: 12),
           Container(
-            width: 56,
-            height: 56,
+            width: 48,
+            height: 48,
             decoration: BoxDecoration(
               color: Colors.white,
               shape: BoxShape.circle,
-              border: Border.all(color: const Color(0xFFFFD1D9), width: 2),
+              border: Border.all(color: const Color(0xFFFFD1D9), width: 1.5),
             ),
             alignment: Alignment.center,
-            child: const Text('🩸', style: TextStyle(fontSize: 26)),
+            child: const Text('🩸', style: TextStyle(fontSize: 22)),
           ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'NEXT PERIOD EXPECTED',
-                  style: TextStyle(
-                    fontSize: 10,
-                    fontWeight: FontWeight.w900,
-                    color: Color(0xFFFF758F),
-                    letterSpacing: 0.8,
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  nextDate,
-                  style: const TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.w900,
-                    color: AppColors.textDark,
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  daysUntil > 0 ? 'In $daysUntil days' : 'Starting today!',
-                  style: const TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.textMuted,
-                  ),
-                ),
-              ],
+          const SizedBox(height: 12),
+          Text(
+            nextDate,
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w900,
+              color: AppColors.textDark,
             ),
           ),
+          const SizedBox(height: 4),
+          Text(
+            daysUntil > 0 ? 'In $daysUntil days' : 'Today!',
+            style: const TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w700,
+              color: AppColors.textMuted,
+            ),
+          ),
+          const SizedBox(height: 10),
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
             decoration: BoxDecoration(
               color: const Color(0xFFFF4D6D),
-              borderRadius: BorderRadius.circular(16),
-              boxShadow: [
-                BoxShadow(
-                  color: const Color(0xFFFF4D6D).withOpacity(0.3),
-                  offset: const Offset(0, 4),
-                  blurRadius: 12,
-                ),
-              ],
+              borderRadius: BorderRadius.circular(10),
             ),
             child: const Text(
               '85%',
               style: TextStyle(
-                fontSize: 14,
+                fontSize: 11,
                 fontWeight: FontWeight.w900,
                 color: Colors.white,
               ),
