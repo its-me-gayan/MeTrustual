@@ -26,76 +26,78 @@ class NextPeriodCard extends ConsumerWidget {
         : 0;
 
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
         color: const Color(0xFFFFF8F9),
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(20),
         border: Border.all(color: const Color(0xFFFFD1D9), width: 1.5),
         boxShadow: [
           BoxShadow(
             color: const Color(0xFFFF4D6D).withOpacity(0.05),
             offset: const Offset(0, 4),
-            blurRadius: 12,
+            blurRadius: 10,
           ),
         ],
       ),
-      child: Column(
+      child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Text(
-            'NEXT PERIOD',
-            style: TextStyle(
-              fontSize: 9,
-              fontWeight: FontWeight.w900,
-              color: Color(0xFFFF758F),
-              letterSpacing: 0.8,
-            ),
-          ),
-          const SizedBox(height: 12),
-          Container(
-            width: 48,
-            height: 48,
-            decoration: BoxDecoration(
-              color: Colors.white,
-              shape: BoxShape.circle,
-              border: Border.all(color: const Color(0xFFFFD1D9), width: 1.5),
-            ),
-            alignment: Alignment.center,
-            child: const Text('🩸', style: TextStyle(fontSize: 22)),
-          ),
-          const SizedBox(height: 12),
-          Text(
-            nextDate,
-            style: const TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w900,
-              color: AppColors.textDark,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            daysUntil > 0 ? 'In $daysUntil days' : 'Today!',
-            style: const TextStyle(
-              fontSize: 11,
-              fontWeight: FontWeight.w700,
-              color: AppColors.textMuted,
-            ),
-          ),
-          const SizedBox(height: 10),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-            decoration: BoxDecoration(
-              color: const Color(0xFFFF4D6D),
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: const Text(
-              '85%',
-              style: TextStyle(
-                fontSize: 11,
-                fontWeight: FontWeight.w900,
-                color: Colors.white,
+          const Text('🩸', style: TextStyle(fontSize: 18)),
+          const SizedBox(width: 10),
+          Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'NEXT PERIOD',
+                style: TextStyle(
+                  fontSize: 8,
+                  fontWeight: FontWeight.w900,
+                  color: Color(0xFFFF758F),
+                  letterSpacing: 0.8,
+                ),
               ),
-            ),
+              const SizedBox(height: 2),
+              Text(
+                nextDate,
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w900,
+                  color: AppColors.textDark,
+                ),
+              ),
+            ],
+          ),
+          const Spacer(),
+          Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Text(
+                daysUntil > 0 ? 'In $daysUntil days' : 'Today!',
+                style: const TextStyle(
+                  fontSize: 10,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.textMuted,
+                ),
+              ),
+              const SizedBox(height: 2),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFF4D6D),
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: const Text(
+                  '85%',
+                  style: TextStyle(
+                    fontSize: 9,
+                    fontWeight: FontWeight.w900,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ],
           ),
         ],
       ),
