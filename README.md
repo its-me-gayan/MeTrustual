@@ -57,3 +57,28 @@ No ads. No selling your data. No judgement. Delete everything anytime. Your data
 
 ---
 Built with ❤️ for girls and women everywhere.
+>
+## 🔥 Firestore Data Setup
+
+To populate your Firestore with the necessary dynamic content (symptoms, education, insights), you can use the provided `populate_firestore.py` script or manually add the following structure:
+
+### 1. `config` Collection
+- **Document ID**: `symptoms`
+  - **Field**: `items` (Array of Maps)
+    - `{ "icon": "🔴", "label": "Heavy Flow", "key": "heavy" }`
+    - `{ "icon": "😴", "label": "Fatigue", "key": "fatigue" }`
+- **Document ID**: `insight_tips`
+  - **Field**: `tips` (Array of Maps)
+    - `{ "text": "Your average cycle is 28 days. 💕" }`
+
+### 2. `education` Collection
+Create documents with:
+- `title`: (String) e.g., "Understanding Your Cycle"
+- `tag`: (String) e.g., "Basics"
+- `tagColor`: (String) e.g., "#F7A8B8"
+- `icon`: (String) e.g., "🌸"
+- `meta`: (String) e.g., "5 min read"
+- `order`: (Number) e.g., 1
+
+### 3. iOS Configuration
+The `GoogleService-Info.plist` has been added to `ios/Runner/GoogleService-Info.plist`. **Important**: After pulling the code, you MUST open the project in Xcode, right-click on the `Runner` folder, and select "Add Files to Runner" to include the `.plist` file in the build target.
