@@ -72,7 +72,7 @@ class _JourneyScreenState extends State<JourneyScreen> {
             }
           ],
           'warn':
-              'You can switch back to Period or Ovulation tracker anytime from your home screen.'
+              'You can switch back to Period or Onboarding tracker anytime from your home screen.'
         },
         {
           'icon': '📅',
@@ -322,7 +322,7 @@ class _JourneyScreenState extends State<JourneyScreen> {
                         child: const Icon(Icons.chevron_left, size: 20),
                       ),
                     ),
-                    const SizedBox(width: 12),
+                    const SizedBox(width: 16),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -390,7 +390,7 @@ class _JourneyScreenState extends State<JourneyScreen> {
                           fontSize: 13,
                           color: Color(0xFFB09090),
                           fontWeight: FontWeight.w600,
-                          height: 1.6,
+                          lineHeight: 1.6,
                         ),
                       ),
                       if (step['warn'] != null) ...[
@@ -636,17 +636,19 @@ class _JourneyScreenState extends State<JourneyScreen> {
         return Column(
           children: (step['opts'] as List).map((o) {
             final on = selected == o['v'];
+            final isSpecial = o['special'] == true;
             return Padding(
               padding: const EdgeInsets.only(bottom: 10),
               child: _buildBigChip(
                 '${o['e']} ${o['l']}',
                 on,
                 () {
-                  if (o['special'] == true)
+                  if (isSpecial)
                     context.go('/mode-selection');
                   else
                     setState(() => journeyData[step['key']] = o['v']);
                 },
+                isSpecial: isSpecial,
               ),
             );
           }).toList(),
@@ -656,24 +658,52 @@ class _JourneyScreenState extends State<JourneyScreen> {
     }
   }
 
-  Widget _buildBigChip(String text, bool on, VoidCallback onTap) {
+  Widget _buildBigChip(String text, bool on, VoidCallback onTap,
+      {bool isSpecial = false}) {
+    Color bgColor = on ? accentColor : Colors.white;
+    Color textColor = on ? Colors.white : AppColors.textDark;
+    Color borderColor = on ? accentColor : const Color(0xFFFCE8E4);
+
+    if (isSpecial && !on) {
+      bgColor = const Color(0xFFF5F5F5);
+      textColor = const Color(0xFF707070);
+      borderColor = const Color(0xFFE0E0E0);
+    }
+
     return GestureDetector(
       onTap: onTap,
       child: Container(
         width: double.infinity,
         padding: const EdgeInsets.all(18),
         decoration: BoxDecoration(
-          color: on ? accentColor : Colors.white,
+          color: bgColor,
           borderRadius: BorderRadius.circular(18),
-          border: Border.all(
-              color: on ? accentColor : const Color(0xFFFCE8E4), width: 1.5),
+          border: Border.all(color: borderColor, width: 1.5),
+          boxShadow: on
+              ? [
+                  BoxShadow(
+                    color: accentColor.withOpacity(0.2),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  )
+                ]
+              : null,
         ),
-        child: Text(
-          text,
-          style: TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w800,
-              color: on ? Colors.white : AppColors.textDark),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              text,
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w800,
+                color: textColor,
+              ),
+            ),
+            if (isSpecial)
+              Icon(Icons.arrow_forward_ios,
+                  size: 12, color: textColor.withOpacity(0.5)),
+          ],
         ),
       ),
     );
