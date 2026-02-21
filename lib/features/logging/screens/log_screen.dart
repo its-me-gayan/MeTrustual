@@ -254,13 +254,7 @@ class _LogScreenState extends ConsumerState<LogScreen> {
         ),
         _buildSectionTitle('OPK Test result?'),
         _buildChipsSingle(
-          [
-            '⬜ Negative',
-            '🟡 Low',
-            '🟠 High',
-            '🎯 Peak!',
-            '⏭️ Didn\'t test'
-          ],
+          ['⬜ Negative', '🟡 Low', '🟠 High', '🎯 Peak!', '⏭️ Didn\'t test'],
           selectedOpkResult,
           (chip) => setState(() => selectedOpkResult = chip),
           const Color(0xFF5A8E6A),
@@ -327,8 +321,9 @@ class _LogScreenState extends ConsumerState<LogScreen> {
                   : Colors.white,
               borderRadius: BorderRadius.circular(14),
               border: Border.all(
-                color:
-                    isSelected ? AppColors.primaryRose : const Color(0xFFFCE8E4),
+                color: isSelected
+                    ? AppColors.primaryRose
+                    : const Color(0xFFFCE8E4),
                 width: 1.5,
               ),
             ),
@@ -591,9 +586,18 @@ class _LogScreenState extends ConsumerState<LogScreen> {
     );
   }
 
-  Widget _buildLogStepperRow(String l1, int v1, int min1, int max1,
-      Function(int) onC1, String l2, dynamic v2, int min2, int max2,
-      Function(int) onC2, Color color) {
+  Widget _buildLogStepperRow(
+      String l1,
+      int v1,
+      int min1,
+      int max1,
+      Function(int) onC1,
+      String l2,
+      dynamic v2,
+      int min2,
+      int max2,
+      Function(int) onC2,
+      Color color) {
     return Row(
       children: [
         Expanded(child: _buildLogStepper(l1, v1, min1, max1, onC1, color)),
