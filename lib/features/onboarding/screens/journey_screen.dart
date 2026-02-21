@@ -363,7 +363,7 @@ class _JourneyScreenState extends State<JourneyScreen> {
                           fontSize: 13,
                           color: Color(0xFFB09090),
                           fontWeight: FontWeight.w600,
-                          lineHeight: 1.6,
+                          height: 1.6,
                         ),
                       ),
                       if (step['warn'] != null) ...[

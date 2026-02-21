@@ -18,7 +18,8 @@ class HomeScreen extends ConsumerStatefulWidget {
 }
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
-  String currentMode = 'period'; // This should ideally come from user settings/onboarding
+  String currentMode =
+      'period'; // This should ideally come from user settings/onboarding
 
   @override
   void initState() {
@@ -74,7 +75,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         color: Colors.white,
                         border: Border.all(color: AppColors.border, width: 1.5),
                       ),
-                      child: const Icon(Icons.person_outline, color: AppColors.textMid),
+                      child: const Icon(Icons.person_outline,
+                          color: AppColors.textMid),
                     ),
                   ),
                 ],
@@ -87,24 +89,31 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           ),
         ),
       ),
-      bottomNavigationBar: AppBottomNav(activeIndex: _getNavIndex(context.currentRoute)),
+      bottomNavigationBar:
+          AppBottomNav(activeIndex: _getNavIndex(_currentRoute)),
       floatingActionButton: const AppFAB(),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
     );
   }
 
   String get _currentRoute {
-    final String? location = GoRouter.of(context).routerDelegate.currentConfiguration.uri.path;
+    final String? location =
+        GoRouter.of(context).routerDelegate.currentConfiguration.uri.path;
     return location ?? '/home';
   }
 
   int _getNavIndex(String route) {
     switch (route) {
-      case '/home': return 0;
-      case '/log': return 1;
-      case '/insights': return 2;
-      case '/learn': return 3;
-      default: return 0;
+      case '/home':
+        return 0;
+      case '/log':
+        return 1;
+      case '/insights':
+        return 2;
+      case '/learn':
+        return 3;
+      default:
+        return 0;
     }
   }
 
@@ -113,7 +122,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       case 'period':
         final lastCycle = homeData?['lastCycle'];
         final phase = homeData?['phase'] as String? ?? 'No data yet 🌸';
-        final cycleDay = lastCycle != null ? DateTime.now().difference(lastCycle.startDate).inDays + 1 : 0;
+        final cycleDay = lastCycle != null
+            ? DateTime.now().difference(lastCycle.startDate).inDays + 1
+            : 0;
         final avgCycle = homeData?['prediction']?.averageLength ?? 28;
         const avgPeriod = 5;
 
@@ -124,14 +135,26 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             ),
             const SizedBox(height: 16),
             _buildPillsRow(
-              {'value': avgCycle.toString(), 'label': 'Avg Cycle', 'color': AppColors.primaryRose},
-              {'value': avgPeriod.toString(), 'label': 'Period Days', 'color': const Color(0xFFC9A0D0)},
-              {'value': '12', 'label': 'Logged', 'color': const Color(0xFF8AB88A)},
+              {
+                'value': avgCycle.toString(),
+                'label': 'Avg Cycle',
+                'color': AppColors.primaryRose
+              },
+              {
+                'value': avgPeriod.toString(),
+                'label': 'Period Days',
+                'color': const Color(0xFFC9A0D0)
+              },
+              {
+                'value': '12',
+                'label': 'Logged',
+                'color': const Color(0xFF8AB88A)
+              },
             ),
             const SizedBox(height: 24),
             const MiniCalendar(),
             const SizedBox(height: 24),
-            NextPeriodCard(mode: currentMode),
+            const NextPeriodCard(),
           ],
         );
       case 'preg':
@@ -139,18 +162,30 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         return Column(
           children: [
             Center(
-              child: CycleCircle(day: 24, phase: '2nd Trimester 💙', mode: 'preg'),
+              child: CycleCircle(day: 24, phase: '2nd Trimester 💙'),
             ),
             const SizedBox(height: 16),
             _buildPillsRow(
-              {'value': '113', 'label': 'Days to Go', 'color': const Color(0xFF4A70B0)},
-              {'value': 'Jun 5', 'label': 'Due Date', 'color': const Color(0xFF9870C0)},
-              {'value': '28', 'label': 'Logs', 'color': const Color(0xFF8AB88A)},
+              {
+                'value': '113',
+                'label': 'Days to Go',
+                'color': const Color(0xFF4A70B0)
+              },
+              {
+                'value': 'Jun 5',
+                'label': 'Due Date',
+                'color': const Color(0xFF9870C0)
+              },
+              {
+                'value': '28',
+                'label': 'Logs',
+                'color': const Color(0xFF8AB88A)
+              },
             ),
             const SizedBox(height: 24),
             _buildBabyCard(),
             const SizedBox(height: 24),
-            NextPeriodCard(mode: currentMode),
+            const NextPeriodCard(),
           ],
         );
       case 'ovul':
@@ -158,18 +193,30 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         return Column(
           children: [
             Center(
-              child: CycleCircle(day: 14, phase: '🎯 Peak Fertile', mode: 'ovul'),
+              child: CycleCircle(day: 14, phase: '🎯 Peak Fertile'),
             ),
             const SizedBox(height: 16),
             _buildPillsRow(
-              {'value': 'Today', 'label': 'Ovulation', 'color': const Color(0xFF5A8E6A)},
-              {'value': 'Mar 6', 'label': 'Next Period', 'color': AppColors.primaryRose},
-              {'value': '28', 'label': 'Cycle Len', 'color': const Color(0xFF8AB88A)},
+              {
+                'value': 'Today',
+                'label': 'Ovulation',
+                'color': const Color(0xFF5A8E6A)
+              },
+              {
+                'value': 'Mar 6',
+                'label': 'Next Period',
+                'color': AppColors.primaryRose
+              },
+              {
+                'value': '28',
+                'label': 'Cycle Len',
+                'color': const Color(0xFF8AB88A)
+              },
             ),
             const SizedBox(height: 24),
             _buildFertileBar(),
             const SizedBox(height: 24),
-            NextPeriodCard(mode: currentMode),
+            const NextPeriodCard(),
           ],
         );
       default:
@@ -177,7 +224,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     }
   }
 
-  Widget _buildPillsRow(Map<String, dynamic> pill1, Map<String, dynamic> pill2, Map<String, dynamic> pill3) {
+  Widget _buildPillsRow(Map<String, dynamic> pill1, Map<String, dynamic> pill2,
+      Map<String, dynamic> pill3) {
     return Row(
       children: [
         _buildStatPill(pill1['value'], pill1['label'], color: pill1['color']),
@@ -251,7 +299,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         children: [
           const Text(
             'Week 24 • What\'s happening',
-            style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: AppColors.textMuted),
+            style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w700,
+                color: AppColors.textMuted),
           ),
           const SizedBox(height: 10),
           Row(
@@ -265,12 +316,19 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   children: [
                     const Text(
                       'Baby is the size of a corn cob!',
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: AppColors.textDark),
+                      style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w900,
+                          color: AppColors.textDark),
                     ),
                     const SizedBox(height: 4),
                     Text(
                       'About 30cm and 600g. Baby\'s face is fully formed and she\'s practising breathing movements this week. Her brain is growing rapidly 💙',
-                      style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.textMuted.withOpacity(0.8), height: 1.5),
+                      style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.textMuted.withOpacity(0.8),
+                          height: 1.5),
                     ),
                   ],
                 ),
@@ -302,7 +360,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         children: [
           const Text(
             '🟢 Fertile Window — Day 10 to 16',
-            style: TextStyle(fontSize: 13, fontWeight: FontWeight.w900, color: AppColors.textDark),
+            style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w900,
+                color: AppColors.textDark),
           ),
           const SizedBox(height: 10),
           Container(
@@ -316,7 +377,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               widthFactor: 0.72, // Corresponds to 72% width in HTML
               child: Container(
                 decoration: BoxDecoration(
-                  gradient: const LinearGradient(colors: [Color(0xFFB0D0B8), Color(0xFF5A8E6A)]),
+                  gradient: const LinearGradient(
+                      colors: [Color(0xFFB0D0B8), Color(0xFF5A8E6A)]),
                   borderRadius: BorderRadius.circular(4),
                 ),
               ),
@@ -326,9 +388,21 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           const Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('Day 10', style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: AppColors.textMuted)),
-              Text('Peak (Day 14)', style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: AppColors.textMuted)),
-              Text('Day 16', style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: AppColors.textMuted)),
+              Text('Day 10',
+                  style: TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.textMuted)),
+              Text('Peak (Day 14)',
+                  style: TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.textMuted)),
+              Text('Day 16',
+                  style: TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.textMuted)),
             ],
           ),
         ],
@@ -356,7 +430,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         children: [
           const Text(
             'Switch tracker',
-            style: TextStyle(fontSize: 13, fontWeight: FontWeight.w900, color: AppColors.textDark),
+            style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w900,
+                color: AppColors.textDark),
           ),
           const SizedBox(height: 12),
           if (currentMode == 'period') ...[
@@ -402,7 +479,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 
-  Widget _buildSwitchModeButton(String text, VoidCallback onTap, Color color, {bool isUrgent = false}) {
+  Widget _buildSwitchModeButton(String text, VoidCallback onTap, Color color,
+      {bool isUrgent = false}) {
     return SizedBox(
       width: double.infinity,
       child: ElevatedButton(
@@ -411,21 +489,21 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           backgroundColor: isUrgent ? color.withOpacity(0.1) : Colors.white,
           foregroundColor: isUrgent ? color : AppColors.textDark,
           elevation: 0,
-          side: BorderSide(color: isUrgent ? color.withOpacity(0.3) : AppColors.border, width: 1.5),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          side: BorderSide(
+              color: isUrgent ? color.withOpacity(0.3) : AppColors.border,
+              width: 1.5),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
           padding: const EdgeInsets.symmetric(vertical: 14),
         ),
-        child: Text(text, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800)),
+        child: Text(text,
+            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800)),
       ),
     );
   }
-}
 
-// Dummy data for now, replace with actual data from providers
-extension GoRouterExtension on GoRouter {
-  String get currentRoute {
-    final RouteMatch lastMatch = routerDelegate.currentConfiguration.last;
-    final RouteBase route = lastMatch.route;
-    return route.path;
-  }
+  // String get _currentRoute {
+  //   final String? location = GoRouter.of(context).routerDelegate.currentConfiguration.uri.path;
+  //   return location ?? '/home';
+  // }
 }

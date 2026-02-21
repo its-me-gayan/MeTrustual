@@ -54,7 +54,7 @@ class ModeSelectionScreen extends StatelessWidget {
                     fontSize: 12.5,
                     color: Color(0xFFB09090),
                     fontWeight: FontWeight.w600,
-                    lineHeight: 1.6,
+                    height: 1.6,
                   ),
                 ),
                 const SizedBox(height: 24),

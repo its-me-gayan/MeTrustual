@@ -53,7 +53,7 @@ class _InsightsScreenState extends ConsumerState<InsightsScreen> {
           ),
         ),
       ),
-      bottomNavigationBar: AppBottomNav(activeIndex: _getNavIndex(context.currentRoute)),
+      bottomNavigationBar: AppBottomNav(activeIndex: _getNavIndex(_currentRoute)),
       floatingActionButton: const AppFAB(),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
     );
@@ -510,13 +510,5 @@ class _InsightsScreenState extends ConsumerState<InsightsScreen> {
         ],
       ),
     );
-  }
-}
-
-extension GoRouterExtension on GoRouter {
-  String get currentRoute {
-    final RouteMatch lastMatch = routerDelegate.currentConfiguration.last;
-    final RouteBase route = lastMatch.route;
-    return route.path;
   }
 }
