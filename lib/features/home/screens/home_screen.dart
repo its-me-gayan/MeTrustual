@@ -184,7 +184,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               },
             ),
             const SizedBox(height: 24),
-            const PremiumGate(
+            PremiumGate(
               message: 'Unlock Weekly Baby Updates',
               child: _buildBabyCard(),
             ),
@@ -228,7 +228,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               },
             ),
             const SizedBox(height: 24),
-            const PremiumGate(
+            PremiumGate(
               message: 'Unlock Fertile Window Analysis',
               child: _buildFertileBar(),
             ),

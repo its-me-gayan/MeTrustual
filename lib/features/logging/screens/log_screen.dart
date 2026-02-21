@@ -181,7 +181,7 @@ class _LogScreenState extends ConsumerState<LogScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const PremiumGate(
+        PremiumGate(
           message: 'Unlock Kick Counter',
           child: _buildKickCounter(),
         ),
@@ -235,7 +235,7 @@ class _LogScreenState extends ConsumerState<LogScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const PremiumGate(
+        PremiumGate(
           message: 'Unlock BBT Logging',
           child: _buildBBTInput(),
         ),
