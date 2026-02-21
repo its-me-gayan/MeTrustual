@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/providers/mode_provider.dart';
+import '../../../core/providers/firebase_providers.dart';
 
 class JourneyScreen extends ConsumerStatefulWidget {
   final String mode;
@@ -15,6 +17,7 @@ class JourneyScreen extends ConsumerStatefulWidget {
 class _JourneyScreenState extends ConsumerState<JourneyScreen> {
   int currentStep = 0;
   final Map<String, dynamic> journeyData = {};
+  bool _isLoading = false;
 
   late final List<Map<String, dynamic>> steps;
   late final Color accentColor;
@@ -26,6 +29,34 @@ class _JourneyScreenState extends ConsumerState<JourneyScreen> {
     steps = _getJourneySteps(widget.mode);
     accentColor = _getModeColor(widget.mode);
     progressGradient = _getModeGradient(widget.mode);
+    _loadExistingData();
+  }
+
+  Future<void> _loadExistingData() async {
+    setState(() => _isLoading = true);
+    try {
+      final auth = ref.read(firebaseAuthProvider);
+      final firestore = ref.read(firestoreProvider);
+      final uid = auth.currentUser?.uid;
+
+      if (uid != null) {
+        final doc = await firestore
+            .collection('users')
+            .doc(uid)
+            .collection('journey')
+            .doc(widget.mode)
+            .get();
+        if (doc.exists) {
+          setState(() {
+            journeyData.addAll(doc.data()!);
+          });
+        }
+      }
+    } catch (e) {
+      debugPrint('Error loading journey data: $e');
+    } finally {
+      setState(() => _isLoading = false);
+    }
   }
 
   Color _getModeColor(String mode) {
@@ -271,7 +302,23 @@ class _JourneyScreenState extends ConsumerState<JourneyScreen> {
     }
   }
 
+  Future<void> _saveData() async {
+    final auth = ref.read(firebaseAuthProvider);
+    final firestore = ref.read(firestoreProvider);
+    final uid = auth.currentUser?.uid;
+
+    if (uid != null) {
+      await firestore
+          .collection('users')
+          .doc(uid)
+          .collection('journey')
+          .doc(widget.mode)
+          .set(journeyData, SetOptions(merge: true));
+    }
+  }
+
   Future<void> _nextStep() async {
+    await _saveData();
     if (currentStep < steps.length - 1) {
       setState(() => currentStep++);
     } else {
@@ -293,6 +340,9 @@ class _JourneyScreenState extends ConsumerState<JourneyScreen> {
 
   @override
   Widget build(BuildContext context) {
+    if (_isLoading) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
     final step = steps[currentStep];
     final progress = (currentStep + 1) / steps.length;
 
@@ -487,11 +537,17 @@ class _JourneyScreenState extends ConsumerState<JourneyScreen> {
   }
 
   Widget _buildStepInput(Map<String, dynamic> step) {
+    final String key = step['key'];
+    final dynamic currentValue = journeyData[key];
+
     switch (step['type']) {
       case 'chips-big-single':
+      case 'chips-single':
+        final List opts = step['opts'];
         return Column(
-          children: (step['opts'] as List).map((opt) {
+          children: opts.map((opt) {
             final isSpecial = opt['special'] == true;
+            final isSelected = currentValue == opt['v'];
             return Padding(
               padding: const EdgeInsets.only(bottom: 12),
               child: GestureDetector(
@@ -499,18 +555,23 @@ class _JourneyScreenState extends ConsumerState<JourneyScreen> {
                   if (isSpecial) {
                     context.go('/mode-selection');
                   } else {
+                    setState(() {
+                      journeyData[key] = opt['v'];
+                    });
                     _nextStep();
                   }
                 },
                 child: Container(
                   padding: const EdgeInsets.all(18),
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: isSelected ? accentColor.withOpacity(0.1) : Colors.white,
                     borderRadius: BorderRadius.circular(20),
                     border: Border.all(
-                      color: isSpecial
-                          ? const Color(0xFFF0B0B8).withOpacity(0.5)
-                          : const Color(0xFFFCE8E4),
+                      color: isSelected
+                          ? accentColor
+                          : (isSpecial
+                              ? const Color(0xFFF0B0B8).withOpacity(0.5)
+                              : const Color(0xFFFCE8E4)),
                       width: 2,
                     ),
                   ),
@@ -531,10 +592,12 @@ class _JourneyScreenState extends ConsumerState<JourneyScreen> {
                         ),
                       ),
                       Icon(
-                        Icons.chevron_right,
-                        color: isSpecial
-                            ? const Color(0xFFD97B8A).withOpacity(0.5)
-                            : const Color(0xFFD0B0B8),
+                        isSelected ? Icons.check_circle : Icons.chevron_right,
+                        color: isSelected
+                            ? accentColor
+                            : (isSpecial
+                                ? const Color(0xFFD97B8A).withOpacity(0.5)
+                                : const Color(0xFFD0B0B8)),
                         size: 20,
                       ),
                     ],
@@ -544,13 +607,64 @@ class _JourneyScreenState extends ConsumerState<JourneyScreen> {
             );
           }).toList(),
         );
+      case 'chips-multi':
+        final List opts = step['opts'];
+        final List<String> selected = List<String>.from(currentValue ?? []);
+        return Wrap(
+          spacing: 10,
+          runSpacing: 10,
+          alignment: WrapAlignment.center,
+          children: opts.map((opt) {
+            final String label = opt['l'];
+            final isSelected = selected.contains(label);
+            return GestureDetector(
+              onTap: () {
+                setState(() {
+                  if (isSelected) {
+                    selected.remove(label);
+                  } else {
+                    selected.add(label);
+                  }
+                  journeyData[key] = selected;
+                });
+              },
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                decoration: BoxDecoration(
+                  color: isSelected ? accentColor : Colors.white,
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(
+                    color: isSelected ? accentColor : const Color(0xFFFCE8E4),
+                    width: 2,
+                  ),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(opt['e'], style: const TextStyle(fontSize: 18)),
+                    const SizedBox(width: 8),
+                    Text(
+                      label,
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w800,
+                        color: isSelected ? Colors.white : AppColors.textDark,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          }).toList(),
+        );
       case 'date':
       case 'due-date':
+        final DateTime? date = currentValue != null ? (currentValue as Timestamp).toDate() : null;
         return GestureDetector(
           onTap: () async {
-            await showDatePicker(
+            final picked = await showDatePicker(
               context: context,
-              initialDate: DateTime.now(),
+              initialDate: date ?? DateTime.now(),
               firstDate: DateTime.now().subtract(const Duration(days: 365)),
               lastDate: DateTime.now().add(const Duration(days: 365)),
               builder: (context, child) {
@@ -566,6 +680,11 @@ class _JourneyScreenState extends ConsumerState<JourneyScreen> {
                 );
               },
             );
+            if (picked != null) {
+              setState(() {
+                journeyData[key] = Timestamp.fromDate(picked);
+              });
+            }
           },
           child: Container(
             padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 20),
@@ -578,9 +697,9 @@ class _JourneyScreenState extends ConsumerState<JourneyScreen> {
               children: [
                 Icon(Icons.calendar_today, color: accentColor, size: 22),
                 const SizedBox(width: 14),
-                const Text(
-                  'Select Date',
-                  style: TextStyle(
+                Text(
+                  date != null ? "${date.day}/${date.month}/${date.year}" : 'Select Date',
+                  style: const TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.w800,
                     color: AppColors.textMid,
@@ -593,6 +712,7 @@ class _JourneyScreenState extends ConsumerState<JourneyScreen> {
           ),
         );
       case 'stepper':
+        final int val = currentValue ?? step['def'];
         return Container(
           padding: const EdgeInsets.symmetric(vertical: 30, horizontal: 20),
           decoration: BoxDecoration(
@@ -603,12 +723,16 @@ class _JourneyScreenState extends ConsumerState<JourneyScreen> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              _buildStepBtn(Icons.remove, () {}),
+              _buildStepBtn(Icons.remove, () {
+                if (val > step['min']) {
+                  setState(() => journeyData[key] = val - 1);
+                }
+              }),
               const SizedBox(width: 30),
               Column(
                 children: [
                   Text(
-                    '${step['def']}',
+                    '$val',
                     style: TextStyle(
                       fontSize: 44,
                       fontWeight: FontWeight.w900,
@@ -627,41 +751,13 @@ class _JourneyScreenState extends ConsumerState<JourneyScreen> {
                 ],
               ),
               const SizedBox(width: 30),
-              _buildStepBtn(Icons.add, () {}),
+              _buildStepBtn(Icons.add, () {
+                if (val < step['max']) {
+                  setState(() => journeyData[key] = val + 1);
+                }
+              }),
             ],
           ),
-        );
-      case 'chips-single':
-      case 'chips-multi':
-        return Wrap(
-          spacing: 10,
-          runSpacing: 10,
-          alignment: WrapAlignment.center,
-          children: (step['opts'] as List).map((opt) {
-            return Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(14),
-                border: Border.all(color: const Color(0xFFFCE8E4), width: 2),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(opt['e'], style: const TextStyle(fontSize: 18)),
-                  const SizedBox(width: 8),
-                  Text(
-                    opt['l'],
-                    style: const TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w800,
-                      color: AppColors.textDark,
-                    ),
-                  ),
-                ],
-              ),
-            );
-          }).toList(),
         );
       default:
         return const SizedBox();
