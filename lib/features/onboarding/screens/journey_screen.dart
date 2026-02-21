@@ -94,6 +94,7 @@ class _JourneyScreenState extends ConsumerState<JourneyScreen> {
               'This helps us set up the right tracker for you. No judgement either way.',
           'type': 'chips-big-single',
           'key': 'isPreg',
+          'required': true,
           'opts': [
             {'e': '✅', 'l': "Yes, I'm pregnant!", 'v': 'yes'},
             {'e': '🤔', 'l': 'I think I might be', 'v': 'maybe'},
@@ -113,7 +114,8 @@ class _JourneyScreenState extends ConsumerState<JourneyScreen> {
           'sub':
               'If yes, enter it. If not, enter your last period start date and we\'ll calculate.',
           'type': 'due-date',
-          'key': 'dueDate'
+          'key': 'dueDate',
+          'required': true,
         },
         {
           'icon': '👶',
@@ -121,6 +123,7 @@ class _JourneyScreenState extends ConsumerState<JourneyScreen> {
           'sub': 'This personalises your week-by-week tips and what to expect.',
           'type': 'chips-big-single',
           'key': 'firstPreg',
+          'required': true,
           'opts': [
             {'e': '🌱', 'l': 'Yes — my first!', 'v': 'first'},
             {'e': '👧', 'l': 'I have one child', 'v': 'second'},
@@ -170,6 +173,7 @@ class _JourneyScreenState extends ConsumerState<JourneyScreen> {
               'This shapes your insights, alerts, and what tools we highlight for you.',
           'type': 'chips-big-single',
           'key': 'goal',
+          'required': true,
           'opts': [
             {'e': '👶', 'l': 'Trying to conceive (TTC)', 'v': 'ttc'},
             {'e': '🌿', 'l': 'Natural family planning', 'v': 'nfp'},
@@ -183,6 +187,7 @@ class _JourneyScreenState extends ConsumerState<JourneyScreen> {
               'We calculate your fertile window from this. Ovulation is usually ~14 days before your next period.',
           'type': 'date',
           'key': 'lastPeriod',
+          'required': true,
           'skip': 'Skip for now'
         },
         {
@@ -238,6 +243,7 @@ class _JourneyScreenState extends ConsumerState<JourneyScreen> {
               'This helps us predict your next period and fertile window accurately.',
           'type': 'date',
           'key': 'lastPeriod',
+          'required': true,
           'skip': 'Not sure / this is my first time tracking'
         },
         {
@@ -271,6 +277,7 @@ class _JourneyScreenState extends ConsumerState<JourneyScreen> {
               'Helps us give you better predictions and product recommendations.',
           'type': 'chips-single',
           'key': 'flow',
+          'required': true,
           'opts': [
             {'e': '💧', 'l': 'Light', 'v': 'light'},
             {'e': '🟠', 'l': 'Medium', 'v': 'medium'},
@@ -318,11 +325,26 @@ class _JourneyScreenState extends ConsumerState<JourneyScreen> {
   }
 
   Future<void> _nextStep() async {
+    final step = steps[currentStep];
+    final key = step['key'];
+    final isRequired = step['required'] == true;
+    final value = journeyData[key];
+
+    if (isRequired && (value == null || (value is List && value.isEmpty))) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please make a selection to continue.'),
+          backgroundColor: Colors.redAccent,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
+    }
+
     await _saveData();
     if (currentStep < steps.length - 1) {
       setState(() => currentStep++);
     } else {
-      // Journey complete, set the mode
       await ref.read(modeProvider.notifier).setMode(widget.mode);
       if (mounted) {
         context.go('/home');
@@ -345,6 +367,7 @@ class _JourneyScreenState extends ConsumerState<JourneyScreen> {
     }
     final step = steps[currentStep];
     final progress = (currentStep + 1) / steps.length;
+    final isSingleChoice = step['type'] == 'chips-big-single' || step['type'] == 'chips-single';
 
     return Scaffold(
       body: Container(
@@ -359,7 +382,6 @@ class _JourneyScreenState extends ConsumerState<JourneyScreen> {
         child: SafeArea(
           child: Column(
             children: [
-              // Header
               Padding(
                 padding: const EdgeInsets.all(16.0),
                 child: Row(
@@ -372,8 +394,8 @@ class _JourneyScreenState extends ConsumerState<JourneyScreen> {
                         decoration: BoxDecoration(
                           color: Colors.white,
                           shape: BoxShape.circle,
-                          border: Border.all(
-                              color: const Color(0xFFFCE8E4), width: 1.5),
+                          border:
+                              Border.all(color: const Color(0xFFFCE8E4), width: 1.5),
                         ),
                         child: const Icon(Icons.arrow_back_ios_new,
                             size: 16, color: AppColors.textDark),
@@ -417,7 +439,6 @@ class _JourneyScreenState extends ConsumerState<JourneyScreen> {
                   ],
                 ),
               ),
-              // Step Content
               Expanded(
                 child: SingleChildScrollView(
                   padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -460,8 +481,7 @@ class _JourneyScreenState extends ConsumerState<JourneyScreen> {
                             color: const Color(0xFFFFF5F5),
                             borderRadius: BorderRadius.circular(16),
                             border: Border.all(
-                                color:
-                                    const Color(0xFFF0B0B8).withOpacity(0.5)),
+                                color: const Color(0xFFF0B0B8).withOpacity(0.5)),
                           ),
                           child: Row(
                             children: [
@@ -487,7 +507,6 @@ class _JourneyScreenState extends ConsumerState<JourneyScreen> {
                   ),
                 ),
               ),
-              // Footer
               Padding(
                 padding: const EdgeInsets.all(24.0),
                 child: Column(
@@ -505,27 +524,28 @@ class _JourneyScreenState extends ConsumerState<JourneyScreen> {
                         ),
                       ),
                     const SizedBox(height: 12),
-                    SizedBox(
-                      width: double.infinity,
-                      height: 56,
-                      child: ElevatedButton(
-                        onPressed: _nextStep,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: accentColor,
-                          foregroundColor: Colors.white,
-                          elevation: 6,
-                          shadowColor: accentColor.withOpacity(0.35),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(18),
+                    if (!isSingleChoice)
+                      SizedBox(
+                        width: double.infinity,
+                        height: 56,
+                        child: ElevatedButton(
+                          onPressed: _nextStep,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: accentColor,
+                            foregroundColor: Colors.white,
+                            elevation: 6,
+                            shadowColor: accentColor.withOpacity(0.35),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(18),
+                            ),
+                          ),
+                          child: const Text(
+                            'Continue',
+                            style: TextStyle(
+                                fontSize: 16, fontWeight: FontWeight.w900),
                           ),
                         ),
-                        child: const Text(
-                          'Continue',
-                          style: TextStyle(
-                              fontSize: 16, fontWeight: FontWeight.w900),
-                        ),
                       ),
-                    ),
                   ],
                 ),
               ),
@@ -564,11 +584,11 @@ class _JourneyScreenState extends ConsumerState<JourneyScreen> {
                 child: Container(
                   padding: const EdgeInsets.all(18),
                   decoration: BoxDecoration(
-                    color: isSelected ? accentColor.withOpacity(0.1) : Colors.white,
+                    color: isSelected ? accentColor.withOpacity(0.08) : Colors.white,
                     borderRadius: BorderRadius.circular(20),
                     border: Border.all(
                       color: isSelected
-                          ? accentColor
+                          ? accentColor.withOpacity(0.5)
                           : (isSpecial
                               ? const Color(0xFFF0B0B8).withOpacity(0.5)
                               : const Color(0xFFFCE8E4)),
@@ -594,7 +614,7 @@ class _JourneyScreenState extends ConsumerState<JourneyScreen> {
                       Icon(
                         isSelected ? Icons.check_circle : Icons.chevron_right,
                         color: isSelected
-                            ? accentColor
+                            ? accentColor.withOpacity(0.5)
                             : (isSpecial
                                 ? const Color(0xFFD97B8A).withOpacity(0.5)
                                 : const Color(0xFFD0B0B8)),
@@ -631,10 +651,10 @@ class _JourneyScreenState extends ConsumerState<JourneyScreen> {
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 decoration: BoxDecoration(
-                  color: isSelected ? accentColor : Colors.white,
+                  color: isSelected ? accentColor.withOpacity(0.12) : Colors.white,
                   borderRadius: BorderRadius.circular(14),
                   border: Border.all(
-                    color: isSelected ? accentColor : const Color(0xFFFCE8E4),
+                    color: isSelected ? accentColor.withOpacity(0.4) : const Color(0xFFFCE8E4),
                     width: 2,
                   ),
                 ),
@@ -648,7 +668,7 @@ class _JourneyScreenState extends ConsumerState<JourneyScreen> {
                       style: TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.w800,
-                        color: isSelected ? Colors.white : AppColors.textDark,
+                        color: isSelected ? accentColor : AppColors.textDark,
                       ),
                     ),
                   ],
@@ -659,7 +679,7 @@ class _JourneyScreenState extends ConsumerState<JourneyScreen> {
         );
       case 'date':
       case 'due-date':
-        final DateTime? date = currentValue != null ? (currentValue as Timestamp).toDate() : null;
+        final DateTime? date = currentValue != null ? (currentValue is Timestamp ? (currentValue as Timestamp).toDate() : currentValue as DateTime) : null;
         return GestureDetector(
           onTap: () async {
             final picked = await showDatePicker(
