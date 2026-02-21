@@ -322,8 +322,8 @@ class _JourneyScreenState extends ConsumerState<JourneyScreen> {
                         decoration: BoxDecoration(
                           color: Colors.white,
                           shape: BoxShape.circle,
-                          border:
-                              Border.all(color: const Color(0xFFFCE8E4), width: 1.5),
+                          border: Border.all(
+                              color: const Color(0xFFFCE8E4), width: 1.5),
                         ),
                         child: const Icon(Icons.arrow_back_ios_new,
                             size: 16, color: AppColors.textDark),
@@ -410,7 +410,8 @@ class _JourneyScreenState extends ConsumerState<JourneyScreen> {
                             color: const Color(0xFFFFF5F5),
                             borderRadius: BorderRadius.circular(16),
                             border: Border.all(
-                                color: const Color(0xFFF0B0B8).withOpacity(0.5)),
+                                color:
+                                    const Color(0xFFF0B0B8).withOpacity(0.5)),
                           ),
                           child: Row(
                             children: [
