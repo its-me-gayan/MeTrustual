@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/premium_gate.dart';
 import '../../../core/providers/mode_provider.dart';
+import '../../../core/services/notification_service.dart';
 
 class LogScreen extends ConsumerStatefulWidget {
   const LogScreen({super.key});
@@ -680,7 +681,10 @@ class _LogScreenState extends ConsumerState<LogScreen> {
       width: double.infinity,
       height: 56,
       child: ElevatedButton(
-        onPressed: () => context.go('/home'),
+        onPressed: () {
+          NotificationService.showSuccess(context, 'Log saved successfully! 🌸');
+          context.go('/home');
+        },
         style: ElevatedButton.styleFrom(
           backgroundColor: color,
           foregroundColor: Colors.white,

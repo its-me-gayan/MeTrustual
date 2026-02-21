@@ -5,6 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/providers/firebase_providers.dart';
+import '../../../core/services/notification_service.dart';
 
 class PremiumScreen extends ConsumerStatefulWidget {
   const PremiumScreen({super.key});
@@ -17,178 +18,163 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen> {
   bool _isLoading = false;
   String _selectedPlan = 'annual';
 
+  void _showError(String message) {
+    NotificationService.showError(context, message);
+  }
+
   Future<void> _handleSubscribe() async {
     final auth = ref.read(firebaseAuthProvider);
     final user = auth.currentUser;
 
     if (user == null || user.isAnonymous) {
-      // Show login/signup dialog first
-      await _showAuthDialog();
+      await _showSignUpSheet();
     } else {
-      // Proceed to mock payment
       await _processMockPayment(user.uid);
     }
   }
 
-  Future<void> _showAuthDialog() async {
-    return showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text('Create an Account',
-            style: TextStyle(fontWeight: FontWeight.w900)),
-        content: const Text(
-          'To secure your premium features and sync your data across devices, please create an account first.',
-          style:
-              TextStyle(fontWeight: FontWeight.w600, color: AppColors.textMid),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Maybe Later',
-                style: TextStyle(color: AppColors.textMuted)),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pop(context);
-              _showSignUpSheet();
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primaryRose,
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12)),
-            ),
-            child: const Text('Sign Up Now',
-                style: TextStyle(
-                    color: Colors.white, fontWeight: FontWeight.w800)),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _showSignUpSheet() {
+  Future<void> _showSignUpSheet() async {
     final emailController = TextEditingController();
     final passwordController = TextEditingController();
+    bool isSheetLoading = false;
 
-    showModalBottomSheet(
+    await showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(top: Radius.circular(25))),
-      builder: (context) => Padding(
-        padding: EdgeInsets.only(
-          bottom: MediaQuery.of(context).viewInsets.bottom,
-          left: 24,
-          right: 24,
-          top: 30,
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text('Join MeTrustual Premium',
-                style: TextStyle(
+      backgroundColor: Colors.transparent,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setSheetState) => Container(
+          decoration: const BoxDecoration(
+            color: Color(0xFFFFF8F5),
+            borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
+          ),
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(context).viewInsets.bottom + 32,
+            left: 24,
+            right: 24,
+            top: 32,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: AppColors.border,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              const SizedBox(height: 24),
+              RichText(
+                textAlign: TextAlign.center,
+                text: const TextSpan(
+                  style: TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.w900,
-                    color: AppColors.textDark)),
-            const SizedBox(height: 8),
-            const Text('Secure your data and unlock all features.',
-                style: TextStyle(
-                    color: AppColors.textMid, fontWeight: FontWeight.w600)),
-            const SizedBox(height: 24),
-            TextField(
-              controller: emailController,
-              decoration: InputDecoration(
-                hintText: 'Email Address',
-                filled: true,
-                fillColor: const Color(0xFFF8F8F8),
-                border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(15),
-                    borderSide: BorderSide.none),
-              ),
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: passwordController,
-              obscureText: true,
-              decoration: InputDecoration(
-                hintText: 'Password',
-                filled: true,
-                fillColor: const Color(0xFFF8F8F8),
-                border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(15),
-                    borderSide: BorderSide.none),
-              ),
-            ),
-            const SizedBox(height: 24),
-            SizedBox(
-              width: double.infinity,
-              height: 56,
-              child: ElevatedButton(
-                onPressed: () => _performSignUp(
-                    emailController.text, passwordController.text),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primaryRose,
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(18)),
+                    color: AppColors.textDark,
+                    fontFamily: 'Nunito',
+                  ),
+                  children: [
+                    TextSpan(text: 'Create your '),
+                    TextSpan(
+                      text: 'account',
+                      style: TextStyle(color: AppColors.primaryRose, fontStyle: FontStyle.italic),
+                    ),
+                  ],
                 ),
-                child: const Text('Create Account & Continue',
-                    style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w900,
-                        fontSize: 16)),
               ),
-            ),
-            const SizedBox(height: 30),
-          ],
+              const SizedBox(height: 8),
+              const Text(
+                'Secure your data and unlock all features.',
+                style: TextStyle(color: AppColors.textMid, fontWeight: FontWeight.w600, fontSize: 13),
+              ),
+              const SizedBox(height: 32),
+              _buildTextField(emailController, 'Email Address', Icons.email_outlined),
+              const SizedBox(height: 16),
+              _buildTextField(passwordController, 'Password', Icons.lock_outline, isObscure: true),
+              const SizedBox(height: 32),
+              SizedBox(
+                width: double.infinity,
+                height: 56,
+                child: ElevatedButton(
+                  onPressed: isSheetLoading ? null : () async {
+                    if (emailController.text.isEmpty || passwordController.text.isEmpty) {
+                      _showError('Please fill in all fields');
+                      return;
+                    }
+                    setSheetState(() => isSheetLoading = true);
+                    try {
+                      final auth = ref.read(firebaseAuthProvider);
+                      final currentUser = auth.currentUser;
+                      
+                      if (currentUser != null && currentUser.isAnonymous) {
+                        final credential = EmailAuthProvider.credential(
+                          email: emailController.text, 
+                          password: passwordController.text
+                        );
+                        await currentUser.linkWithCredential(credential);
+                      } else {
+                        await auth.createUserWithEmailAndPassword(
+                          email: emailController.text, 
+                          password: passwordController.text
+                        );
+                      }
+                      
+                      if (context.mounted) Navigator.pop(context);
+                      final newUser = auth.currentUser;
+                      if (newUser != null) {
+                        await _processMockPayment(newUser.uid);
+                      }
+                    } catch (e) {
+                      _showError(e.toString());
+                    } finally {
+                      setSheetState(() => isSheetLoading = false);
+                    }
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primaryRose,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                    elevation: 0,
+                  ),
+                  child: isSheetLoading 
+                    ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                    : const Text('Create Account & Continue', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 16)),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
 
-  Future<void> _performSignUp(String email, String password) async {
-    if (email.isEmpty || password.isEmpty) return;
-
-    Navigator.pop(context); // Close bottom sheet
-    setState(() => _isLoading = true);
-
-    try {
-      final auth = ref.read(firebaseAuthProvider);
-      final currentUser = auth.currentUser;
-
-      if (currentUser != null && currentUser.isAnonymous) {
-        // Link anonymous account to email/password
-        final credential =
-            EmailAuthProvider.credential(email: email, password: password);
-        await currentUser.linkWithCredential(credential);
-
-        // Data migration is automatic because UID remains the same when linking
-      } else {
-        await auth.createUserWithEmailAndPassword(
-            email: email, password: password);
-      }
-
-      if (mounted) {
-        final newUser = auth.currentUser;
-        if (newUser != null) {
-          await _processMockPayment(newUser.uid);
-        }
-      }
-    } catch (e) {
-      if (mounted)
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text('Error: $e')));
-    } finally {
-      if (mounted) setState(() => _isLoading = false);
-    }
+  Widget _buildTextField(TextEditingController controller, String hint, IconData icon, {bool isObscure = false}) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: AppColors.border, width: 2),
+      ),
+      child: TextField(
+        controller: controller,
+        obscureText: isObscure,
+        style: const TextStyle(fontWeight: FontWeight.w700, color: AppColors.textDark),
+        decoration: InputDecoration(
+          hintText: hint,
+          hintStyle: const TextStyle(color: AppColors.textMuted, fontWeight: FontWeight.w600),
+          prefixIcon: Icon(icon, color: AppColors.textMuted, size: 20),
+          border: InputBorder.none,
+          contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+        ),
+      ),
+    );
   }
 
   Future<void> _processMockPayment(String uid) async {
     setState(() => _isLoading = true);
-    await Future.delayed(
-        const Duration(seconds: 2)); // Simulate payment processing
-
+    await Future.delayed(const Duration(seconds: 2));
+    
     try {
       final firestore = ref.read(firestoreProvider);
       await firestore.collection('users').doc(uid).set({
@@ -196,60 +182,70 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen> {
         'subscriptionPlan': _selectedPlan,
         'subscriptionDate': FieldValue.serverTimestamp(),
       }, SetOptions(merge: true));
-
+      
       if (mounted) {
-        showDialog(
-          context: context,
-          barrierDismissible: false,
-          builder: (context) => AlertDialog(
-            shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Icon(Icons.check_circle, color: Colors.green, size: 80),
-                const SizedBox(height: 20),
-                const Text('Welcome to Premium!',
-                    style:
-                        TextStyle(fontSize: 22, fontWeight: FontWeight.w900)),
-                const SizedBox(height: 10),
-                const Text('All features are now unlocked for you.',
-                    textAlign: TextAlign.center),
-                const SizedBox(height: 24),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      Navigator.pop(context);
-                      context.go('/home');
-                    },
-                    style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.primaryRose,
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12))),
-                    child: const Text('Start Exploring',
-                        style: TextStyle(
-                            color: Colors.white, fontWeight: FontWeight.w800)),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
+        _showSuccessDialog();
       }
     } catch (e) {
-      if (mounted)
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text('Error: $e')));
+      _showError(e.toString());
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
   }
 
+  void _showSuccessDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(32)),
+        backgroundColor: const Color(0xFFFFF8F5),
+        child: Padding(
+          padding: const EdgeInsets.all(32.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(20),
+                decoration: const BoxDecoration(color: Color(0xFFE8F5E9), shape: BoxShape.circle),
+                child: const Icon(Icons.star, color: Color(0xFF4CAF50), size: 40),
+              ),
+              const SizedBox(height: 24),
+              const Text('You\'re Premium!', style: TextStyle(fontSize: 24, fontWeight: FontWeight.w900, color: AppColors.textDark)),
+              const SizedBox(height: 8),
+              const Text(
+                'Welcome to the family. Your journey just got even better.',
+                textAlign: TextAlign.center,
+                style: TextStyle(fontWeight: FontWeight.w600, color: AppColors.textMid),
+              ),
+              const SizedBox(height: 32),
+              SizedBox(
+                width: double.infinity,
+                height: 56,
+                child: ElevatedButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                    context.go('/home');
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primaryRose,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                    elevation: 0,
+                  ),
+                  child: const Text('Start Exploring', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900)),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: const Color(0xFFFFF8F5),
       body: Stack(
         children: [
           SingleChildScrollView(
@@ -257,45 +253,21 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen> {
               children: [
                 _buildHeader(),
                 Padding(
-                  padding: const EdgeInsets.all(24.0),
+                  padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 32),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text('Why Go Premium?',
-                          style: TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.w900,
-                              color: AppColors.textDark)),
-                      const SizedBox(height: 20),
-                      _buildFeatureRow(
-                          Icons.analytics_outlined,
-                          'Advanced Health Insights',
-                          'Deep dive into your cycle and pregnancy patterns.'),
-                      _buildFeatureRow(
-                          Icons.cloud_sync_outlined,
-                          'Secure Cloud Sync',
-                          'Never lose your data. Sync across all your devices.'),
-                      _buildFeatureRow(
-                          Icons.menu_book_outlined,
-                          'Expert Health Library',
-                          'Unlimited access to expert-reviewed articles and guides.'),
-                      _buildFeatureRow(
-                          Icons.notifications_active_outlined,
-                          'Smart Reminders',
-                          'Personalized alerts for pills, ovulation, and more.'),
+                      _buildFeatureItem('📊', 'Advanced Insights', 'Deep dive into your cycle and health patterns.'),
+                      _buildFeatureItem('☁️', 'Secure Cloud Sync', 'Sync your data safely across all your devices.'),
+                      _buildFeatureItem('📖', 'Expert Library', 'Unlimited access to expert-reviewed health guides.'),
+                      _buildFeatureItem('🔔', 'Smart Reminders', 'Personalized alerts tailored to your unique cycle.'),
                       const SizedBox(height: 40),
-                      const Text('Choose Your Plan',
-                          style: TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.w900,
-                              color: AppColors.textDark)),
+                      const Text('Select a plan', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: AppColors.textDark)),
                       const SizedBox(height: 16),
-                      _buildPlanOption('annual', 'Annual Plan', 'Best Value',
-                          '\$49.99/year', 'Only \$4.16/month'),
+                      _buildPlanCard('annual', 'Annual', '$49.99', 'Best Value • $4.16/mo'),
                       const SizedBox(height: 12),
-                      _buildPlanOption('monthly', 'Monthly Plan', null,
-                          '\$9.99/month', 'Cancel anytime'),
-                      const SizedBox(height: 100),
+                      _buildPlanCard('monthly', 'Monthly', '$9.99', 'Cancel anytime'),
+                      const SizedBox(height: 120),
                     ],
                   ),
                 ),
@@ -303,48 +275,32 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen> {
             ),
           ),
           Positioned(
-            bottom: 0,
-            left: 0,
-            right: 0,
-            child: Container(
-              padding: const EdgeInsets.all(24),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                boxShadow: [
-                  BoxShadow(
-                      color: Colors.black.withOpacity(0.05),
-                      blurRadius: 10,
-                      offset: const Offset(0, -5))
-                ],
-              ),
-              child: SizedBox(
-                width: double.infinity,
-                height: 56,
-                child: ElevatedButton(
-                  onPressed: _isLoading ? null : _handleSubscribe,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primaryRose,
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(18)),
-                    elevation: 0,
-                  ),
-                  child: _isLoading
-                      ? const CircularProgressIndicator(color: Colors.white)
-                      : const Text('Unlock Premium Now',
-                          style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w900,
-                              color: Colors.white)),
+            bottom: 32,
+            left: 22,
+            right: 22,
+            child: SizedBox(
+              height: 60,
+              child: ElevatedButton(
+                onPressed: _isLoading ? null : _handleSubscribe,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primaryRose,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(22)),
+                  elevation: 8,
+                  shadowColor: AppColors.primaryRose.withOpacity(0.4),
                 ),
+                child: _isLoading 
+                  ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                  : const Text('Unlock Premium Now', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: Colors.white)),
               ),
             ),
           ),
-          Positioned(
-            top: 50,
-            left: 20,
-            child: IconButton(
-              icon: const Icon(Icons.close, color: Colors.white, size: 28),
-              onPressed: () => Navigator.pop(context),
+          SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.only(left: 10, top: 10),
+              child: IconButton(
+                icon: const Icon(Icons.arrow_back_ios_new, color: AppColors.textDark, size: 20),
+                onPressed: () => Navigator.pop(context),
+              ),
             ),
           ),
         ],
@@ -355,64 +311,60 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen> {
   Widget _buildHeader() {
     return Container(
       width: double.infinity,
-      height: 260,
+      padding: const EdgeInsets.fromLTRB(22, 80, 22, 40),
       decoration: const BoxDecoration(
-        gradient: AppColors.primaryGradient,
+        color: Colors.white,
         borderRadius: BorderRadius.vertical(bottom: Radius.circular(40)),
+        boxShadow: [BoxShadow(color: Color(0xFFFCE8E4), blurRadius: 20, offset: Offset(0, 10))],
       ),
       child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const SizedBox(height: 40),
           Container(
-            padding: const EdgeInsets.all(15),
-            decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.2), shape: BoxShape.circle),
-            child: const Icon(Icons.star, color: Colors.white, size: 50),
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(color: AppColors.primaryRose.withOpacity(0.1), shape: BoxShape.circle),
+            child: const Text('✨', style: TextStyle(fontSize: 32)),
           ),
           const SizedBox(height: 20),
-          const Text('MeTrustual Premium',
-              style: TextStyle(
-                  fontSize: 28,
-                  fontWeight: FontWeight.w900,
-                  color: Colors.white)),
-          const Text('Your health, elevated.',
-              style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.white70)),
+          RichText(
+            textAlign: TextAlign.center,
+            text: const TextSpan(
+              style: TextStyle(fontSize: 28, fontWeight: FontWeight.w900, color: AppColors.textDark, fontFamily: 'Nunito'),
+              children: [
+                TextSpan(text: 'MeTrustual '),
+                TextSpan(text: 'Premium', style: TextStyle(color: AppColors.primaryRose, fontStyle: FontStyle.italic)),
+              ],
+            ),
+          ),
+          const SizedBox(height: 8),
+          const Text(
+            'Experience the full power of personalized health.',
+            textAlign: TextAlign.center,
+            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textMid),
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildFeatureRow(IconData icon, String title, String sub) {
+  Widget _buildFeatureItem(String emoji, String title, String desc) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 20),
+      padding: const EdgeInsets.only(bottom: 24),
       child: Row(
         children: [
           Container(
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-                color: AppColors.primaryRose.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(12)),
-            child: Icon(icon, color: AppColors.primaryRose, size: 24),
+            width: 48,
+            height: 48,
+            decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16), border: Border.all(color: AppColors.border, width: 1.5)),
+            alignment: Alignment.center,
+            child: Text(emoji, style: const TextStyle(fontSize: 24)),
           ),
           const SizedBox(width: 16),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(title,
-                    style: const TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w800,
-                        color: AppColors.textDark)),
-                Text(sub,
-                    style: const TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.textMid)),
+                Text(title, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w900, color: AppColors.textDark)),
+                Text(desc, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.textMid)),
               ],
             ),
           ),
@@ -421,66 +373,41 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen> {
     );
   }
 
-  Widget _buildPlanOption(
-      String id, String title, String? badge, String price, String sub) {
+  Widget _buildPlanCard(String id, String title, String price, String sub) {
     final isSelected = _selectedPlan == id;
     return GestureDetector(
       onTap: () => setState(() => _selectedPlan = id),
       child: Container(
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          color: isSelected
-              ? AppColors.primaryRose.withOpacity(0.05)
-              : Colors.white,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(
-              color: isSelected ? AppColors.primaryRose : AppColors.border,
-              width: 2),
+          color: isSelected ? Colors.white : Colors.transparent,
+          borderRadius: BorderRadius.circular(22),
+          border: Border.all(color: isSelected ? AppColors.primaryRose : AppColors.border, width: 2),
+          boxShadow: isSelected ? [BoxShadow(color: AppColors.primaryRose.withOpacity(0.1), blurRadius: 10, offset: const Offset(0, 4))] : null,
         ),
         child: Row(
           children: [
+            Container(
+              width: 24,
+              height: 24,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(color: isSelected ? AppColors.primaryRose : AppColors.textMuted, width: 2),
+                color: isSelected ? AppColors.primaryRose : Colors.transparent,
+              ),
+              child: isSelected ? const Icon(Icons.check, color: Colors.white, size: 14) : null,
+            ),
+            const SizedBox(width: 16),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(
-                    children: [
-                      Text(title,
-                          style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w900,
-                              color: AppColors.textDark)),
-                      if (badge != null) ...[
-                        const SizedBox(width: 8),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 8, vertical: 2),
-                          decoration: BoxDecoration(
-                              color: AppColors.primaryRose,
-                              borderRadius: BorderRadius.circular(8)),
-                          child: Text(badge,
-                              style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.w900)),
-                        ),
-                      ],
-                    ],
-                  ),
-                  const SizedBox(height: 4),
-                  Text(sub,
-                      style: const TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w600,
-                          color: AppColors.textMid)),
+                  Text(title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: AppColors.textDark)),
+                  Text(sub, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: AppColors.textMuted)),
                 ],
               ),
             ),
-            Text(price,
-                style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w900,
-                    color: AppColors.textDark)),
+            Text(price, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: AppColors.textDark)),
           ],
         ),
       ),

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/services/notification_service.dart';
 import '../../../core/providers/mode_provider.dart';
 import '../../../core/providers/firebase_providers.dart';
 
@@ -331,13 +332,7 @@ class _JourneyScreenState extends ConsumerState<JourneyScreen> {
     final value = journeyData[key];
 
     if (isRequired && (value == null || (value is List && value.isEmpty))) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please make a selection to continue.'),
-          backgroundColor: Colors.redAccent,
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
+      NotificationService.showError(context, 'Please make a selection to continue');
       return;
     }
 

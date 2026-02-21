@@ -4,6 +4,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/providers/firebase_providers.dart';
+import '../../../core/services/notification_service.dart';
 import '../../../models/user_profile_model.dart';
 
 class ProfileScreen extends ConsumerStatefulWidget {
@@ -51,9 +52,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         await firestore.collection('users').doc(profile.uid).collection('profile').doc('current').update({
           'displayName': result,
         });
-        if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Profile updated!')));
+        if (mounted) NotificationService.showSuccess(context, 'Profile updated!');
       } catch (e) {
-        if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+        if (mounted) NotificationService.showError(context, e.toString());
       } finally {
         if (mounted) setState(() => _isLoading = false);
       }
@@ -155,7 +156,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     _buildSettingsTile(Icons.person_outline, 'Edit Profile', () => _editProfile(profile)),
                     _buildSettingsTile(Icons.language, 'Language', _changeLanguage),
                     _buildSettingsTile(Icons.notifications_none, 'Notifications', () {
-                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Notification settings coming soon!')));
+                      NotificationService.showSuccess(context, 'Notification settings coming soon!');
                     }),
                   ]),
                   const SizedBox(height: 24),
@@ -163,10 +164,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   _buildSettingsCard([
                     _buildSettingsTile(Icons.lock_outline, 'Privacy & Security', () => context.go('/privacy')),
                     _buildSettingsTile(Icons.cloud_upload_outlined, 'Cloud Sync', () {
-                       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Cloud sync is active')));
+                       NotificationService.showSuccess(context, 'Cloud sync is active');
                     }),
                     _buildSettingsTile(Icons.palette_outlined, 'Theme', () {
-                       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Light theme is currently the only option')));
+                       NotificationService.showSuccess(context, 'Light theme is currently the only option');
                     }),
                   ]),
                   const SizedBox(height: 24),
