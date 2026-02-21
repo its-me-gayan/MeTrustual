@@ -148,7 +148,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                               anonymousMode: keepPrivate,
                               cloudSync: backupData,
                             );
-                        if (mounted) context.go('/home');
+                        if (mounted) context.go('/mode-selection');
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.transparent,
