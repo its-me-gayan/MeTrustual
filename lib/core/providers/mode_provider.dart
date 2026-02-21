@@ -10,9 +10,13 @@ class ModeNotifier extends StateNotifier<String> {
     _loadMode();
   }
 
+  bool _hasCompletedJourney = false;
+  bool get hasCompletedJourney => _hasCompletedJourney;
+
   Future<void> _loadMode() async {
     final prefs = await SharedPreferences.getInstance();
     final mode = prefs.getString('currentMode') ?? 'period';
+    _hasCompletedJourney = prefs.getBool('hasCompletedJourney') ?? false;
     state = mode;
   }
 
@@ -20,5 +24,17 @@ class ModeNotifier extends StateNotifier<String> {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('currentMode', mode);
     state = mode;
+  }
+
+  Future<void> completeJourney() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('hasCompletedJourney', true);
+    _hasCompletedJourney = true;
+  }
+
+  Future<void> resetJourney() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('hasCompletedJourney', false);
+    _hasCompletedJourney = false;
   }
 }

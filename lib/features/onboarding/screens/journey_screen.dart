@@ -341,6 +341,7 @@ class _JourneyScreenState extends ConsumerState<JourneyScreen> {
       setState(() => currentStep++);
     } else {
       await ref.read(modeProvider.notifier).setMode(widget.mode);
+      await ref.read(modeProvider.notifier).completeJourney();
       if (mounted) {
         context.go('/home');
       }

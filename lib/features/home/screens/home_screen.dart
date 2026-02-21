@@ -576,9 +576,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 
-  void _selectMode(String mode) {
-    // Navigate back to the journey for the selected mode
-    context.go('/journey/$mode');
+  Future<void> _selectMode(String mode) async {
+    // Reset journey completion so user can go through the new mode's journey
+    await ref.read(modeProvider.notifier).resetJourney();
+    if (mounted) {
+      context.go('/journey/$mode');
+    }
   }
 }
 

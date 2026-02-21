@@ -1,17 +1,19 @@
 import 'dart:async';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/providers/mode_provider.dart';
 
-class SplashScreen extends StatefulWidget {
+class SplashScreen extends ConsumerStatefulWidget {
   const SplashScreen({super.key});
 
   @override
-  State<SplashScreen> createState() => _SplashScreenState();
+  ConsumerState<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMixin {
+class _SplashScreenState extends ConsumerState<SplashScreen> with TickerProviderStateMixin {
   late AnimationController _logoController;
   late AnimationController _barController;
   late AnimationController _fadeController;
@@ -58,7 +60,12 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
     Future.delayed(const Duration(milliseconds: 3200), () {
       if (mounted) {
         _fadeController.forward().then((_) {
-          context.go('/onboarding');
+          final hasCompleted = ref.read(modeProvider.notifier).hasCompletedJourney;
+          if (hasCompleted) {
+            context.go('/home');
+          } else {
+            context.go('/onboarding');
+          }
         });
       }
     });
