@@ -4,15 +4,20 @@ import '../../../core/theme/app_colors.dart';
 class CycleCircle extends StatelessWidget {
   final int day;
   final String phase;
+  final Color? color;
+  final String? label;
 
   const CycleCircle({
     super.key,
     required this.day,
     required this.phase,
+    this.color,
+    this.label,
   });
 
   @override
   Widget build(BuildContext context) {
+    final accentColor = color ?? AppColors.primaryRose;
     return Center(
       child: Stack(
         alignment: Alignment.center,
@@ -24,7 +29,7 @@ class CycleCircle extends StatelessWidget {
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               border: Border.all(
-                color: AppColors.primaryRose.withOpacity(0.2),
+                color: accentColor.withOpacity(0.2),
                 width: 2,
                 style: BorderStyle.solid,
               ),
@@ -36,15 +41,22 @@ class CycleCircle extends StatelessWidget {
             height: 170,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              gradient: AppColors.cycleCircleGradient,
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  Colors.white,
+                  accentColor.withOpacity(0.05),
+                ],
+              ),
               boxShadow: [
                 BoxShadow(
-                  color: AppColors.primaryRose.withOpacity(0.2),
+                  color: accentColor.withOpacity(0.2),
                   offset: const Offset(0, 8),
                   blurRadius: 30,
                 ),
                 BoxShadow(
-                  color: const Color(0xFFFCE8E8).withOpacity(0.5),
+                  color: accentColor.withOpacity(0.05),
                   spreadRadius: 10,
                 ),
               ],
@@ -54,16 +66,16 @@ class CycleCircle extends StatelessWidget {
               children: [
                 Text(
                   '$day',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 52,
                     fontWeight: FontWeight.w900,
-                    color: AppColors.primaryRose,
+                    color: accentColor,
                     height: 1,
                   ),
                 ),
-                const Text(
-                  'Cycle Day',
-                  style: TextStyle(
+                Text(
+                  label ?? 'Cycle Day',
+                  style: const TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w700,
                     color: AppColors.textMuted,
@@ -74,7 +86,7 @@ class CycleCircle extends StatelessWidget {
                   padding:
                       const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
                   decoration: BoxDecoration(
-                    color: AppColors.primaryRose,
+                    color: accentColor,
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Text(

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:easy_localization/easy_localization.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/providers/mode_provider.dart';
 
 class LogScreen extends ConsumerStatefulWidget {
   const LogScreen({super.key});
@@ -12,9 +12,6 @@ class LogScreen extends ConsumerStatefulWidget {
 }
 
 class _LogScreenState extends ConsumerState<LogScreen> {
-  // This should ideally come from a global state/provider
-  String currentMode = 'period'; // period | preg | ovul
-
   // Period Mode State
   String? selectedFlow;
   String? selectedMoodPeriod;
@@ -41,6 +38,8 @@ class _LogScreenState extends ConsumerState<LogScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final currentMode = ref.watch(modeProvider);
+
     return Scaffold(
       body: SafeArea(
         child: SingleChildScrollView(
@@ -56,14 +55,18 @@ class _LogScreenState extends ConsumerState<LogScreen> {
                     onPressed: () => context.go('/home'),
                   ),
                   Text(
-                    _getPageTitle(),
-                    style: Theme.of(context).textTheme.titleLarge,
+                    _getPageTitle(currentMode),
+                    style: const TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.w900,
+                      color: AppColors.textDark,
+                    ),
                   ),
                 ],
               ),
               const SizedBox(height: 4),
               Text(
-                _getPageSub(),
+                _getPageSub(currentMode),
                 style: const TextStyle(
                   fontSize: 11.5,
                   fontWeight: FontWeight.w700,
@@ -71,9 +74,9 @@ class _LogScreenState extends ConsumerState<LogScreen> {
                 ),
               ),
               const SizedBox(height: 20),
-              _buildModeSpecificLogContent(),
+              _buildModeSpecificLogContent(currentMode),
               const SizedBox(height: 20),
-              _buildSaveButton(),
+              _buildSaveButton(currentMode),
             ],
           ),
         ),
@@ -81,21 +84,33 @@ class _LogScreenState extends ConsumerState<LogScreen> {
     );
   }
 
-  String _getPageTitle() {
+  String _getPageTitle(String currentMode) {
     switch (currentMode) {
-      case 'period': return 'How are you? 🌸';
-      case 'preg': return 'Daily Log 💙';
-      case 'ovul': return 'Daily Log 🌿';
-      default: return 'Daily Log';
+      case 'period':
+        return 'How are you? 🌸';
+      case 'preg':
+        return 'Daily Log 💙';
+      case 'ovul':
+        return 'Daily Log 🌿';
+      default:
+        return 'Daily Log';
     }
   }
 
-  String _getPageSub() {
-    // This should be dynamic based on date
-    return 'Thursday · Feb 21, 2026';
+  String _getPageSub(String currentMode) {
+    switch (currentMode) {
+      case 'period':
+        return 'Thursday · Feb 21, 2026';
+      case 'preg':
+        return 'Week 24 · Thursday, Feb 21';
+      case 'ovul':
+        return 'Cycle Day 14 · Feb 21, 2026';
+      default:
+        return 'Thursday · Feb 21, 2026';
+    }
   }
 
-  Widget _buildModeSpecificLogContent() {
+  Widget _buildModeSpecificLogContent(String currentMode) {
     switch (currentMode) {
       case 'period':
         return _buildPeriodLogContent();
@@ -119,9 +134,16 @@ class _LogScreenState extends ConsumerState<LogScreen> {
         _buildSectionTitle('Physical symptoms?'),
         _buildChipsMulti(
           [
-            '🌀 Cramps', '🤕 Headache', '😴 Fatigue', '🤢 Nausea',
-            '🌊 Bloating', '💆 Back Pain', '🍫 Cravings', '😤 Mood Swings',
-            '🌡️ Breast Tenderness', '✚ More'
+            '🌀 Cramps',
+            '🤕 Headache',
+            '😴 Fatigue',
+            '🤢 Nausea',
+            '🌊 Bloating',
+            '💆 Back Pain',
+            '🍫 Cravings',
+            '😤 Mood Swings',
+            '🌡️ Breast Tenderness',
+            '✚ More'
           ],
           selectedSymptomsPeriod,
           (chip) => setState(() {
@@ -135,8 +157,16 @@ class _LogScreenState extends ConsumerState<LogScreen> {
         ),
         _buildSectionTitle('Wellness'),
         _buildLogStepperRow(
-          '💧 Water (glasses)', waterGlasses, 0, 15, (val) => setState(() => waterGlasses = val),
-          '🌙 Sleep (hrs)', sleepHours, 0, 12, (val) => setState(() => sleepHours = val),
+          '💧 Water (glasses)',
+          waterGlasses,
+          0,
+          15,
+          (val) => setState(() => waterGlasses = val),
+          '🌙 Sleep (hrs)',
+          sleepHours,
+          0,
+          12,
+          (val) => setState(() => sleepHours = val),
           AppColors.primaryRose,
         ),
         _buildSectionTitle('Note to self 🌷'),
@@ -155,9 +185,16 @@ class _LogScreenState extends ConsumerState<LogScreen> {
         _buildSectionTitle('Symptoms today?'),
         _buildChipsMulti(
           [
-            '🤢 Nausea', '🔥 Heartburn', '😴 Fatigue', '💆 Back Pain',
-            '🦵 Leg Cramps', '🌊 Swelling', '😰 Anxiety', '😴 Insomnia',
-            '🤯 Brain Fog', '✨ Feeling great!'
+            '🤢 Nausea',
+            '🔥 Heartburn',
+            '😴 Fatigue',
+            '💆 Back Pain',
+            '🦵 Leg Cramps',
+            '🌊 Swelling',
+            '😰 Anxiety',
+            '😴 Insomnia',
+            '🤯 Brain Fog',
+            '✨ Feeling great!'
           ],
           selectedSymptomsPreg,
           (chip) => setState(() {
@@ -171,8 +208,16 @@ class _LogScreenState extends ConsumerState<LogScreen> {
         ),
         _buildSectionTitle('Wellness'),
         _buildLogStepperRow(
-          '💧 Water (glasses)', waterGlassesPreg, 0, 15, (val) => setState(() => waterGlassesPreg = val),
-          '⚖️ Weight (kg)', weightKg, 50, 120, (val) => setState(() => weightKg = val),
+          '💧 Water (glasses)',
+          waterGlassesPreg,
+          0,
+          15,
+          (val) => setState(() => waterGlassesPreg = val),
+          '⚖️ Weight (kg)',
+          weightKg,
+          50,
+          120,
+          (val) => setState(() => weightKg = val),
           const Color(0xFF4A70B0),
         ),
         _buildSectionTitle('Appointment notes 🩺'),
@@ -189,7 +234,11 @@ class _LogScreenState extends ConsumerState<LogScreen> {
         _buildSectionTitle('Cervical mucus?'),
         _buildChipsSingle(
           [
-            '🏜️ Dry / None', '🍬 Sticky', '🥛 Creamy', '💧 Watery', '🥚 Egg White (peak!)'
+            '🏜️ Dry / None',
+            '🍬 Sticky',
+            '🥛 Creamy',
+            '💧 Watery',
+            '🥚 Egg White (peak!)'
           ],
           selectedCervicalMucus,
           (chip) => setState(() => selectedCervicalMucus = chip),
@@ -198,7 +247,11 @@ class _LogScreenState extends ConsumerState<LogScreen> {
         _buildSectionTitle('OPK Test result?'),
         _buildChipsSingle(
           [
-            '⬜ Negative', '🟡 Low', '🟠 High', '🎯 Peak!', '⏭️ Didn\'t test'
+            '⬜ Negative',
+            '🟡 Low',
+            '🟠 High',
+            '🎯 Peak!',
+            '⏭️ Didn\'t test'
           ],
           selectedOpkResult,
           (chip) => setState(() => selectedOpkResult = chip),
@@ -209,8 +262,10 @@ class _LogScreenState extends ConsumerState<LogScreen> {
         _buildSectionTitle('Other symptoms?'),
         _buildChipsMulti(
           [
-            '🩸 Mid-cycle spotting', '💫 Ovulation pain (Mittelschmerz)',
-            '🌿 High libido', '🌡️ Feeling warm'
+            '🩸 Mid-cycle spotting',
+            '💫 Ovulation pain (Mittelschmerz)',
+            '🌿 High libido',
+            '🌡️ Feeling warm'
           ],
           selectedSymptomsOvul,
           (chip) => setState(() {
@@ -259,10 +314,13 @@ class _LogScreenState extends ConsumerState<LogScreen> {
           child: Container(
             padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 5),
             decoration: BoxDecoration(
-              color: isSelected ? AppColors.primaryRose.withOpacity(0.1) : Colors.white,
+              color: isSelected
+                  ? AppColors.primaryRose.withOpacity(0.1)
+                  : Colors.white,
               borderRadius: BorderRadius.circular(14),
               border: Border.all(
-                color: isSelected ? AppColors.primaryRose : const Color(0xFFFCE8E4),
+                color:
+                    isSelected ? AppColors.primaryRose : const Color(0xFFFCE8E4),
                 width: 1.5,
               ),
             ),
@@ -274,7 +332,8 @@ class _LogScreenState extends ConsumerState<LogScreen> {
                   style: TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.w800,
-                    color: isSelected ? AppColors.primaryRose : AppColors.textDark,
+                    color:
+                        isSelected ? AppColors.primaryRose : AppColors.textDark,
                   ),
                 ),
               ],
@@ -290,9 +349,15 @@ class _LogScreenState extends ConsumerState<LogScreen> {
     Color accentColor = _getAccentColor(mode);
     String? currentSelectedMood;
     switch (mode) {
-      case 'period': currentSelectedMood = selectedMoodPeriod; break;
-      case 'preg': currentSelectedMood = selectedMoodPreg; break;
-      case 'ovul': currentSelectedMood = selectedMoodOvul; break;
+      case 'period':
+        currentSelectedMood = selectedMoodPeriod;
+        break;
+      case 'preg':
+        currentSelectedMood = selectedMoodPreg;
+        break;
+      case 'ovul':
+        currentSelectedMood = selectedMoodOvul;
+        break;
     }
 
     return Row(
@@ -302,14 +367,19 @@ class _LogScreenState extends ConsumerState<LogScreen> {
         return GestureDetector(
           onTap: () => setState(() {
             switch (mode) {
-              case 'period': selectedMoodPeriod = mood; break;
-              case 'preg': selectedMoodPreg = mood; break;
-              case 'ovul': selectedMoodOvul = mood; break;
+              case 'period':
+                selectedMoodPeriod = mood;
+                break;
+              case 'preg':
+                selectedMoodPreg = mood;
+                break;
+              case 'ovul':
+                selectedMoodOvul = mood;
+                break;
             }
           }),
           child: Container(
-            width: 48, height: 48,
-            alignment: Alignment.center,
+            padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
               color: isSelected ? accentColor.withOpacity(0.1) : Colors.white,
               shape: BoxShape.circle,
@@ -318,208 +388,67 @@ class _LogScreenState extends ConsumerState<LogScreen> {
                 width: 1.5,
               ),
             ),
-            child: Text(mood, style: const TextStyle(fontSize: 24)),
+            child: Text(mood, style: const TextStyle(fontSize: 28)),
           ),
         );
       }).toList(),
-    );
-  }
-
-  Widget _buildChipsMulti(List<String> chips, List<String> selectedChips, Function(String) onTap, Color accentColor) {
-    return Wrap(
-      spacing: 8,
-      runSpacing: 8,
-      children: chips.map((chip) {
-        final isSelected = selectedChips.contains(chip);
-        return GestureDetector(
-          onTap: () => onTap(chip),
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-            decoration: BoxDecoration(
-              color: isSelected ? accentColor.withOpacity(0.1) : Colors.white,
-              borderRadius: BorderRadius.circular(14),
-              border: Border.all(
-                color: isSelected ? accentColor : const Color(0xFFFCE8E4),
-                width: 1.5,
-              ),
-            ),
-            child: Text(
-              chip,
-              style: TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w800,
-                color: isSelected ? accentColor : AppColors.textDark,
-              ),
-            ),
-          ),
-        );
-      }).toList(),
-    );
-  }
-
-  Widget _buildChipsSingle(List<String> chips, String? selectedChip, Function(String) onTap, Color accentColor) {
-    return Wrap(
-      spacing: 8,
-      runSpacing: 8,
-      children: chips.map((chip) {
-        final isSelected = selectedChip == chip;
-        return GestureDetector(
-          onTap: () => onTap(chip),
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-            decoration: BoxDecoration(
-              color: isSelected ? accentColor.withOpacity(0.1) : Colors.white,
-              borderRadius: BorderRadius.circular(14),
-              border: Border.all(
-                color: isSelected ? accentColor : const Color(0xFFFCE8E4),
-                width: 1.5,
-              ),
-            ),
-            child: Text(
-              chip,
-              style: TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w800,
-                color: isSelected ? accentColor : AppColors.textDark,
-              ),
-            ),
-          ),
-        );
-      }).toList(),
-    );
-  }
-
-  Widget _buildLogStepperRow(
-    String label1, int val1, int min1, int max1, ValueChanged<int> onChanged1,
-    String label2, int val2, int min2, int max2, ValueChanged<int> onChanged2,
-    Color accentColor,
-  ) {
-    return Row(
-      children: [
-        Expanded(
-          child: _buildLogStepper(label1, val1, min1, max1, onChanged1, accentColor),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: _buildLogStepper(label2, val2, min2, max2, onChanged2, accentColor),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildLogStepper(
-      String label, int value, int min, int max, ValueChanged<int> onChanged, Color accentColor) {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 10),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: const Color(0xFFFCE8E4), width: 1.5),
-      ),
-      child: Column(
-        children: [
-          Text(label, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: AppColors.textMuted)),
-          const SizedBox(height: 8),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              _buildStepperButton(Icons.remove, () {
-                if (value > min) onChanged(value - 1);
-              }, accentColor),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 12),
-                child: Text(value.toString(), style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900, color: accentColor)),
-              ),
-              _buildStepperButton(Icons.add, () {
-                if (value < max) onChanged(value + 1);
-              }, accentColor),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildStepperButton(IconData icon, VoidCallback onTap, Color accentColor) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: 36, height: 36,
-        decoration: BoxDecoration(
-          color: accentColor.withOpacity(0.1),
-          shape: BoxShape.circle,
-        ),
-        child: Icon(icon, color: accentColor, size: 20),
-      ),
-    );
-  }
-
-  Widget _buildNoteField(String initialValue, ValueChanged<String> onChanged) {
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: const Color(0xFFFCE8E4), width: 1.5),
-      ),
-      child: TextField(
-        controller: TextEditingController(text: initialValue),
-        onChanged: onChanged,
-        maxLines: 4,
-        decoration: const InputDecoration(
-          hintText: 'Just for you — how are you really feeling?',
-          border: InputBorder.none,
-          hintStyle: TextStyle(color: AppColors.textMuted),
-        ),
-        style: const TextStyle(fontSize: 14, color: AppColors.textDark),
-      ),
     );
   }
 
   Widget _buildKickCounter() {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(18),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(22),
-        border: Border.all(color: const Color(0xFFFCE8E4), width: 1.5),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF4A70B0).withOpacity(0.08),
-            offset: const Offset(0, 4),
-            blurRadius: 12,
-          ),
-        ],
+        color: const Color(0xFFF0F4FF),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: const Color(0xFFE8EEFF), width: 1.5),
       ),
       child: Column(
         children: [
           const Text(
             '👶 Kick Counter — Today',
-            style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.textMuted),
+            style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w800,
+                color: Color(0xFF4A70B0)),
           ),
           const SizedBox(height: 10),
           Text(
             kicks.toString(),
-            style: TextStyle(fontSize: 48, fontWeight: FontWeight.w900, color: const Color(0xFF4A70B0)),
+            style: const TextStyle(
+                fontSize: 48,
+                fontWeight: FontWeight.w900,
+                color: Color(0xFF4A70B0)),
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 14),
           GestureDetector(
             onTap: () => setState(() => kicks++),
             child: Container(
-              width: 60, height: 60,
+              width: 64,
+              height: 64,
               decoration: BoxDecoration(
-                color: const Color(0xFF4A70B0).withOpacity(0.1),
+                color: Colors.white,
                 shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                      color: const Color(0xFF4A70B0).withOpacity(0.2),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4))
+                ],
               ),
-              child: const Center(child: Text('👶', style: TextStyle(fontSize: 32))),
+              child: const Center(
+                  child: Text('👶', style: TextStyle(fontSize: 32))),
             ),
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 12),
           const Text(
             'Tap when you feel baby move — aim for 10 kicks in 2 hours',
             textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 11, color: Color(0xFF7090C0), fontWeight: FontWeight.w700),
+            style: TextStyle(
+                fontSize: 10,
+                fontWeight: FontWeight.w700,
+                color: Color(0xFF7090C0)),
           ),
         ],
       ),
@@ -529,98 +458,233 @@ class _LogScreenState extends ConsumerState<LogScreen> {
   Widget _buildBBTInput() {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(18),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(22),
-        border: Border.all(color: const Color(0xFFFCE8E4), width: 1.5),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF5A8E6A).withOpacity(0.08),
-            offset: const Offset(0, 4),
-            blurRadius: 12,
-          ),
-        ],
+        color: const Color(0xFFF0FAF4),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: const Color(0xFFE8FAF0), width: 1.5),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text(
             '🌡️ Basal Body Temperature',
-            style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.textMuted),
+            style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w800,
+                color: Color(0xFF5A8E6A)),
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 12),
           Row(
             children: [
               Expanded(
                 child: TextField(
-                  keyboardType: TextInputType.numberWithOptions(decimal: true),
-                  controller: TextEditingController(text: bbt.toStringAsFixed(2)),
-                  onChanged: (text) {
-                    final value = double.tryParse(text);
-                    if (value != null) setState(() => bbt = value);
-                  },
+                  keyboardType:
+                      const TextInputType.numberWithOptions(decimal: true),
                   decoration: InputDecoration(
                     hintText: '36.70',
-                    border: InputBorder.none,
-                    isDense: true,
-                    contentPadding: EdgeInsets.zero,
-                    hintStyle: TextStyle(color: AppColors.textMuted.withOpacity(0.5)),
+                    filled: true,
+                    fillColor: Colors.white,
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(color: Color(0xFFE8FAF0)),
+                    ),
                   ),
-                  style: TextStyle(fontSize: 32, fontWeight: FontWeight.w900, color: const Color(0xFF5A8E6A)),
+                  onChanged: (val) => bbt = double.tryParse(val) ?? bbt,
                 ),
               ),
+              const SizedBox(width: 12),
               const Text(
                 '°C',
-                style: TextStyle(fontSize: 32, fontWeight: FontWeight.w900, color: AppColors.textDark),
+                style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w900,
+                    color: Color(0xFF5A8E6A)),
               ),
             ],
           ),
-          const SizedBox(height: 5),
+          const SizedBox(height: 8),
           const Text(
-            '— taken immediately on waking, before getting up',
-            style: TextStyle(fontSize: 11, color: AppColors.textMuted, fontWeight: FontWeight.w700),
+            'taken immediately on waking, before getting up',
+            style: TextStyle(
+                fontSize: 10,
+                fontWeight: FontWeight.w700,
+                color: Color(0xFF8Aae8a)),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildSaveButton() {
-    Color buttonColor = AppColors.primaryRose;
-    switch (currentMode) {
-      case 'preg': buttonColor = const Color(0xFF4A70B0); break;
-      case 'ovul': buttonColor = const Color(0xFF5A8E6A); break;
-    }
-    String buttonText = 'Save today\'s log';
-    switch (currentMode) {
-      case 'period': buttonText += ' ✓'; break;
-      case 'preg': buttonText += ' 💙'; break;
-      case 'ovul': buttonText += ' 🌿'; break;
-    }
+  Widget _buildChipsMulti(List<String> chips, List<String> selected,
+      Function(String) onToggle, Color color) {
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      children: chips.map((chip) {
+        final isSelected = selected.contains(chip);
+        return GestureDetector(
+          onTap: () => onToggle(chip),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+            decoration: BoxDecoration(
+              color: isSelected ? color : Colors.white,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: isSelected ? color : const Color(0xFFFCE8E4),
+                width: 1.5,
+              ),
+            ),
+            child: Text(
+              chip,
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w800,
+                color: isSelected ? Colors.white : AppColors.textMid,
+              ),
+            ),
+          ),
+        );
+      }).toList(),
+    );
+  }
 
+  Widget _buildChipsSingle(List<String> chips, String? selected,
+      Function(String) onSelect, Color color) {
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      children: chips.map((chip) {
+        final isSelected = selected == chip;
+        return GestureDetector(
+          onTap: () => onSelect(chip),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+            decoration: BoxDecoration(
+              color: isSelected ? color : Colors.white,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: isSelected ? color : const Color(0xFFFCE8E4),
+                width: 1.5,
+              ),
+            ),
+            child: Text(
+              chip,
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w800,
+                color: isSelected ? Colors.white : AppColors.textMid,
+              ),
+            ),
+          ),
+        );
+      }).toList(),
+    );
+  }
+
+  Widget _buildLogStepperRow(String l1, int v1, int min1, int max1,
+      Function(int) onC1, String l2, dynamic v2, int min2, int max2,
+      Function(int) onC2, Color color) {
+    return Row(
+      children: [
+        Expanded(child: _buildLogStepper(l1, v1, min1, max1, onC1, color)),
+        const SizedBox(width: 12),
+        Expanded(child: _buildLogStepper(l2, v2, min2, max2, onC2, color)),
+      ],
+    );
+  }
+
+  Widget _buildLogStepper(String label, dynamic value, int min, int max,
+      Function(int) onChanged, Color color) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFFCE8E4), width: 1.5),
+      ),
+      child: Column(
+        children: [
+          Text(
+            label,
+            style: const TextStyle(
+                fontSize: 10,
+                fontWeight: FontWeight.w800,
+                color: AppColors.textMuted),
+          ),
+          const SizedBox(height: 8),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              _buildStepBtn(Icons.remove, () {
+                if (value > min) onChanged(value - 1);
+              }, color),
+              Text(
+                value.toString(),
+                style: TextStyle(
+                    fontSize: 18, fontWeight: FontWeight.w900, color: color),
+              ),
+              _buildStepBtn(Icons.add, () {
+                if (value < max) onChanged(value + 1);
+              }, color),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStepBtn(IconData icon, VoidCallback onTap, Color color) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 28,
+        height: 28,
+        decoration: BoxDecoration(
+          color: color.withOpacity(0.1),
+          shape: BoxShape.circle,
+        ),
+        child: Icon(icon, size: 16, color: color),
+      ),
+    );
+  }
+
+  Widget _buildNoteField(String initial, Function(String) onChanged) {
+    return TextField(
+      maxLines: 3,
+      controller: TextEditingController(text: initial),
+      decoration: InputDecoration(
+        hintText: 'Just for you — how are you really feeling?',
+        filled: true,
+        fillColor: Colors.white,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: const BorderSide(color: Color(0xFFFCE8E4), width: 1.5),
+        ),
+      ),
+      onChanged: onChanged,
+    );
+  }
+
+  Widget _buildSaveButton(String mode) {
+    Color color = _getAccentColor(mode);
     return SizedBox(
       width: double.infinity,
-      height: 54,
+      height: 56,
       child: ElevatedButton(
-        onPressed: () {
-          // Handle saving log data based on currentMode
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Log saved for $currentMode mode!'))
-          );
-        },
+        onPressed: () => context.go('/home'),
         style: ElevatedButton.styleFrom(
-          backgroundColor: buttonColor,
+          backgroundColor: color,
           foregroundColor: Colors.white,
-          elevation: 0,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
-          shadowColor: buttonColor.withOpacity(0.35),
-        ).copyWith(
-          backgroundColor: WidgetStateProperty.all(buttonColor),
+          elevation: 4,
+          shadowColor: color.withOpacity(0.4),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
         ),
         child: Text(
-          buttonText,
-          style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w900),
+          mode == 'preg' ? 'Save today\'s log 💙' : 'Save today\'s log ✓',
+          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w900),
         ),
       ),
     );
@@ -628,9 +692,12 @@ class _LogScreenState extends ConsumerState<LogScreen> {
 
   Color _getAccentColor(String mode) {
     switch (mode) {
-      case 'preg': return const Color(0xFF4A70B0);
-      case 'ovul': return const Color(0xFF5A8E6A);
-      default: return AppColors.primaryRose;
+      case 'preg':
+        return const Color(0xFF4A70B0);
+      case 'ovul':
+        return const Color(0xFF5A8E6A);
+      default:
+        return AppColors.primaryRose;
     }
   }
 }

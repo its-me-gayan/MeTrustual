@@ -1,16 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/providers/mode_provider.dart';
 
-class JourneyScreen extends StatefulWidget {
+class JourneyScreen extends ConsumerStatefulWidget {
   final String mode;
   const JourneyScreen({super.key, required this.mode});
 
   @override
-  State<JourneyScreen> createState() => _JourneyScreenState();
+  ConsumerState<JourneyScreen> createState() => _JourneyScreenState();
 }
 
-class _JourneyScreenState extends State<JourneyScreen> {
+class _JourneyScreenState extends ConsumerState<JourneyScreen> {
   int currentStep = 0;
   final Map<String, dynamic> journeyData = {};
 
@@ -269,11 +271,15 @@ class _JourneyScreenState extends State<JourneyScreen> {
     }
   }
 
-  void _nextStep() {
+  Future<void> _nextStep() async {
     if (currentStep < steps.length - 1) {
       setState(() => currentStep++);
     } else {
-      context.go('/home');
+      // Journey complete, set the mode
+      await ref.read(modeProvider.notifier).setMode(widget.mode);
+      if (mounted) {
+        context.go('/home');
+      }
     }
   }
 
@@ -316,20 +322,20 @@ class _JourneyScreenState extends State<JourneyScreen> {
                         decoration: BoxDecoration(
                           color: Colors.white,
                           shape: BoxShape.circle,
-                          border: Border.all(
-                              color: const Color(0xFFFCE8E4), width: 1.5),
+                          border:
+                              Border.all(color: const Color(0xFFFCE8E4), width: 1.5),
                         ),
-                        child: const Icon(Icons.chevron_left, size: 20),
+                        child: const Icon(Icons.arrow_back_ios_new,
+                            size: 16, color: AppColors.textDark),
                       ),
                     ),
-                    const SizedBox(width: 16),
+                    const SizedBox(width: 12),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Container(
-                            height: 5,
-                            width: double.infinity,
+                            height: 6,
                             decoration: BoxDecoration(
                               color: const Color(0xFFFCE8E4),
                               borderRadius: BorderRadius.circular(3),
@@ -337,8 +343,7 @@ class _JourneyScreenState extends State<JourneyScreen> {
                             child: FractionallySizedBox(
                               alignment: Alignment.centerLeft,
                               widthFactor: progress,
-                              child: AnimatedContainer(
-                                duration: const Duration(milliseconds: 400),
+                              child: Container(
                                 decoration: BoxDecoration(
                                   gradient: progressGradient,
                                   borderRadius: BorderRadius.circular(3),
@@ -348,12 +353,12 @@ class _JourneyScreenState extends State<JourneyScreen> {
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            'Step ${currentStep + 1} of ${steps.length}',
+                            'STEP ${currentStep + 1} OF ${steps.length}',
                             style: const TextStyle(
-                              fontSize: 10,
-                              fontWeight: FontWeight.w800,
+                              fontSize: 9,
+                              fontWeight: FontWeight.w900,
                               color: Color(0xFFD0B0B8),
-                              letterSpacing: 0.4,
+                              letterSpacing: 0.5,
                             ),
                           ),
                         ],
@@ -362,15 +367,17 @@ class _JourneyScreenState extends State<JourneyScreen> {
                   ],
                 ),
               ),
-
-              // Body
+              // Step Content
               Expanded(
                 child: SingleChildScrollView(
                   padding: const EdgeInsets.symmetric(horizontal: 24),
                   child: Column(
                     children: [
-                      const SizedBox(height: 20),
-                      Text(step['icon'], style: const TextStyle(fontSize: 48)),
+                      const SizedBox(height: 10),
+                      Text(
+                        step['icon'],
+                        style: const TextStyle(fontSize: 48),
+                      ),
                       const SizedBox(height: 16),
                       Text(
                         step['q'],
@@ -387,65 +394,88 @@ class _JourneyScreenState extends State<JourneyScreen> {
                         step['sub'],
                         textAlign: TextAlign.center,
                         style: const TextStyle(
-                          fontSize: 13,
-                          color: Color(0xFFB09090),
+                          fontSize: 12.5,
                           fontWeight: FontWeight.w600,
-                          lineHeight: 1.6,
+                          color: Color(0xFFB09090),
+                          height: 1.6,
                         ),
                       ),
+                      const SizedBox(height: 30),
+                      _buildStepInput(step),
                       if (step['warn'] != null) ...[
-                        const SizedBox(height: 16),
+                        const SizedBox(height: 24),
                         Container(
-                          padding: const EdgeInsets.all(12),
+                          padding: const EdgeInsets.all(16),
                           decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(12),
-                            border:
-                                Border.all(color: accentColor.withOpacity(0.2)),
+                            color: const Color(0xFFFFF5F5),
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(
+                                color: const Color(0xFFF0B0B8).withOpacity(0.5)),
                           ),
-                          child: Text(
-                            '💡 ${step['warn']}',
-                            style: TextStyle(
-                                fontSize: 11,
-                                color: accentColor,
-                                fontWeight: FontWeight.w700),
+                          child: Row(
+                            children: [
+                              const Icon(Icons.info_outline,
+                                  color: Color(0xFFD97B8A), size: 20),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Text(
+                                  step['warn'],
+                                  style: const TextStyle(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w700,
+                                    color: Color(0xFFD97B8A),
+                                    height: 1.4,
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       ],
-                      const SizedBox(height: 32),
-                      _buildStepInput(step),
-                      const SizedBox(height: 40),
                     ],
                   ),
                 ),
               ),
-
-              // Bottom Button
+              // Footer
               Padding(
                 padding: const EdgeInsets.all(24.0),
-                child: SizedBox(
-                  width: double.infinity,
-                  height: 56,
-                  child: ElevatedButton(
-                    onPressed: _nextStep,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: accentColor,
-                      foregroundColor: Colors.white,
-                      elevation: 0,
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(18)),
-                      shadowColor: accentColor.withOpacity(0.35),
-                    ).copyWith(
-                      backgroundColor: WidgetStateProperty.all(accentColor),
+                child: Column(
+                  children: [
+                    if (step['skip'] != null)
+                      TextButton(
+                        onPressed: _nextStep,
+                        child: Text(
+                          step['skip'],
+                          style: const TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w800,
+                            color: Color(0xFFD0B0B8),
+                          ),
+                        ),
+                      ),
+                    const SizedBox(height: 12),
+                    SizedBox(
+                      width: double.infinity,
+                      height: 56,
+                      child: ElevatedButton(
+                        onPressed: _nextStep,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: accentColor,
+                          foregroundColor: Colors.white,
+                          elevation: 6,
+                          shadowColor: accentColor.withOpacity(0.35),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(18),
+                          ),
+                        ),
+                        child: const Text(
+                          'Continue',
+                          style: TextStyle(
+                              fontSize: 16, fontWeight: FontWeight.w900),
+                        ),
+                      ),
                     ),
-                    child: Text(
-                      currentStep == steps.length - 1
-                          ? "Done! Let's go →"
-                          : "Continue →",
-                      style: const TextStyle(
-                          fontSize: 16, fontWeight: FontWeight.w900),
-                    ),
-                  ),
+                  ],
                 ),
               ),
             ],
@@ -457,198 +487,177 @@ class _JourneyScreenState extends State<JourneyScreen> {
 
   Widget _buildStepInput(Map<String, dynamic> step) {
     switch (step['type']) {
-      case 'date':
-      case 'due-date':
+      case 'chips-big-single':
         return Column(
-          children: [
-            if (step['type'] == 'due-date') ...[
-              _buildBigChip(
-                '📅 Yes, I know my due date',
-                journeyData['dueDateKnown'] != false,
-                () => setState(() => journeyData['dueDateKnown'] = true),
-              ),
-              const SizedBox(height: 10),
-              _buildBigChip(
-                '🩸 Use my last period start instead',
-                journeyData['dueDateKnown'] == false,
-                () => setState(() => journeyData['dueDateKnown'] = false),
-              ),
-              const SizedBox(height: 20),
-            ],
-            GestureDetector(
-              onTap: () async {
-                final date = await showDatePicker(
-                  context: context,
-                  initialDate: DateTime.now(),
-                  firstDate: DateTime(2000),
-                  lastDate: DateTime(2100),
-                );
-                if (date != null)
-                  setState(() => journeyData[step['key']] = date.toString());
-              },
-              child: Container(
-                padding:
-                    const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(14),
-                  border: Border.all(
-                      color: accentColor.withOpacity(0.3), width: 1.5),
-                ),
-                child: Row(
-                  children: [
-                    Icon(Icons.calendar_today, color: accentColor, size: 20),
-                    const SizedBox(width: 12),
-                    Text(
-                      journeyData[step['key']] ?? 'Select Date',
-                      style: TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w800,
-                        color: journeyData[step['key']] == null
-                            ? Colors.grey
-                            : AppColors.textDark,
-                      ),
+          children: (step['opts'] as List).map((opt) {
+            final isSpecial = opt['special'] == true;
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: GestureDetector(
+                onTap: () {
+                  if (isSpecial) {
+                    context.go('/mode-selection');
+                  } else {
+                    _nextStep();
+                  }
+                },
+                child: Container(
+                  padding: const EdgeInsets.all(18),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
+                      color: isSpecial
+                          ? const Color(0xFFF0B0B8).withOpacity(0.5)
+                          : const Color(0xFFFCE8E4),
+                      width: 2,
                     ),
-                  ],
-                ),
-              ),
-            ),
-            if (step['skip'] != null) ...[
-              const SizedBox(height: 16),
-              GestureDetector(
-                onTap: _nextStep,
-                child: Text(
-                  step['skip'],
-                  style: const TextStyle(
-                      fontSize: 12,
-                      color: Color(0xFFD0B0B8),
-                      fontWeight: FontWeight.w700,
-                      decoration: TextDecoration.underline),
-                ),
-              ),
-            ]
-          ],
-        );
-      case 'stepper':
-        final val = journeyData[step['key']] ?? step['def'];
-        return Column(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(22),
-                border: Border.all(color: const Color(0xFFFCE8E4), width: 1.5),
-              ),
-              child: Row(
-                children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                  ),
+                  child: Row(
                     children: [
-                      Text(step['unit'],
-                          style: const TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w800,
-                              color: Color(0xFFD0B0B8))),
-                      Text(val.toString(),
+                      Text(opt['e'], style: const TextStyle(fontSize: 24)),
+                      const SizedBox(width: 14),
+                      Expanded(
+                        child: Text(
+                          opt['l'],
                           style: TextStyle(
-                              fontSize: 32,
-                              fontWeight: FontWeight.w900,
-                              color: accentColor)),
+                            fontSize: 14,
+                            fontWeight: FontWeight.w800,
+                            color: isSpecial
+                                ? const Color(0xFFD97B8A)
+                                : AppColors.textDark,
+                          ),
+                        ),
+                      ),
+                      Icon(
+                        Icons.chevron_right,
+                        color: isSpecial
+                            ? const Color(0xFFD97B8A).withOpacity(0.5)
+                            : const Color(0xFFD0B0B8),
+                        size: 20,
+                      ),
                     ],
                   ),
-                  const Spacer(),
-                  _buildStepperBtn(Icons.remove, () {
-                    if (val > step['min'])
-                      setState(() => journeyData[step['key']] = val - 1);
-                  }),
-                  const SizedBox(width: 12),
-                  _buildStepperBtn(Icons.add, () {
-                    if (val < step['max'])
-                      setState(() => journeyData[step['key']] = val + 1);
-                  }),
-                ],
-              ),
-            ),
-            if (step['skip'] != null) ...[
-              const SizedBox(height: 16),
-              GestureDetector(
-                onTap: _nextStep,
-                child: Text(
-                  step['skip'],
-                  style: const TextStyle(
-                      fontSize: 12,
-                      color: Color(0xFFD0B0B8),
-                      fontWeight: FontWeight.w700,
-                      decoration: TextDecoration.underline),
-                ),
-              ),
-            ]
-          ],
-        );
-      case 'chips-single':
-      case 'chips-multi':
-        final isMulti = step['type'] == 'chips-multi';
-        final selected = journeyData[step['key']] ?? (isMulti ? [] : null);
-        return Wrap(
-          spacing: 8,
-          runSpacing: 8,
-          alignment: WrapAlignment.center,
-          children: (step['opts'] as List).map((o) {
-            final on = isMulti ? selected.contains(o['l']) : selected == o['v'];
-            return GestureDetector(
-              onTap: () {
-                setState(() {
-                  if (isMulti) {
-                    if (selected.contains(o['l']))
-                      selected.remove(o['l']);
-                    else
-                      selected.add(o['l']);
-                    journeyData[step['key']] = selected;
-                  } else {
-                    journeyData[step['key']] = o['v'];
-                  }
-                });
-              },
-              child: Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                decoration: BoxDecoration(
-                  color: on ? accentColor : Colors.white,
-                  borderRadius: BorderRadius.circular(14),
-                  border: Border.all(
-                      color: on ? accentColor : const Color(0xFFFCE8E4),
-                      width: 1.5),
-                ),
-                child: Text(
-                  '${o['e']} ${o['l']}',
-                  style: TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w800,
-                      color: on ? Colors.white : AppColors.textDark),
                 ),
               ),
             );
           }).toList(),
         );
-      case 'chips-big-single':
-        final selected = journeyData[step['key']];
-        return Column(
-          children: (step['opts'] as List).map((o) {
-            final on = selected == o['v'];
-            final isSpecial = o['special'] == true;
-            return Padding(
-              padding: const EdgeInsets.only(bottom: 10),
-              child: _buildBigChip(
-                '${o['e']} ${o['l']}',
-                on,
-                () {
-                  if (isSpecial)
-                    context.go('/mode-selection');
-                  else
-                    setState(() => journeyData[step['key']] = o['v']);
-                },
-                isSpecial: isSpecial,
+      case 'date':
+      case 'due-date':
+        return GestureDetector(
+          onTap: () async {
+            await showDatePicker(
+              context: context,
+              initialDate: DateTime.now(),
+              firstDate: DateTime.now().subtract(const Duration(days: 365)),
+              lastDate: DateTime.now().add(const Duration(days: 365)),
+              builder: (context, child) {
+                return Theme(
+                  data: Theme.of(context).copyWith(
+                    colorScheme: ColorScheme.light(
+                      primary: accentColor,
+                      onPrimary: Colors.white,
+                      onSurface: AppColors.textDark,
+                    ),
+                  ),
+                  child: child!,
+                );
+              },
+            );
+          },
+          child: Container(
+            padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 20),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(18),
+              border: Border.all(color: const Color(0xFFFCE8E4), width: 2),
+            ),
+            child: Row(
+              children: [
+                Icon(Icons.calendar_today, color: accentColor, size: 22),
+                const SizedBox(width: 14),
+                const Text(
+                  'Select Date',
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w800,
+                    color: AppColors.textMid,
+                  ),
+                ),
+                const Spacer(),
+                const Icon(Icons.arrow_drop_down, color: Color(0xFFD0B0B8)),
+              ],
+            ),
+          ),
+        );
+      case 'stepper':
+        return Container(
+          padding: const EdgeInsets.symmetric(vertical: 30, horizontal: 20),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(color: const Color(0xFFFCE8E4), width: 2),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              _buildStepBtn(Icons.remove, () {}),
+              const SizedBox(width: 30),
+              Column(
+                children: [
+                  Text(
+                    '${step['def']}',
+                    style: TextStyle(
+                      fontSize: 44,
+                      fontWeight: FontWeight.w900,
+                      color: accentColor,
+                    ),
+                  ),
+                  Text(
+                    step['unit'].toString().toUpperCase(),
+                    style: const TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w800,
+                      color: Color(0xFFD0B0B8),
+                      letterSpacing: 1,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(width: 30),
+              _buildStepBtn(Icons.add, () {}),
+            ],
+          ),
+        );
+      case 'chips-single':
+      case 'chips-multi':
+        return Wrap(
+          spacing: 10,
+          runSpacing: 10,
+          alignment: WrapAlignment.center,
+          children: (step['opts'] as List).map((opt) {
+            return Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(color: const Color(0xFFFCE8E4), width: 2),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(opt['e'], style: const TextStyle(fontSize: 18)),
+                  const SizedBox(width: 8),
+                  Text(
+                    opt['l'],
+                    style: const TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w800,
+                      color: AppColors.textDark,
+                    ),
+                  ),
+                ],
               ),
             );
           }).toList(),
@@ -658,63 +667,12 @@ class _JourneyScreenState extends State<JourneyScreen> {
     }
   }
 
-  Widget _buildBigChip(String text, bool on, VoidCallback onTap,
-      {bool isSpecial = false}) {
-    Color bgColor = on ? accentColor : Colors.white;
-    Color textColor = on ? Colors.white : AppColors.textDark;
-    Color borderColor = on ? accentColor : const Color(0xFFFCE8E4);
-
-    if (isSpecial && !on) {
-      bgColor = const Color(0xFFF5F5F5);
-      textColor = const Color(0xFF707070);
-      borderColor = const Color(0xFFE0E0E0);
-    }
-
+  Widget _buildStepBtn(IconData icon, VoidCallback onTap) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        width: double.infinity,
-        padding: const EdgeInsets.all(18),
-        decoration: BoxDecoration(
-          color: bgColor,
-          borderRadius: BorderRadius.circular(18),
-          border: Border.all(color: borderColor, width: 1.5),
-          boxShadow: on
-              ? [
-                  BoxShadow(
-                    color: accentColor.withOpacity(0.2),
-                    blurRadius: 10,
-                    offset: const Offset(0, 4),
-                  )
-                ]
-              : null,
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              text,
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w800,
-                color: textColor,
-              ),
-            ),
-            if (isSpecial)
-              Icon(Icons.arrow_forward_ios,
-                  size: 12, color: textColor.withOpacity(0.5)),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildStepperBtn(IconData icon, VoidCallback onTap) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: 44,
-        height: 44,
+        width: 48,
+        height: 48,
         decoration: BoxDecoration(
           color: accentColor.withOpacity(0.1),
           shape: BoxShape.circle,
