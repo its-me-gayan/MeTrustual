@@ -1,6 +1,8 @@
 import 'package:go_router/go_router.dart';
 import '../../features/onboarding/screens/splash_screen.dart';
 import '../../features/onboarding/screens/onboarding_screen.dart';
+import '../../features/onboarding/screens/mode_selection_screen.dart';
+import '../../features/onboarding/screens/journey_screen.dart';
 import '../../features/home/screens/home_screen.dart';
 import '../../features/logging/screens/log_screen.dart';
 import '../../features/insights/screens/insights_screen.dart';
@@ -18,6 +20,17 @@ final GoRouter appRouter = GoRouter(
     GoRoute(
       path: '/onboarding',
       builder: (context, state) => const OnboardingScreen(),
+    ),
+    GoRoute(
+      path: '/mode-selection',
+      builder: (context, state) => const ModeSelectionScreen(),
+    ),
+    GoRoute(
+      path: '/journey/:mode',
+      builder: (context, state) {
+        final mode = state.pathParameters['mode'] ?? 'period';
+        return JourneyScreen(mode: mode);
+      },
     ),
     GoRoute(
       path: '/home',
