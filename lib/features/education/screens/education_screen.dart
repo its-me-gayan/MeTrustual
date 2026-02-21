@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:easy_localization/easy_localization.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/widgets/premium_gate.dart';
 import '../../../core/providers/dynamic_content_provider.dart';
 import '../../../core/widgets/app_bottom_nav.dart';
 
@@ -37,14 +38,26 @@ class EducationScreen extends ConsumerWidget {
                     );
                   }
                   return Column(
-                    children: articles.map((article) {
-                      return _buildArticleCard(
+                    children: articles.asMap().entries.map((entry) {
+                      final index = entry.key;
+                      final article = entry.value;
+                      final card = _buildArticleCard(
                         article['icon'] ?? '📖',
                         article['tag'] ?? 'Info',
                         article['title'] ?? 'Untitled',
                         article['meta'] ?? '',
                         _getColorFromHex(article['tagColor'] ?? '#F7A8B8'),
                       );
+
+                      // Lock articles after the first two
+                      if (index >= 2) {
+                        return PremiumGate(
+                          isOverlay: true,
+                          message: 'Premium Article',
+                          child: card,
+                        );
+                      }
+                      return card;
                     }).toList(),
                   );
                 },

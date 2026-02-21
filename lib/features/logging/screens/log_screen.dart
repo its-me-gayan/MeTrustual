@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/widgets/premium_gate.dart';
 import '../../../core/providers/mode_provider.dart';
 
 class LogScreen extends ConsumerStatefulWidget {
@@ -179,7 +180,10 @@ class _LogScreenState extends ConsumerState<LogScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildKickCounter(),
+        const PremiumGate(
+          message: 'Unlock Kick Counter',
+          child: _buildKickCounter(),
+        ),
         _buildSectionTitle('How are you feeling?'),
         _buildMoodSelection('preg'),
         _buildSectionTitle('Symptoms today?'),
@@ -230,7 +234,10 @@ class _LogScreenState extends ConsumerState<LogScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildBBTInput(),
+        const PremiumGate(
+          message: 'Unlock BBT Logging',
+          child: _buildBBTInput(),
+        ),
         _buildSectionTitle('Cervical mucus?'),
         _buildChipsSingle(
           [

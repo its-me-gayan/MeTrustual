@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:easy_localization/easy_localization.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/widgets/premium_gate.dart';
 import '../../../core/widgets/app_bottom_nav.dart';
 
 class InsightsScreen extends ConsumerStatefulWidget {
@@ -121,9 +122,12 @@ class _InsightsScreenState extends ConsumerState<InsightsScreen> {
               accentColor: AppColors.primaryRose,
             ),
             const SizedBox(height: 20),
-            _buildInsightCard(
-              title: '📊 Cycle Length — Last 6 Months',
-              content: _buildMiniChartPeriod(),
+            PremiumGate(
+              message: 'Unlock Cycle Analytics',
+              child: _buildInsightCard(
+                title: '📊 Cycle Length — Last 6 Months',
+                content: _buildMiniChartPeriod(),
+              ),
             ),
             const SizedBox(height: 20),
             _buildInsightCard(
@@ -180,9 +184,12 @@ class _InsightsScreenState extends ConsumerState<InsightsScreen> {
               accentColor: const Color(0xFF4A70B0),
             ),
             const SizedBox(height: 20),
-            _buildInsightCard(
-              title: '📊 Kick Count — Last 7 Days',
-              content: _buildMiniChartPregnancy(),
+            PremiumGate(
+              message: 'Unlock Kick Count Analytics',
+              child: _buildInsightCard(
+                title: '📊 Kick Count — Last 7 Days',
+                content: _buildMiniChartPregnancy(),
+              ),
             ),
             const SizedBox(height: 20),
             _buildInsightCard(
@@ -249,9 +256,12 @@ class _InsightsScreenState extends ConsumerState<InsightsScreen> {
               accentColor: const Color(0xFF5A8E6A),
             ),
             const SizedBox(height: 20),
-            _buildInsightCard(
-              title: '🌡️ BBT Chart — Last 14 Days',
-              content: _buildBBTChart(),
+            PremiumGate(
+              message: 'Unlock BBT Charting',
+              child: _buildInsightCard(
+                title: '🌡️ BBT Chart — Last 14 Days',
+                content: _buildBBTChart(),
+              ),
             ),
             const SizedBox(height: 20),
             _buildInsightCard(

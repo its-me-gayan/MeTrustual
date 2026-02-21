@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/widgets/premium_gate.dart';
 import '../../../core/providers/mode_provider.dart';
 import '../widgets/cycle_circle.dart';
 import '../widgets/mini_calendar.dart';
@@ -145,7 +146,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               },
             ),
             const SizedBox(height: 24),
-            const MiniCalendar(),
+            const PremiumGate(
+              message: 'Unlock Advanced Calendar',
+              child: MiniCalendar(),
+            ),
             const SizedBox(height: 24),
             const NextPeriodCard(),
           ],
@@ -180,7 +184,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               },
             ),
             const SizedBox(height: 24),
-            _buildBabyCard(),
+            const PremiumGate(
+              message: 'Unlock Weekly Baby Updates',
+              child: _buildBabyCard(),
+            ),
             const SizedBox(height: 24),
             _buildNextBanner(
               title: 'Next Appointment',
@@ -221,7 +228,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               },
             ),
             const SizedBox(height: 24),
-            _buildFertileBar(),
+            const PremiumGate(
+              message: 'Unlock Fertile Window Analysis',
+              child: _buildFertileBar(),
+            ),
             const SizedBox(height: 24),
             _buildNextBanner(
               title: 'Ovulation Prediction',
