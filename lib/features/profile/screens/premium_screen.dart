@@ -79,7 +79,9 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen> {
                     TextSpan(text: 'Create your '),
                     TextSpan(
                       text: 'account',
-                      style: TextStyle(color: AppColors.primaryRose, fontStyle: FontStyle.italic),
+                      style: TextStyle(
+                          color: AppColors.primaryRose,
+                          fontStyle: FontStyle.italic),
                     ),
                   ],
                 ),
@@ -87,59 +89,76 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen> {
               const SizedBox(height: 8),
               const Text(
                 'Secure your data and unlock all features.',
-                style: TextStyle(color: AppColors.textMid, fontWeight: FontWeight.w600, fontSize: 13),
+                style: TextStyle(
+                    color: AppColors.textMid,
+                    fontWeight: FontWeight.w600,
+                    fontSize: 13),
               ),
               const SizedBox(height: 32),
-              _buildTextField(emailController, 'Email Address', Icons.email_outlined),
+              _buildTextField(
+                  emailController, 'Email Address', Icons.email_outlined),
               const SizedBox(height: 16),
-              _buildTextField(passwordController, 'Password', Icons.lock_outline, isObscure: true),
+              _buildTextField(
+                  passwordController, 'Password', Icons.lock_outline,
+                  isObscure: true),
               const SizedBox(height: 32),
               SizedBox(
                 width: double.infinity,
                 height: 56,
                 child: ElevatedButton(
-                  onPressed: isSheetLoading ? null : () async {
-                    if (emailController.text.isEmpty || passwordController.text.isEmpty) {
-                      _showError('Please fill in all fields');
-                      return;
-                    }
-                    setSheetState(() => isSheetLoading = true);
-                    try {
-                      final auth = ref.read(firebaseAuthProvider);
-                      final currentUser = auth.currentUser;
-                      
-                      if (currentUser != null && currentUser.isAnonymous) {
-                        final credential = EmailAuthProvider.credential(
-                          email: emailController.text, 
-                          password: passwordController.text
-                        );
-                        await currentUser.linkWithCredential(credential);
-                      } else {
-                        await auth.createUserWithEmailAndPassword(
-                          email: emailController.text, 
-                          password: passwordController.text
-                        );
-                      }
-                      
-                      if (context.mounted) Navigator.pop(context);
-                      final newUser = auth.currentUser;
-                      if (newUser != null) {
-                        await _processMockPayment(newUser.uid);
-                      }
-                    } catch (e) {
-                      _showError(e.toString());
-                    } finally {
-                      setSheetState(() => isSheetLoading = false);
-                    }
-                  },
+                  onPressed: isSheetLoading
+                      ? null
+                      : () async {
+                          if (emailController.text.isEmpty ||
+                              passwordController.text.isEmpty) {
+                            _showError('Please fill in all fields');
+                            return;
+                          }
+                          setSheetState(() => isSheetLoading = true);
+                          try {
+                            final auth = ref.read(firebaseAuthProvider);
+                            final currentUser = auth.currentUser;
+
+                            if (currentUser != null &&
+                                currentUser.isAnonymous) {
+                              final credential = EmailAuthProvider.credential(
+                                  email: emailController.text,
+                                  password: passwordController.text);
+                              await currentUser.linkWithCredential(credential);
+                            } else {
+                              await auth.createUserWithEmailAndPassword(
+                                  email: emailController.text,
+                                  password: passwordController.text);
+                            }
+
+                            if (context.mounted) Navigator.pop(context);
+                            final newUser = auth.currentUser;
+                            if (newUser != null) {
+                              await _processMockPayment(newUser.uid);
+                            }
+                          } catch (e) {
+                            _showError(e.toString());
+                          } finally {
+                            setSheetState(() => isSheetLoading = false);
+                          }
+                        },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primaryRose,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20)),
                     elevation: 0,
                   ),
-                  child: isSheetLoading 
-                    ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                    : const Text('Create Account & Continue', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 16)),
+                  child: isSheetLoading
+                      ? const SizedBox(
+                          width: 24,
+                          height: 24,
+                          child: CircularProgressIndicator(
+                              color: Colors.white, strokeWidth: 2))
+                      : const Text('Create Account & Continue',
+                          style: TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w900,
+                              fontSize: 16)),
                 ),
               ),
             ],
@@ -149,7 +168,9 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen> {
     );
   }
 
-  Widget _buildTextField(TextEditingController controller, String hint, IconData icon, {bool isObscure = false}) {
+  Widget _buildTextField(
+      TextEditingController controller, String hint, IconData icon,
+      {bool isObscure = false}) {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -159,13 +180,16 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen> {
       child: TextField(
         controller: controller,
         obscureText: isObscure,
-        style: const TextStyle(fontWeight: FontWeight.w700, color: AppColors.textDark),
+        style: const TextStyle(
+            fontWeight: FontWeight.w700, color: AppColors.textDark),
         decoration: InputDecoration(
           hintText: hint,
-          hintStyle: const TextStyle(color: AppColors.textMuted, fontWeight: FontWeight.w600),
+          hintStyle: const TextStyle(
+              color: AppColors.textMuted, fontWeight: FontWeight.w600),
           prefixIcon: Icon(icon, color: AppColors.textMuted, size: 20),
           border: InputBorder.none,
-          contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+          contentPadding:
+              const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
         ),
       ),
     );
@@ -174,7 +198,7 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen> {
   Future<void> _processMockPayment(String uid) async {
     setState(() => _isLoading = true);
     await Future.delayed(const Duration(seconds: 2));
-    
+
     try {
       final firestore = ref.read(firestoreProvider);
       await firestore.collection('users').doc(uid).set({
@@ -182,7 +206,7 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen> {
         'subscriptionPlan': _selectedPlan,
         'subscriptionDate': FieldValue.serverTimestamp(),
       }, SetOptions(merge: true));
-      
+
       if (mounted) {
         _showSuccessDialog();
       }
@@ -207,16 +231,23 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen> {
             children: [
               Container(
                 padding: const EdgeInsets.all(20),
-                decoration: const BoxDecoration(color: Color(0xFFE8F5E9), shape: BoxShape.circle),
-                child: const Icon(Icons.star, color: Color(0xFF4CAF50), size: 40),
+                decoration: const BoxDecoration(
+                    color: Color(0xFFE8F5E9), shape: BoxShape.circle),
+                child:
+                    const Icon(Icons.star, color: Color(0xFF4CAF50), size: 40),
               ),
               const SizedBox(height: 24),
-              const Text('You\'re Premium!', style: TextStyle(fontSize: 24, fontWeight: FontWeight.w900, color: AppColors.textDark)),
+              const Text('You\'re Premium!',
+                  style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.w900,
+                      color: AppColors.textDark)),
               const SizedBox(height: 8),
               const Text(
                 'Welcome to the family. Your journey just got even better.',
                 textAlign: TextAlign.center,
-                style: TextStyle(fontWeight: FontWeight.w600, color: AppColors.textMid),
+                style: TextStyle(
+                    fontWeight: FontWeight.w600, color: AppColors.textMid),
               ),
               const SizedBox(height: 32),
               SizedBox(
@@ -229,10 +260,13 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen> {
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primaryRose,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20)),
                     elevation: 0,
                   ),
-                  child: const Text('Start Exploring', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900)),
+                  child: const Text('Start Exploring',
+                      style: TextStyle(
+                          color: Colors.white, fontWeight: FontWeight.w900)),
                 ),
               ),
             ],
@@ -253,20 +287,31 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen> {
               children: [
                 _buildHeader(),
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 32),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 22, vertical: 32),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      _buildFeatureItem('📊', 'Advanced Insights', 'Deep dive into your cycle and health patterns.'),
-                      _buildFeatureItem('☁️', 'Secure Cloud Sync', 'Sync your data safely across all your devices.'),
-                      _buildFeatureItem('📖', 'Expert Library', 'Unlimited access to expert-reviewed health guides.'),
-                      _buildFeatureItem('🔔', 'Smart Reminders', 'Personalized alerts tailored to your unique cycle.'),
+                      _buildFeatureItem('📊', 'Advanced Insights',
+                          'Deep dive into your cycle and health patterns.'),
+                      _buildFeatureItem('☁️', 'Secure Cloud Sync',
+                          'Sync your data safely across all your devices.'),
+                      _buildFeatureItem('📖', 'Expert Library',
+                          'Unlimited access to expert-reviewed health guides.'),
+                      _buildFeatureItem('🔔', 'Smart Reminders',
+                          'Personalized alerts tailored to your unique cycle.'),
                       const SizedBox(height: 40),
-                      const Text('Select a plan', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: AppColors.textDark)),
+                      const Text('Select a plan',
+                          style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w900,
+                              color: AppColors.textDark)),
                       const SizedBox(height: 16),
-                      _buildPlanCard('annual', 'Annual', '\$49.99', 'Best Value • \$4.16/mo'),
+                      _buildPlanCard('annual', 'Annual', '\$49.99',
+                          'Best Value • \$4.16/mo'),
                       const SizedBox(height: 12),
-                      _buildPlanCard('monthly', 'Monthly', '\$9.99', 'Cancel anytime'),
+                      _buildPlanCard(
+                          'monthly', 'Monthly', '\$9.99', 'Cancel anytime'),
                       const SizedBox(height: 120),
                     ],
                   ),
@@ -284,13 +329,22 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen> {
                 onPressed: _isLoading ? null : _handleSubscribe,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primaryRose,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(22)),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(22)),
                   elevation: 8,
                   shadowColor: AppColors.primaryRose.withOpacity(0.4),
                 ),
-                child: _isLoading 
-                  ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                  : const Text('Unlock Premium Now', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: Colors.white)),
+                child: _isLoading
+                    ? const SizedBox(
+                        width: 24,
+                        height: 24,
+                        child: CircularProgressIndicator(
+                            color: Colors.white, strokeWidth: 2))
+                    : const Text('Unlock Premium Now',
+                        style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w900,
+                            color: Colors.white)),
               ),
             ),
           ),
@@ -298,7 +352,8 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen> {
             child: Padding(
               padding: const EdgeInsets.only(left: 10, top: 10),
               child: IconButton(
-                icon: const Icon(Icons.arrow_back_ios_new, color: AppColors.textDark, size: 20),
+                icon: const Icon(Icons.arrow_back_ios_new,
+                    color: AppColors.textDark, size: 20),
                 onPressed: () => Navigator.pop(context),
               ),
             ),
@@ -315,23 +370,36 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen> {
       decoration: const BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.vertical(bottom: Radius.circular(40)),
-        boxShadow: [BoxShadow(color: Color(0xFFFCE8E4), blurRadius: 20, offset: Offset(0, 10))],
+        boxShadow: [
+          BoxShadow(
+              color: Color(0xFFFCE8E4), blurRadius: 20, offset: Offset(0, 10))
+        ],
       ),
       child: Column(
         children: [
           Container(
             padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(color: AppColors.primaryRose.withOpacity(0.1), shape: BoxShape.circle),
+            decoration: BoxDecoration(
+                color: AppColors.primaryRose.withOpacity(0.1),
+                shape: BoxShape.circle),
             child: const Text('✨', style: TextStyle(fontSize: 32)),
           ),
           const SizedBox(height: 20),
           RichText(
             textAlign: TextAlign.center,
             text: const TextSpan(
-              style: TextStyle(fontSize: 28, fontWeight: FontWeight.w900, color: AppColors.textDark, fontFamily: 'Nunito'),
+              style: TextStyle(
+                  fontSize: 28,
+                  fontWeight: FontWeight.w900,
+                  color: AppColors.textDark,
+                  fontFamily: 'Nunito'),
               children: [
                 TextSpan(text: 'MeTrustual '),
-                TextSpan(text: 'Premium', style: TextStyle(color: AppColors.primaryRose, fontStyle: FontStyle.italic)),
+                TextSpan(
+                    text: 'Premium',
+                    style: TextStyle(
+                        color: AppColors.primaryRose,
+                        fontStyle: FontStyle.italic)),
               ],
             ),
           ),
@@ -339,7 +407,10 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen> {
           const Text(
             'Experience the full power of personalized health.',
             textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textMid),
+            style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: AppColors.textMid),
           ),
         ],
       ),
@@ -354,7 +425,10 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen> {
           Container(
             width: 48,
             height: 48,
-            decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16), border: Border.all(color: AppColors.border, width: 1.5)),
+            decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: AppColors.border, width: 1.5)),
             alignment: Alignment.center,
             child: Text(emoji, style: const TextStyle(fontSize: 24)),
           ),
@@ -363,8 +437,16 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(title, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w900, color: AppColors.textDark)),
-                Text(desc, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.textMid)),
+                Text(title,
+                    style: const TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w900,
+                        color: AppColors.textDark)),
+                Text(desc,
+                    style: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.textMid)),
               ],
             ),
           ),
@@ -382,8 +464,17 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen> {
         decoration: BoxDecoration(
           color: isSelected ? Colors.white : Colors.transparent,
           borderRadius: BorderRadius.circular(22),
-          border: Border.all(color: isSelected ? AppColors.primaryRose : AppColors.border, width: 2),
-          boxShadow: isSelected ? [BoxShadow(color: AppColors.primaryRose.withOpacity(0.1), blurRadius: 10, offset: const Offset(0, 4))] : null,
+          border: Border.all(
+              color: isSelected ? AppColors.primaryRose : AppColors.border,
+              width: 2),
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                      color: AppColors.primaryRose.withOpacity(0.1),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4))
+                ]
+              : null,
         ),
         child: Row(
           children: [
@@ -392,22 +483,40 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen> {
               height: 24,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                border: Border.all(color: isSelected ? AppColors.primaryRose : AppColors.textMuted, width: 2),
+                border: Border.all(
+                    color: isSelected
+                        ? AppColors.primaryRose
+                        : AppColors.textMuted,
+                    width: 2),
                 color: isSelected ? AppColors.primaryRose : Colors.transparent,
               ),
-              child: isSelected ? const Icon(Icons.check, color: Colors.white, size: 14) : null,
+              child: isSelected
+                  ? const Icon(Icons.check, color: Colors.white, size: 14)
+                  : null,
             ),
             const SizedBox(width: 16),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: AppColors.textDark)),
-                  Text(sub, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: AppColors.textMuted)),
+                  Text(title,
+                      style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w900,
+                          color: AppColors.textDark)),
+                  Text(sub,
+                      style: const TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.textMuted)),
                 ],
               ),
             ),
-            Text(price, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: AppColors.textDark)),
+            Text(price,
+                style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w900,
+                    color: AppColors.textDark)),
           ],
         ),
       ),
