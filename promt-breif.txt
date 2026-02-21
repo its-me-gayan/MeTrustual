@@ -1,0 +1,1952 @@
+{\rtf1\ansi\ansicpg1252\cocoartf2822
+\cocoatextscaling0\cocoaplatform0{\fonttbl\f0\froman\fcharset0 Times-Bold;\f1\froman\fcharset0 Times-Roman;\f2\fmodern\fcharset0 Courier;
+\f3\fnil\fcharset0 HelveticaNeue;\f4\froman\fcharset0 TimesNewRomanPSMT;\f5\froman\fcharset0 TimesNewRomanPS-BoldMT;
+\f6\fnil\fcharset0 Menlo-Regular;\f7\fnil\fcharset0 AppleColorEmoji;\f8\fnil\fcharset77 ITFDevanagari-Book;
+\f9\fnil\fcharset178 GeezaPro;\f10\fmodern\fcharset0 Courier-Bold;}
+{\colortbl;\red255\green255\blue255;\red0\green0\blue0;\red255\green255\blue255;\red109\green109\blue109;
+\red0\green0\blue0;\red229\green232\blue236;}
+{\*\expandedcolortbl;;\cssrgb\c0\c0\c0;\cssrgb\c100000\c100000\c99985;\cssrgb\c50251\c50251\c50189;
+\cssrgb\c0\c0\c0\c84706;\cssrgb\c91876\c92662\c94116;}
+{\*\listtable{\list\listtemplateid1\listhybrid{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\*\levelmarker \{disc\}}{\leveltext\leveltemplateid1\'01\uc0\u8226 ;}{\levelnumbers;}\fi-360\li720\lin720 }{\listname ;}\listid1}
+{\list\listtemplateid2\listhybrid{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\*\levelmarker \{disc\}}{\leveltext\leveltemplateid101\'01\uc0\u8226 ;}{\levelnumbers;}\fi-360\li720\lin720 }{\listname ;}\listid2}
+{\list\listtemplateid3\listhybrid{\listlevel\levelnfc0\levelnfcn0\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\*\levelmarker \{decimal\}}{\leveltext\leveltemplateid201\'01\'00;}{\levelnumbers\'01;}\fi-360\li720\lin720 }{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\*\levelmarker \{circle\}}{\leveltext\leveltemplateid202\'01\uc0\u9702 ;}{\levelnumbers;}\fi-360\li1440\lin1440 }{\listname ;}\listid3}
+{\list\listtemplateid4\listhybrid{\listlevel\levelnfc0\levelnfcn0\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\*\levelmarker \{decimal\}}{\leveltext\leveltemplateid301\'01\'00;}{\levelnumbers\'01;}\fi-360\li720\lin720 }{\listname ;}\listid4}
+{\list\listtemplateid5\listhybrid{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\*\levelmarker \{disc\}}{\leveltext\leveltemplateid401\'01\uc0\u8226 ;}{\levelnumbers;}\fi-360\li720\lin720 }{\listname ;}\listid5}
+{\list\listtemplateid6\listhybrid{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\*\levelmarker \{disc\}}{\leveltext\leveltemplateid501\'01\uc0\u8226 ;}{\levelnumbers;}\fi-360\li720\lin720 }{\listname ;}\listid6}
+{\list\listtemplateid7\listhybrid{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\*\levelmarker \{disc\}}{\leveltext\leveltemplateid601\'01\uc0\u8226 ;}{\levelnumbers;}\fi-360\li720\lin720 }{\listname ;}\listid7}
+{\list\listtemplateid8\listhybrid{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\*\levelmarker \{disc\}}{\leveltext\leveltemplateid701\'01\uc0\u8226 ;}{\levelnumbers;}\fi-360\li720\lin720 }{\listname ;}\listid8}
+{\list\listtemplateid9\listhybrid{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\*\levelmarker \{disc\}}{\leveltext\leveltemplateid801\'01\uc0\u8226 ;}{\levelnumbers;}\fi-360\li720\lin720 }{\listname ;}\listid9}
+{\list\listtemplateid10\listhybrid{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\*\levelmarker \{disc\}}{\leveltext\leveltemplateid901\'01\uc0\u8226 ;}{\levelnumbers;}\fi-360\li720\lin720 }{\listname ;}\listid10}
+{\list\listtemplateid11\listhybrid{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\*\levelmarker \{disc\}}{\leveltext\leveltemplateid1001\'01\uc0\u8226 ;}{\levelnumbers;}\fi-360\li720\lin720 }{\listname ;}\listid11}
+{\list\listtemplateid12\listhybrid{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\*\levelmarker \{disc\}}{\leveltext\leveltemplateid1101\'01\uc0\u8226 ;}{\levelnumbers;}\fi-360\li720\lin720 }{\listname ;}\listid12}
+{\list\listtemplateid13\listhybrid{\listlevel\levelnfc0\levelnfcn0\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\*\levelmarker \{decimal\}}{\leveltext\leveltemplateid1201\'01\'00;}{\levelnumbers\'01;}\fi-360\li720\lin720 }{\listname ;}\listid13}
+{\list\listtemplateid14\listhybrid{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\*\levelmarker \{disc\}}{\leveltext\leveltemplateid1301\'01\uc0\u8226 ;}{\levelnumbers;}\fi-360\li720\lin720 }{\listname ;}\listid14}
+{\list\listtemplateid15\listhybrid{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\*\levelmarker \{disc\}}{\leveltext\leveltemplateid1401\'01\uc0\u8226 ;}{\levelnumbers;}\fi-360\li720\lin720 }{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\*\levelmarker \{circle\}}{\leveltext\leveltemplateid1402\'01\uc0\u9702 ;}{\levelnumbers;}\fi-360\li1440\lin1440 }{\listname ;}\listid15}
+{\list\listtemplateid16\listhybrid{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\*\levelmarker \{disc\}}{\leveltext\leveltemplateid1501\'01\uc0\u8226 ;}{\levelnumbers;}\fi-360\li720\lin720 }{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\*\levelmarker \{circle\}}{\leveltext\leveltemplateid1502\'01\uc0\u9702 ;}{\levelnumbers;}\fi-360\li1440\lin1440 }{\listname ;}\listid16}
+{\list\listtemplateid17\listhybrid{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\*\levelmarker \{disc\}}{\leveltext\leveltemplateid1601\'01\uc0\u8226 ;}{\levelnumbers;}\fi-360\li720\lin720 }{\listname ;}\listid17}
+{\list\listtemplateid18\listhybrid{\listlevel\levelnfc0\levelnfcn0\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\*\levelmarker \{decimal\}}{\leveltext\leveltemplateid1701\'01\'00;}{\levelnumbers\'01;}\fi-360\li720\lin720 }{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\*\levelmarker \{circle\}}{\leveltext\leveltemplateid1702\'01\uc0\u9702 ;}{\levelnumbers;}\fi-360\li1440\lin1440 }{\listname ;}\listid18}
+{\list\listtemplateid19\listhybrid{\listlevel\levelnfc0\levelnfcn0\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\*\levelmarker \{decimal\}}{\leveltext\leveltemplateid1801\'01\'00;}{\levelnumbers\'01;}\fi-360\li720\lin720 }{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\*\levelmarker \{circle\}}{\leveltext\leveltemplateid1802\'01\uc0\u9702 ;}{\levelnumbers;}\fi-360\li1440\lin1440 }{\listname ;}\listid19}
+{\list\listtemplateid20\listhybrid{\listlevel\levelnfc0\levelnfcn0\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\*\levelmarker \{decimal\}}{\leveltext\leveltemplateid1901\'01\'00;}{\levelnumbers\'01;}\fi-360\li720\lin720 }{\listname ;}\listid20}
+{\list\listtemplateid21\listhybrid{\listlevel\levelnfc0\levelnfcn0\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\*\levelmarker \{decimal\}}{\leveltext\leveltemplateid2001\'01\'00;}{\levelnumbers\'01;}\fi-360\li720\lin720 }{\listname ;}\listid21}
+{\list\listtemplateid22\listhybrid{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\*\levelmarker \{disc\}}{\leveltext\leveltemplateid2101\'01\uc0\u8226 ;}{\levelnumbers;}\fi-360\li720\lin720 }{\listname ;}\listid22}
+{\list\listtemplateid23\listhybrid{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\*\levelmarker \{disc\}}{\leveltext\leveltemplateid2201\'01\uc0\u8226 ;}{\levelnumbers;}\fi-360\li720\lin720 }{\listname ;}\listid23}
+{\list\listtemplateid24\listhybrid{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\*\levelmarker \{disc\}}{\leveltext\leveltemplateid2301\'01\uc0\u8226 ;}{\levelnumbers;}\fi-360\li720\lin720 }{\listname ;}\listid24}
+{\list\listtemplateid25\listhybrid{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\*\levelmarker \{disc\}}{\leveltext\leveltemplateid2401\'01\uc0\u8226 ;}{\levelnumbers;}\fi-360\li720\lin720 }{\listname ;}\listid25}
+{\list\listtemplateid26\listhybrid{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\*\levelmarker \{disc\}}{\leveltext\leveltemplateid2501\'01\uc0\u8226 ;}{\levelnumbers;}\fi-360\li720\lin720 }{\listname ;}\listid26}
+{\list\listtemplateid27\listhybrid{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\*\levelmarker \{disc\}}{\leveltext\leveltemplateid2601\'01\uc0\u8226 ;}{\levelnumbers;}\fi-360\li720\lin720 }{\listname ;}\listid27}
+{\list\listtemplateid28\listhybrid{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\*\levelmarker \{disc\}}{\leveltext\leveltemplateid2701\'01\uc0\u8226 ;}{\levelnumbers;}\fi-360\li720\lin720 }{\listname ;}\listid28}}
+{\*\listoverridetable{\listoverride\listid1\listoverridecount0\ls1}{\listoverride\listid2\listoverridecount0\ls2}{\listoverride\listid3\listoverridecount0\ls3}{\listoverride\listid4\listoverridecount0\ls4}{\listoverride\listid5\listoverridecount0\ls5}{\listoverride\listid6\listoverridecount0\ls6}{\listoverride\listid7\listoverridecount0\ls7}{\listoverride\listid8\listoverridecount0\ls8}{\listoverride\listid9\listoverridecount0\ls9}{\listoverride\listid10\listoverridecount0\ls10}{\listoverride\listid11\listoverridecount0\ls11}{\listoverride\listid12\listoverridecount0\ls12}{\listoverride\listid13\listoverridecount0\ls13}{\listoverride\listid14\listoverridecount0\ls14}{\listoverride\listid15\listoverridecount0\ls15}{\listoverride\listid16\listoverridecount0\ls16}{\listoverride\listid17\listoverridecount0\ls17}{\listoverride\listid18\listoverridecount0\ls18}{\listoverride\listid19\listoverridecount0\ls19}{\listoverride\listid20\listoverridecount0\ls20}{\listoverride\listid21\listoverridecount0\ls21}{\listoverride\listid22\listoverridecount0\ls22}{\listoverride\listid23\listoverridecount0\ls23}{\listoverride\listid24\listoverridecount0\ls24}{\listoverride\listid25\listoverridecount0\ls25}{\listoverride\listid26\listoverridecount0\ls26}{\listoverride\listid27\listoverridecount0\ls27}{\listoverride\listid28\listoverridecount0\ls28}}
+\margl1440\margr1440\vieww11520\viewh8400\viewkind0
+\deftab720
+\pard\pardeftab720\sa240\partightenfactor0
+
+\f0\b\fs24 \cf2 \expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec3 For: Manus
+\f1\b0 \strokec3  
+\f0\b \strokec3 Re: Flow & Screen Updates \'97 do NOT change any other screens, logic, or files not listed here
+\f1\b0 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \strokec4 \
+\pard\pardeftab720\sa298\partightenfactor0
+
+\f0\b\fs36 \cf2 \strokec3 Overview\
+\pard\pardeftab720\sa240\partightenfactor0
+
+\f1\b0\fs24 \cf2 \strokec3 The HTML prototype (
+\f2\fs26 \strokec3 metrustual-7.html
+\f1\fs24 \strokec3 ) defines the new flow and three new screen sets. Please implement exactly what is in the HTML file. The attached HTML file is the single source of truth for design, layout, colours, copy, and component behaviour.\
+\pard\pardeftab720\sa240\partightenfactor0
+
+\f0\b \cf2 \strokec3 Do not change:
+\f1\b0 \strokec3 \
+\pard\tx220\tx720\pardeftab720\li720\fi-720\partightenfactor0
+\ls1\ilvl0\cf2 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec3 Any backend logic, data models, or API calls not mentioned here\
+\ls1\ilvl0\kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec3 Any screen not listed in this document\
+\ls1\ilvl0\kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec3 Any existing colour tokens, font sizes, or spacing that aren't part of the new screens\
+\ls1\ilvl0\kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec3 Navigation or routing for screens not mentioned here\
+\pard\pardeftab720\partightenfactor0
+\cf2 \strokec4 \
+\pard\pardeftab720\sa298\partightenfactor0
+
+\f0\b\fs36 \cf2 \strokec3 1. New App Flow\
+\pard\pardeftab720\sa240\partightenfactor0
+
+\f1\b0\fs24 \cf2 \strokec3 Replace the current startup flow with the following sequence:\
+\pard\pardeftab720\qc\partightenfactor0
+
+\f3\fs22 \cf2 \strokec5 \
+\
+\pard\pardeftab720\partightenfactor0
+
+\f1\fs24 \cf2 \strokec6 Splash Screen\
+     
+\f4 \strokec6 \uc0\u8595 
+\f1 \strokec6  (auto, 3.2 seconds)\
+Let's Go Screen  
+\f4 \strokec6 \uc0\u8592 
+\f1 \strokec6  NEW (was previously going straight to Home)\
+     
+\f4 \strokec6 \uc0\u8595 
+\f1 \strokec6  (user taps "Let's go!")\
+Mode Selection Screen  
+\f4 \strokec6 \uc0\u8592 
+\f1 \strokec6  NEW\
+     
+\f4 \strokec6 \uc0\u8595 
+\f1 \strokec6  (user taps one of 3 options)\
+Journey Wizard  
+\f4 \strokec6 \uc0\u8592 
+\f1 \strokec6  NEW (5-step onboarding per mode)\
+     
+\f4 \strokec6 \uc0\u8595 
+\f1 \strokec6  (user completes all steps)\
+Home Screen  
+\f4 \strokec6 \uc0\u8592 
+\f1 \strokec6  existing, but now mode-aware\
+\pard\pardeftab720\sa240\partightenfactor0
+\cf2 \strokec3 After first launch is complete, the app goes directly to Home on subsequent opens (save 
+\f2\fs26 \strokec3 isOnboarded = true
+\f1\fs24 \strokec3  in local storage / shared preferences after journey is done).\
+The user can re-enter the Journey Wizard anytime from the "Switch Tracker" card on the Home screen.\
+\pard\pardeftab720\partightenfactor0
+\cf2 \strokec4 \
+\pard\pardeftab720\sa298\partightenfactor0
+
+\f0\b\fs36 \cf2 \strokec3 2. Colour System per Mode\
+\pard\pardeftab720\sa240\partightenfactor0
+
+\f1\b0\fs24 \cf2 \strokec3 The app has three modes. Each mode has an accent colour used across its screens:\
+
+\itap1\trowd \taflags0 \trgaph108\trleft-108 \trbrdrt\brdrnil \trbrdrl\brdrnil \trbrdrr\brdrnil 
+\clvertalc \clshdrawnil \clwWidth1566\clftsWidth3 \clmart10 \clmarl10 \clmarb10 \clmarr10 \clbrdrt\brdrnil \clbrdrl\brdrnil \clbrdrb\brdrnil \clbrdrr\brdrnil \clpadt20 \clpadl20 \clpadb20 \clpadr20 \gaph\cellx2160
+\clvertalc \clshdrawnil \clwWidth1792\clftsWidth3 \clmart10 \clmarl10 \clmarb10 \clmarr10 \clbrdrt\brdrnil \clbrdrl\brdrnil \clbrdrb\brdrnil \clbrdrr\brdrnil \clpadt20 \clpadl20 \clpadb20 \clpadr20 \gaph\cellx4320
+\clvertalc \clshdrawnil \clwWidth1800\clftsWidth3 \clmart10 \clmarl10 \clmarb10 \clmarr10 \clbrdrt\brdrnil \clbrdrl\brdrnil \clbrdrb\brdrnil \clbrdrr\brdrnil \clpadt20 \clpadl20 \clpadb20 \clpadr20 \gaph\cellx6480
+\clvertalc \clshdrawnil \clwWidth1659\clftsWidth3 \clmart10 \clmarl10 \clmarb10 \clmarr10 \clbrdrt\brdrnil \clbrdrl\brdrnil \clbrdrb\brdrnil \clbrdrr\brdrnil \clpadt20 \clpadl20 \clpadb20 \clpadr20 \gaph\cellx8640
+\pard\intbl\itap1\pardeftab720\qc\partightenfactor0
+
+\f0\b \cf2 \strokec2 Mode\cell 
+\pard\intbl\itap1\pardeftab720\qc\partightenfactor0
+\cf2 Accent (Primary)\cell 
+\pard\intbl\itap1\pardeftab720\qc\partightenfactor0
+\cf2 Accent (Light bg)\cell 
+\pard\intbl\itap1\pardeftab720\qc\partightenfactor0
+\cf2 Accent (Border)\cell \row
+
+\itap1\trowd \taflags0 \trgaph108\trleft-108 \trbrdrl\brdrnil \trbrdrr\brdrnil 
+\clvertalc \clshdrawnil \clwWidth1566\clftsWidth3 \clmart10 \clmarl10 \clmarb10 \clmarr10 \clbrdrt\brdrnil \clbrdrl\brdrnil \clbrdrb\brdrnil \clbrdrr\brdrnil \clpadt20 \clpadl20 \clpadb20 \clpadr20 \gaph\cellx2160
+\clvertalc \clshdrawnil \clwWidth1792\clftsWidth3 \clmart10 \clmarl10 \clmarb10 \clmarr10 \clbrdrt\brdrnil \clbrdrl\brdrnil \clbrdrb\brdrnil \clbrdrr\brdrnil \clpadt20 \clpadl20 \clpadb20 \clpadr20 \gaph\cellx4320
+\clvertalc \clshdrawnil \clwWidth1800\clftsWidth3 \clmart10 \clmarl10 \clmarb10 \clmarr10 \clbrdrt\brdrnil \clbrdrl\brdrnil \clbrdrb\brdrnil \clbrdrr\brdrnil \clpadt20 \clpadl20 \clpadb20 \clpadr20 \gaph\cellx6480
+\clvertalc \clshdrawnil \clwWidth1659\clftsWidth3 \clmart10 \clmarl10 \clmarb10 \clmarr10 \clbrdrt\brdrnil \clbrdrl\brdrnil \clbrdrb\brdrnil \clbrdrr\brdrnil \clpadt20 \clpadl20 \clpadb20 \clpadr20 \gaph\cellx8640
+\pard\intbl\itap1\pardeftab720\partightenfactor0
+\cf2 Period
+\f1\b0  (default)\cell 
+\pard\intbl\itap1\pardeftab720\partightenfactor0
+
+\f2\fs26 \cf2 #d97b8a
+\f1\fs24 \cell 
+\pard\intbl\itap1\pardeftab720\partightenfactor0
+
+\f2\fs26 \cf2 #fff5f6
+\f1\fs24 \cell 
+\pard\intbl\itap1\pardeftab720\partightenfactor0
+
+\f2\fs26 \cf2 #fce8e4
+\f1\fs24 \cell \row
+
+\itap1\trowd \taflags0 \trgaph108\trleft-108 \trbrdrl\brdrnil \trbrdrr\brdrnil 
+\clvertalc \clshdrawnil \clwWidth1566\clftsWidth3 \clmart10 \clmarl10 \clmarb10 \clmarr10 \clbrdrt\brdrnil \clbrdrl\brdrnil \clbrdrb\brdrnil \clbrdrr\brdrnil \clpadt20 \clpadl20 \clpadb20 \clpadr20 \gaph\cellx2160
+\clvertalc \clshdrawnil \clwWidth1792\clftsWidth3 \clmart10 \clmarl10 \clmarb10 \clmarr10 \clbrdrt\brdrnil \clbrdrl\brdrnil \clbrdrb\brdrnil \clbrdrr\brdrnil \clpadt20 \clpadl20 \clpadb20 \clpadr20 \gaph\cellx4320
+\clvertalc \clshdrawnil \clwWidth1800\clftsWidth3 \clmart10 \clmarl10 \clmarb10 \clmarr10 \clbrdrt\brdrnil \clbrdrl\brdrnil \clbrdrb\brdrnil \clbrdrr\brdrnil \clpadt20 \clpadl20 \clpadb20 \clpadr20 \gaph\cellx6480
+\clvertalc \clshdrawnil \clwWidth1659\clftsWidth3 \clmart10 \clmarl10 \clmarb10 \clmarr10 \clbrdrt\brdrnil \clbrdrl\brdrnil \clbrdrb\brdrnil \clbrdrr\brdrnil \clpadt20 \clpadl20 \clpadb20 \clpadr20 \gaph\cellx8640
+\pard\intbl\itap1\pardeftab720\partightenfactor0
+
+\f0\b \cf2 Pregnancy
+\f1\b0 \cell 
+\pard\intbl\itap1\pardeftab720\partightenfactor0
+
+\f2\fs26 \cf2 #4a70b0
+\f1\fs24 \cell 
+\pard\intbl\itap1\pardeftab720\partightenfactor0
+
+\f2\fs26 \cf2 #f0f4ff
+\f1\fs24 \cell 
+\pard\intbl\itap1\pardeftab720\partightenfactor0
+
+\f2\fs26 \cf2 #dde8f8
+\f1\fs24 \cell \row
+
+\itap1\trowd \taflags0 \trgaph108\trleft-108 \trbrdrl\brdrnil \trbrdrt\brdrnil \trbrdrr\brdrnil 
+\clvertalc \clshdrawnil \clwWidth1566\clftsWidth3 \clmart10 \clmarl10 \clmarb10 \clmarr10 \clbrdrt\brdrnil \clbrdrl\brdrnil \clbrdrb\brdrnil \clbrdrr\brdrnil \clpadt20 \clpadl20 \clpadb20 \clpadr20 \gaph\cellx2160
+\clvertalc \clshdrawnil \clwWidth1792\clftsWidth3 \clmart10 \clmarl10 \clmarb10 \clmarr10 \clbrdrt\brdrnil \clbrdrl\brdrnil \clbrdrb\brdrnil \clbrdrr\brdrnil \clpadt20 \clpadl20 \clpadb20 \clpadr20 \gaph\cellx4320
+\clvertalc \clshdrawnil \clwWidth1800\clftsWidth3 \clmart10 \clmarl10 \clmarb10 \clmarr10 \clbrdrt\brdrnil \clbrdrl\brdrnil \clbrdrb\brdrnil \clbrdrr\brdrnil \clpadt20 \clpadl20 \clpadb20 \clpadr20 \gaph\cellx6480
+\clvertalc \clshdrawnil \clwWidth1659\clftsWidth3 \clmart10 \clmarl10 \clmarb10 \clmarr10 \clbrdrt\brdrnil \clbrdrl\brdrnil \clbrdrb\brdrnil \clbrdrr\brdrnil \clpadt20 \clpadl20 \clpadb20 \clpadr20 \gaph\cellx8640
+\pard\intbl\itap1\pardeftab720\partightenfactor0
+
+\f0\b \cf2 Ovulation
+\f1\b0 \cell 
+\pard\intbl\itap1\pardeftab720\partightenfactor0
+
+\f2\fs26 \cf2 #5a8e6a
+\f1\fs24 \cell 
+\pard\intbl\itap1\pardeftab720\partightenfactor0
+
+\f2\fs26 \cf2 #f0faf4
+\f1\fs24 \cell 
+\pard\intbl\itap1\pardeftab720\partightenfactor0
+
+\f2\fs26 \cf2 #d0e8d8
+\f1\fs24 \cell \lastrow\row
+\pard\pardeftab720\sa240\partightenfactor0
+\cf2 \strokec3 Save the current mode to shared preferences as a string: 
+\f2\fs26 \strokec3 "period"
+\f1\fs24 \strokec3 , 
+\f2\fs26 \strokec3 "preg"
+\f1\fs24 \strokec3 , or 
+\f2\fs26 \strokec3 "ovul"
+\f1\fs24 \strokec3 .\
+\pard\pardeftab720\partightenfactor0
+\cf2 \strokec4 \
+\pard\pardeftab720\sa298\partightenfactor0
+
+\f0\b\fs36 \cf2 \strokec3 3. Screen: Splash Screen\
+\pard\pardeftab720\sa240\partightenfactor0
+
+\fs24 \cf2 \strokec3 Status: Already exists \'97 only one change needed.
+\f1\b0 \strokec3 \
+Change the navigation after the splash animation finishes:\
+\pard\tx220\tx720\pardeftab720\li720\fi-720\partightenfactor0
+\ls2\ilvl0
+\f0\b \cf2 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec3 Before:
+\f1\b0 \strokec3  navigates to Home\
+\ls2\ilvl0
+\f0\b \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec3 After:
+\f1\b0 \strokec3  navigates to 
+\f2\fs26 \strokec3 LetsGoScreen
+\f1\fs24 \strokec3  (if 
+\f2\fs26 \strokec3 isOnboarded == false
+\f1\fs24 \strokec3 ) OR 
+\f2\fs26 \strokec3 HomeScreen
+\f1\fs24 \strokec3  (if 
+\f2\fs26 \strokec3 isOnboarded == true
+\f1\fs24 \strokec3 )\
+\pard\pardeftab720\partightenfactor0
+\cf2 \strokec4 \
+\pard\pardeftab720\sa298\partightenfactor0
+
+\f0\b\fs36 \cf2 \strokec3 4. Screen: Let's Go Screen 
+\f5 \strokec3 \uc0\u8592 
+\f0 \strokec3  NEW\
+\pard\pardeftab720\sa240\partightenfactor0
+
+\fs24 \cf2 \strokec3 Route name:
+\f1\b0 \strokec3  
+\f2\fs26 \strokec3 /lets-go
+\f1\fs24 \strokec3 \
+This is a scrollable, centered column screen with gradient background 
+\f2\fs26 \strokec3 linear(170\'b0 
+\f6 \strokec3 \uc0\u8594 
+\f2 \strokec3  #fff8f5 
+\f6 \strokec3 \uc0\u8594 
+\f2 \strokec3  #fef0f5)
+\f1\fs24 \strokec3 .\
+
+\f0\b \strokec3 Contents (top to bottom):
+\f1\b0 \strokec3 \
+\pard\tx220\tx720\pardeftab720\li720\fi-720\partightenfactor0
+\ls3\ilvl0\cf2 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	1	}\expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec3 Large emoji: 
+\f7 \strokec3 \uc0\u55356 \u57144 
+\f1 \strokec3  (font size ~60)\
+\ls3\ilvl0\kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	2	}\expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec3 Heading: 
+\f2\fs26 \strokec3 Hey there,
+\f1\fs24 \strokec3  + italic 
+\f2\fs26 \strokec3 lovely!
+\f1\fs24 \strokec3  in 
+\f2\fs26 \strokec3 #d97b8a
+\f1\fs24 \strokec3 \
+\ls3\ilvl0\kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	3	}\expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec3 Body text: 
+\f2\fs26 \strokec3 Your cycle. Your story. Your privacy. Let's make it personal. 
+\f7 \strokec3 \uc0\u55356 \u57151 
+\f1\fs24 \strokec3 \
+\pard\tx220\tx720\pardeftab720\li720\fi-720\partightenfactor0
+\ls3\ilvl0
+\f0\b \cf2 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	4	}\expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec3 Language selector grid
+\f1\b0 \strokec3  (2 columns):\
+\pard\tx940\tx1440\pardeftab720\li1440\fi-1440\partightenfactor0
+\ls3\ilvl1\cf2 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	
+\f4 \uc0\u9702 
+\f1 	}
+\f7 \expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec3 \uc0\u55356 \u56812 \u55356 \u56807 
+\f1 \strokec3  English (default selected)\
+\ls3\ilvl1\kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	
+\f4 \uc0\u9702 
+\f1 	}
+\f7 \expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec3 \uc0\u55356 \u56818 \u55356 \u56830 
+\f1 \strokec3  Melayu\
+\ls3\ilvl1\kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	
+\f4 \uc0\u9702 
+\f1 	}
+\f7 \expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec3 \uc0\u55356 \u56810 \u55356 \u56824 
+\f1 \strokec3  Espa\'f1ol\
+\ls3\ilvl1\kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	
+\f4 \uc0\u9702 
+\f1 	}
+\f7 \expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec3 \uc0\u55356 \u56814 \u55356 \u56819 
+\f1 \strokec3  
+\f8 \strokec3 \uc0\u2361 \u2367 \u2344 \u2381 \u2342 \u2368 
+\f1 \strokec3 \
+\ls3\ilvl1\kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	
+\f4 \uc0\u9702 
+\f1 	}
+\f7 \expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec3 \uc0\u55356 \u56824 \u55356 \u56806 
+\f1 \strokec3  
+\f9 \strokec3 \'c7\'e1\'da\'d1\'c8\'ed\'c9
+\f1 \strokec3 \
+\ls3\ilvl1\kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	
+\f4 \uc0\u9702 
+\f1 	}
+\f7 \expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec3 \uc0\u55356 \u57104 
+\f1 \strokec3  More\'85\
+\ls3\ilvl1\kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	
+\f4 \uc0\u9702 
+\f1 	}\expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec3 Each is a tappable pill: white background, 
+\f2\fs26 \strokec3 #fce8e4
+\f1\fs24 \strokec3  border, rounded 14px. Selected state: 
+\f2\fs26 \strokec3 #d97b8a
+\f1\fs24 \strokec3  border + text, 
+\f2\fs26 \strokec3 #fff5f6
+\f1\fs24 \strokec3  background.\
+\pard\tx220\tx720\pardeftab720\li720\fi-720\partightenfactor0
+\ls3\ilvl0
+\f0\b \cf2 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	5	}\expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec3 Toggle row 1:
+\f1\b0 \strokec3  "
+\f7 \strokec3 \uc0\u55357 \u56594 
+\f1 \strokec3  Keep it private" / "No account, stays on your phone" \'97 toggle default ON\
+\ls3\ilvl0
+\f0\b \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	6	}\expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec3 Toggle row 2:
+\f1\b0 \strokec3  "
+\f7 \strokec3 \uc0\u9729 \u65039 
+\f1 \strokec3  Backup my data" / "Encrypted, only you can see it" \'97 toggle default OFF\
+\ls3\ilvl0
+\f0\b \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	7	}\expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec3 Promise box
+\f1\b0 \strokec3  (green-tinted card): "
+\f7 \strokec3 \uc0\u55357 \u57057 \u65039 
+\f1 \strokec3  Our promise to you" \'97 "No ads. No selling your data. No judgement. Delete everything anytime."\
+\ls3\ilvl0
+\f0\b \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	8	}\expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec3 Primary button:
+\f1\b0 \strokec3  
+\f2\fs26 \strokec3 Let's go! 
+\f7 \strokec3 \uc0\u55356 \u57144 
+\f1\fs24 \strokec3  
+\f4 \strokec3 \uc0\u8594 
+\f1 \strokec3  navigates to 
+\f2\fs26 \strokec3 ModeSelectionScreen
+\f1\fs24 \strokec3 \
+\pard\pardeftab720\sa240\partightenfactor0
+\cf2 \strokec3 Toggles use the existing Toggle widget from the codebase. Promise box uses a soft green background (
+\f2\fs26 \strokec3 rgba(168,220,168,0.15)
+\f1\fs24 \strokec3  = approx 
+\f2\fs26 \strokec3 #e8f8ee
+\f1\fs24 \strokec3 ).\
+\pard\pardeftab720\partightenfactor0
+\cf2 \strokec4 \
+\pard\pardeftab720\sa298\partightenfactor0
+
+\f0\b\fs36 \cf2 \strokec3 5. Screen: Mode Selection Screen 
+\f5 \strokec3 \uc0\u8592 
+\f0 \strokec3  NEW\
+\pard\pardeftab720\sa240\partightenfactor0
+
+\fs24 \cf2 \strokec3 Route name:
+\f1\b0 \strokec3  
+\f2\fs26 \strokec3 /mode-selection
+\f1\fs24 \strokec3 \
+Same gradient background as Let's Go. Centered column, not scrollable.\
+
+\f0\b \strokec3 Contents:
+\f1\b0 \strokec3 \
+\pard\tx220\tx720\pardeftab720\li720\fi-720\partightenfactor0
+\ls4\ilvl0\cf2 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	1	}\expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec3 Emoji: 
+\f7 \strokec3 \uc0\u55356 \u57144 
+\f1 \strokec3 \
+\ls4\ilvl0\kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	2	}\expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec3 Heading: 
+\f2\fs26 \strokec3 What are you
+\f1\fs24 \strokec3  + italic 
+\f2\fs26 \strokec3 tracking?
+\f1\fs24 \strokec3 \
+\ls4\ilvl0\kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	3	}\expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec3 Subtext: 
+\f2\fs26 \strokec3 Choose your journey \'97 you can switch anytime from your home screen. 
+\f7 \strokec3 \uc0\u55357 \u56469 
+\f1\fs24 \strokec3 \
+\ls4\ilvl0\kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	4	}\expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec3 Three mode cards (see below)\
+\pard\pardeftab720\sa240\partightenfactor0
+
+\f0\b \cf2 \strokec3 Mode Card component
+\f1\b0 \strokec3  \'97 each card is a full-width row with:\
+\pard\tx220\tx720\pardeftab720\li720\fi-720\partightenfactor0
+\ls5\ilvl0\cf2 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec3 White background, 2px border (color matches mode accent), border-radius 22\
+\ls5\ilvl0\kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec3 Left: large emoji (2.4rem equivalent)\
+\ls5\ilvl0\kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec3 Centre: bold title + smaller description text\
+\ls5\ilvl0\kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec3 Right: 
+\f6\fs26 \strokec3 \uc0\u8594 
+\f1\fs24 \strokec3  arrow that shifts right on hover/press\
+
+\itap1\trowd \taflags0 \trgaph108\trleft-108 \trbrdrt\brdrnil \trbrdrl\brdrnil \trbrdrr\brdrnil 
+\clvertalc \clshdrawnil \clwWidth1013\clftsWidth3 \clmart10 \clmarl10 \clmarb10 \clmarr10 \clbrdrt\brdrnil \clbrdrl\brdrnil \clbrdrb\brdrnil \clbrdrr\brdrnil \clpadt20 \clpadl20 \clpadb20 \clpadr20 \gaph\cellx2160
+\clvertalc \clshdrawnil \clwWidth626\clftsWidth3 \clmart10 \clmarl10 \clmarb10 \clmarr10 \clbrdrt\brdrnil \clbrdrl\brdrnil \clbrdrb\brdrnil \clbrdrr\brdrnil \clpadt20 \clpadl20 \clpadb20 \clpadr20 \gaph\cellx4320
+\clvertalc \clshdrawnil \clwWidth1990\clftsWidth3 \clmart10 \clmarl10 \clmarb10 \clmarr10 \clbrdrt\brdrnil \clbrdrl\brdrnil \clbrdrb\brdrnil \clbrdrr\brdrnil \clpadt20 \clpadl20 \clpadb20 \clpadr20 \gaph\cellx6480
+\clvertalc \clshdrawnil \clwWidth6559\clftsWidth3 \clmart10 \clmarl10 \clmarb10 \clmarr10 \clbrdrt\brdrnil \clbrdrl\brdrnil \clbrdrb\brdrnil \clbrdrr\brdrnil \clpadt20 \clpadl20 \clpadb20 \clpadr20 \gaph\cellx8640
+\pard\intbl\itap1\pardeftab720\qc\partightenfactor0
+
+\f0\b \cf2 \strokec2 Card\cell 
+\pard\intbl\itap1\pardeftab720\qc\partightenfactor0
+\cf2 Emoji\cell 
+\pard\intbl\itap1\pardeftab720\qc\partightenfactor0
+\cf2 Title\cell 
+\pard\intbl\itap1\pardeftab720\qc\partightenfactor0
+\cf2 Description\cell \row
+
+\itap1\trowd \taflags0 \trgaph108\trleft-108 \trbrdrl\brdrnil \trbrdrr\brdrnil 
+\clvertalc \clshdrawnil \clwWidth1013\clftsWidth3 \clmart10 \clmarl10 \clmarb10 \clmarr10 \clbrdrt\brdrnil \clbrdrl\brdrnil \clbrdrb\brdrnil \clbrdrr\brdrnil \clpadt20 \clpadl20 \clpadb20 \clpadr20 \gaph\cellx2160
+\clvertalc \clshdrawnil \clwWidth626\clftsWidth3 \clmart10 \clmarl10 \clmarb10 \clmarr10 \clbrdrt\brdrnil \clbrdrl\brdrnil \clbrdrb\brdrnil \clbrdrr\brdrnil \clpadt20 \clpadl20 \clpadb20 \clpadr20 \gaph\cellx4320
+\clvertalc \clshdrawnil \clwWidth1990\clftsWidth3 \clmart10 \clmarl10 \clmarb10 \clmarr10 \clbrdrt\brdrnil \clbrdrl\brdrnil \clbrdrb\brdrnil \clbrdrr\brdrnil \clpadt20 \clpadl20 \clpadb20 \clpadr20 \gaph\cellx6480
+\clvertalc \clshdrawnil \clwWidth6559\clftsWidth3 \clmart10 \clmarl10 \clmarb10 \clmarr10 \clbrdrt\brdrnil \clbrdrl\brdrnil \clbrdrb\brdrnil \clbrdrr\brdrnil \clpadt20 \clpadl20 \clpadb20 \clpadr20 \gaph\cellx8640
+\pard\intbl\itap1\pardeftab720\partightenfactor0
+
+\f1\b0 \cf2 Period\cell 
+\pard\intbl\itap1\pardeftab720\partightenfactor0
+
+\f7 \cf2 \uc0\u55358 \u56952 
+\f1 \cell 
+\pard\intbl\itap1\pardeftab720\partightenfactor0
+\cf2 Track my Period\cell 
+\pard\intbl\itap1\pardeftab720\partightenfactor0
+\cf2 Predict your cycle, understand phases, log symptoms & mood\cell \row
+
+\itap1\trowd \taflags0 \trgaph108\trleft-108 \trbrdrl\brdrnil \trbrdrr\brdrnil 
+\clvertalc \clshdrawnil \clwWidth1013\clftsWidth3 \clmart10 \clmarl10 \clmarb10 \clmarr10 \clbrdrt\brdrnil \clbrdrl\brdrnil \clbrdrb\brdrnil \clbrdrr\brdrnil \clpadt20 \clpadl20 \clpadb20 \clpadr20 \gaph\cellx2160
+\clvertalc \clshdrawnil \clwWidth626\clftsWidth3 \clmart10 \clmarl10 \clmarb10 \clmarr10 \clbrdrt\brdrnil \clbrdrl\brdrnil \clbrdrb\brdrnil \clbrdrr\brdrnil \clpadt20 \clpadl20 \clpadb20 \clpadr20 \gaph\cellx4320
+\clvertalc \clshdrawnil \clwWidth1990\clftsWidth3 \clmart10 \clmarl10 \clmarb10 \clmarr10 \clbrdrt\brdrnil \clbrdrl\brdrnil \clbrdrb\brdrnil \clbrdrr\brdrnil \clpadt20 \clpadl20 \clpadb20 \clpadr20 \gaph\cellx6480
+\clvertalc \clshdrawnil \clwWidth6559\clftsWidth3 \clmart10 \clmarl10 \clmarb10 \clmarr10 \clbrdrt\brdrnil \clbrdrl\brdrnil \clbrdrb\brdrnil \clbrdrr\brdrnil \clpadt20 \clpadl20 \clpadb20 \clpadr20 \gaph\cellx8640
+\pard\intbl\itap1\pardeftab720\partightenfactor0
+\cf2 Pregnancy\cell 
+\pard\intbl\itap1\pardeftab720\partightenfactor0
+
+\f7 \cf2 \uc0\u55358 \u56624 
+\f1 \cell 
+\pard\intbl\itap1\pardeftab720\partightenfactor0
+\cf2 Track my Pregnancy\cell 
+\pard\intbl\itap1\pardeftab720\partightenfactor0
+\cf2 Week-by-week progress, baby growth, kick counter & appointments\cell \row
+
+\itap1\trowd \taflags0 \trgaph108\trleft-108 \trbrdrl\brdrnil \trbrdrt\brdrnil \trbrdrr\brdrnil 
+\clvertalc \clshdrawnil \clwWidth1013\clftsWidth3 \clmart10 \clmarl10 \clmarb10 \clmarr10 \clbrdrt\brdrnil \clbrdrl\brdrnil \clbrdrb\brdrnil \clbrdrr\brdrnil \clpadt20 \clpadl20 \clpadb20 \clpadr20 \gaph\cellx2160
+\clvertalc \clshdrawnil \clwWidth626\clftsWidth3 \clmart10 \clmarl10 \clmarb10 \clmarr10 \clbrdrt\brdrnil \clbrdrl\brdrnil \clbrdrb\brdrnil \clbrdrr\brdrnil \clpadt20 \clpadl20 \clpadb20 \clpadr20 \gaph\cellx4320
+\clvertalc \clshdrawnil \clwWidth1990\clftsWidth3 \clmart10 \clmarl10 \clmarb10 \clmarr10 \clbrdrt\brdrnil \clbrdrl\brdrnil \clbrdrb\brdrnil \clbrdrr\brdrnil \clpadt20 \clpadl20 \clpadb20 \clpadr20 \gaph\cellx6480
+\clvertalc \clshdrawnil \clwWidth6559\clftsWidth3 \clmart10 \clmarl10 \clmarb10 \clmarr10 \clbrdrt\brdrnil \clbrdrl\brdrnil \clbrdrb\brdrnil \clbrdrr\brdrnil \clpadt20 \clpadl20 \clpadb20 \clpadr20 \gaph\cellx8640
+\pard\intbl\itap1\pardeftab720\partightenfactor0
+\cf2 Ovulation\cell 
+\pard\intbl\itap1\pardeftab720\partightenfactor0
+
+\f7 \cf2 \uc0\u55356 \u57151 
+\f1 \cell 
+\pard\intbl\itap1\pardeftab720\partightenfactor0
+\cf2 Track Ovulation\cell 
+\pard\intbl\itap1\pardeftab720\partightenfactor0
+\cf2 Find your fertile window, BBT tracking, TTC & family planning\cell \lastrow\row
+\pard\pardeftab720\sa240\partightenfactor0
+\cf2 \strokec3 Tapping a card saves 
+\f2\fs26 \strokec3 selectedMode
+\f1\fs24 \strokec3  and navigates to 
+\f2\fs26 \strokec3 JourneyWizardScreen
+\f1\fs24 \strokec3  with the mode passed as a parameter. Add a subtle scale-down tap animation.\
+\pard\pardeftab720\partightenfactor0
+\cf2 \strokec4 \
+\pard\pardeftab720\sa298\partightenfactor0
+
+\f0\b\fs36 \cf2 \strokec3 6. Screen: Journey Wizard 
+\f5 \strokec3 \uc0\u8592 
+\f0 \strokec3  NEW\
+\pard\pardeftab720\sa240\partightenfactor0
+
+\fs24 \cf2 \strokec3 Route name:
+\f1\b0 \strokec3  
+\f2\fs26 \strokec3 /journey/:mode
+\f1\fs24 \strokec3 \
+This is a single screen that renders different content based on 
+\f2\fs26 \strokec3 currentStep
+\f1\fs24 \strokec3  (0\'964 for all three modes = 5 steps each). The content per step is defined in the HTML prototype's 
+\f2\fs26 \strokec3 JOURNEYS
+\f1\fs24 \strokec3  JavaScript object \'97 replicate this in Dart as a data structure.\
+
+\f0\b \strokec3 Fixed header (does not scroll):
+\f1\b0 \strokec3 \
+\pard\tx220\tx720\pardeftab720\li720\fi-720\partightenfactor0
+\ls6\ilvl0\cf2 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec3 Back chevron button (circular, white, 
+\f2\fs26 \strokec3 #fce8e4
+\f1\fs24 \strokec3  border) \'97 taps go to previous step or back to Mode Selection if on step 0\
+\ls6\ilvl0\kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec3 Progress bar: fills left to right from 20% to 100% across the 5 steps. Colour = mode accent colour. Animates with 400ms ease.\
+\ls6\ilvl0\kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec3 Step counter label: "Step X of 5"\
+\pard\pardeftab720\sa240\partightenfactor0
+
+\f0\b \cf2 \strokec3 Scrollable body below header.
+\f1\b0 \strokec3 \
+
+\f0\b \strokec3 Step types used across the three journeys (build these as reusable widgets):
+\f1\b0 \strokec3 \
+\pard\pardeftab720\sa280\partightenfactor0
+
+\f10\b\fs30\fsmilli15210 \cf2 \strokec3 DatePickerStep
+\f0\fs28 \strokec3 \
+\pard\tx220\tx720\pardeftab720\li720\fi-720\partightenfactor0
+\ls7\ilvl0
+\f1\b0\fs24 \cf2 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec3 Shows a native date picker input\
+\ls7\ilvl0\kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec3 "Skip" text link below (only on some steps \'97 check HTML)\
+\pard\pardeftab720\sa280\partightenfactor0
+
+\f10\b\fs30\fsmilli15210 \cf2 \strokec3 StepperStep
+\f0\fs28 \strokec3 \
+\pard\tx220\tx720\pardeftab720\li720\fi-720\partightenfactor0
+\ls8\ilvl0
+\f1\b0\fs24 \cf2 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec3 Large number display (mode accent colour)\
+\ls8\ilvl0\kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec3 Minus / Plus buttons (circle, mode accent tint background)\
+\ls8\ilvl0\kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec3 Unit label (e.g. "days")\
+\ls8\ilvl0\kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec3 Optional "skip" link\
+\pard\pardeftab720\sa280\partightenfactor0
+
+\f10\b\fs30\fsmilli15210 \cf2 \strokec3 ChipsSingleStep
+\f0\fs28 \strokec3 \
+\pard\tx220\tx720\pardeftab720\li720\fi-720\partightenfactor0
+\ls9\ilvl0
+\f1\b0\fs24 \cf2 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec3 Horizontal wrap of pill chips\
+\ls9\ilvl0\kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec3 Tapping one selects it (mode-coloured selected state), deselects others\
+\pard\pardeftab720\sa280\partightenfactor0
+
+\f10\b\fs30\fsmilli15210 \cf2 \strokec3 ChipsMultiStep
+\f0\fs28 \strokec3 \
+\pard\tx220\tx720\pardeftab720\li720\fi-720\partightenfactor0
+\ls10\ilvl0
+\f1\b0\fs24 \cf2 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec3 Same as above but multiple can be selected simultaneously\
+\pard\pardeftab720\sa280\partightenfactor0
+
+\f10\b\fs30\fsmilli15210 \cf2 \strokec3 ChipsBigSingleStep
+\f0\fs28 \strokec3 \
+\pard\tx220\tx720\pardeftab720\li720\fi-720\partightenfactor0
+\ls11\ilvl0
+\f1\b0\fs24 \cf2 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec3 Full-width vertical list of large pill buttons\
+\ls11\ilvl0\kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec3 Auto-advances to next step 260ms after selection\
+\ls11\ilvl0\kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec3 One option may have 
+\f2\fs26 \strokec3 special: true
+\f1\fs24 \strokec3  \'97 this routes to Mode Selection (
+\f2\fs26 \strokec3 /mode-selection
+\f1\fs24 \strokec3 ) instead of advancing\
+\pard\pardeftab720\sa280\partightenfactor0
+
+\f10\b\fs30\fsmilli15210 \cf2 \strokec3 DueDateStep
+\f0\fs28 \strokec3  (pregnancy only, step 2)\
+\pard\tx220\tx720\pardeftab720\li720\fi-720\partightenfactor0
+\ls12\ilvl0
+\f1\b0\fs24 \cf2 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec3 Two large toggle chips: "Yes, I know my due date" / "Use my last period start instead"\
+\ls12\ilvl0\kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec3 Date picker below changes its label depending on which is selected\
+\pard\pardeftab720\partightenfactor0
+\cf2 \strokec4 \
+\pard\pardeftab720\sa280\partightenfactor0
+
+\f0\b\fs28 \cf2 \strokec3 Period Journey (5 steps)\
+
+\itap1\trowd \taflags0 \trgaph108\trleft-108 \trbrdrt\brdrnil \trbrdrl\brdrnil \trbrdrr\brdrnil 
+\clvertalc \clshdrawnil \clwWidth453\clftsWidth3 \clmart10 \clmarl10 \clmarb10 \clmarr10 \clbrdrt\brdrnil \clbrdrl\brdrnil \clbrdrb\brdrnil \clbrdrr\brdrnil \clpadt20 \clpadl20 \clpadb20 \clpadr20 \gaph\cellx1728
+\clvertalc \clshdrawnil \clwWidth1173\clftsWidth3 \clmart10 \clmarl10 \clmarb10 \clmarr10 \clbrdrt\brdrnil \clbrdrl\brdrnil \clbrdrb\brdrnil \clbrdrr\brdrnil \clpadt20 \clpadl20 \clpadb20 \clpadr20 \gaph\cellx3456
+\clvertalc \clshdrawnil \clwWidth2574\clftsWidth3 \clmart10 \clmarl10 \clmarb10 \clmarr10 \clbrdrt\brdrnil \clbrdrl\brdrnil \clbrdrb\brdrnil \clbrdrr\brdrnil \clpadt20 \clpadl20 \clpadb20 \clpadr20 \gaph\cellx5184
+\clvertalc \clshdrawnil \clwWidth1560\clftsWidth3 \clmart10 \clmarl10 \clmarb10 \clmarr10 \clbrdrt\brdrnil \clbrdrl\brdrnil \clbrdrb\brdrnil \clbrdrr\brdrnil \clpadt20 \clpadl20 \clpadb20 \clpadr20 \gaph\cellx6912
+\clvertalc \clshdrawnil \clwWidth9178\clftsWidth3 \clmart10 \clmarl10 \clmarb10 \clmarr10 \clbrdrt\brdrnil \clbrdrl\brdrnil \clbrdrb\brdrnil \clbrdrr\brdrnil \clpadt20 \clpadl20 \clpadb20 \clpadr20 \gaph\cellx8640
+\pard\intbl\itap1\pardeftab720\qc\partightenfactor0
+
+\fs24 \cf2 \strokec2 Step\cell 
+\pard\intbl\itap1\pardeftab720\qc\partightenfactor0
+\cf2 Type\cell 
+\pard\intbl\itap1\pardeftab720\qc\partightenfactor0
+\cf2 Question\cell 
+\pard\intbl\itap1\pardeftab720\qc\partightenfactor0
+\cf2 Key\cell 
+\pard\intbl\itap1\pardeftab720\qc\partightenfactor0
+\cf2 Options/Config\cell \row
+
+\itap1\trowd \taflags0 \trgaph108\trleft-108 \trbrdrl\brdrnil \trbrdrr\brdrnil 
+\clvertalc \clshdrawnil \clwWidth453\clftsWidth3 \clmart10 \clmarl10 \clmarb10 \clmarr10 \clbrdrt\brdrnil \clbrdrl\brdrnil \clbrdrb\brdrnil \clbrdrr\brdrnil \clpadt20 \clpadl20 \clpadb20 \clpadr20 \gaph\cellx1728
+\clvertalc \clshdrawnil \clwWidth1173\clftsWidth3 \clmart10 \clmarl10 \clmarb10 \clmarr10 \clbrdrt\brdrnil \clbrdrl\brdrnil \clbrdrb\brdrnil \clbrdrr\brdrnil \clpadt20 \clpadl20 \clpadb20 \clpadr20 \gaph\cellx3456
+\clvertalc \clshdrawnil \clwWidth2574\clftsWidth3 \clmart10 \clmarl10 \clmarb10 \clmarr10 \clbrdrt\brdrnil \clbrdrl\brdrnil \clbrdrb\brdrnil \clbrdrr\brdrnil \clpadt20 \clpadl20 \clpadb20 \clpadr20 \gaph\cellx5184
+\clvertalc \clshdrawnil \clwWidth1560\clftsWidth3 \clmart10 \clmarl10 \clmarb10 \clmarr10 \clbrdrt\brdrnil \clbrdrl\brdrnil \clbrdrb\brdrnil \clbrdrr\brdrnil \clpadt20 \clpadl20 \clpadb20 \clpadr20 \gaph\cellx6912
+\clvertalc \clshdrawnil \clwWidth9178\clftsWidth3 \clmart10 \clmarl10 \clmarb10 \clmarr10 \clbrdrt\brdrnil \clbrdrl\brdrnil \clbrdrb\brdrnil \clbrdrr\brdrnil \clpadt20 \clpadl20 \clpadb20 \clpadr20 \gaph\cellx8640
+\pard\intbl\itap1\pardeftab720\partightenfactor0
+
+\f1\b0 \cf2 0\cell 
+\pard\intbl\itap1\pardeftab720\partightenfactor0
+\cf2 DatePicker\cell 
+\pard\intbl\itap1\pardeftab720\partightenfactor0
+\cf2 When did your 
+\f0\b last period
+\f1\b0  start?\cell 
+\pard\intbl\itap1\pardeftab720\partightenfactor0
+
+\f2\fs26 \cf2 lastPeriod
+\f1\fs24 \cell 
+\pard\intbl\itap1\pardeftab720\partightenfactor0
+\cf2 Skip: "Not sure / first time tracking"\cell \row
+
+\itap1\trowd \taflags0 \trgaph108\trleft-108 \trbrdrl\brdrnil \trbrdrr\brdrnil 
+\clvertalc \clshdrawnil \clwWidth453\clftsWidth3 \clmart10 \clmarl10 \clmarb10 \clmarr10 \clbrdrt\brdrnil \clbrdrl\brdrnil \clbrdrb\brdrnil \clbrdrr\brdrnil \clpadt20 \clpadl20 \clpadb20 \clpadr20 \gaph\cellx1728
+\clvertalc \clshdrawnil \clwWidth1173\clftsWidth3 \clmart10 \clmarl10 \clmarb10 \clmarr10 \clbrdrt\brdrnil \clbrdrl\brdrnil \clbrdrb\brdrnil \clbrdrr\brdrnil \clpadt20 \clpadl20 \clpadb20 \clpadr20 \gaph\cellx3456
+\clvertalc \clshdrawnil \clwWidth2574\clftsWidth3 \clmart10 \clmarl10 \clmarb10 \clmarr10 \clbrdrt\brdrnil \clbrdrl\brdrnil \clbrdrb\brdrnil \clbrdrr\brdrnil \clpadt20 \clpadl20 \clpadb20 \clpadr20 \gaph\cellx5184
+\clvertalc \clshdrawnil \clwWidth1560\clftsWidth3 \clmart10 \clmarl10 \clmarb10 \clmarr10 \clbrdrt\brdrnil \clbrdrl\brdrnil \clbrdrb\brdrnil \clbrdrr\brdrnil \clpadt20 \clpadl20 \clpadb20 \clpadr20 \gaph\cellx6912
+\clvertalc \clshdrawnil \clwWidth9178\clftsWidth3 \clmart10 \clmarl10 \clmarb10 \clmarr10 \clbrdrt\brdrnil \clbrdrl\brdrnil \clbrdrb\brdrnil \clbrdrr\brdrnil \clpadt20 \clpadl20 \clpadb20 \clpadr20 \gaph\cellx8640
+\pard\intbl\itap1\pardeftab720\partightenfactor0
+\cf2 1\cell 
+\pard\intbl\itap1\pardeftab720\partightenfactor0
+\cf2 Stepper\cell 
+\pard\intbl\itap1\pardeftab720\partightenfactor0
+\cf2 How long is your cycle 
+\f0\b usually?
+\f1\b0 \cell 
+\pard\intbl\itap1\pardeftab720\partightenfactor0
+
+\f2\fs26 \cf2 cycleLen
+\f1\fs24 \cell 
+\pard\intbl\itap1\pardeftab720\partightenfactor0
+\cf2 Min 18, Max 45, Default 28, unit "days". Skip: "Not sure yet"\cell \row
+
+\itap1\trowd \taflags0 \trgaph108\trleft-108 \trbrdrl\brdrnil \trbrdrr\brdrnil 
+\clvertalc \clshdrawnil \clwWidth453\clftsWidth3 \clmart10 \clmarl10 \clmarb10 \clmarr10 \clbrdrt\brdrnil \clbrdrl\brdrnil \clbrdrb\brdrnil \clbrdrr\brdrnil \clpadt20 \clpadl20 \clpadb20 \clpadr20 \gaph\cellx1728
+\clvertalc \clshdrawnil \clwWidth1173\clftsWidth3 \clmart10 \clmarl10 \clmarb10 \clmarr10 \clbrdrt\brdrnil \clbrdrl\brdrnil \clbrdrb\brdrnil \clbrdrr\brdrnil \clpadt20 \clpadl20 \clpadb20 \clpadr20 \gaph\cellx3456
+\clvertalc \clshdrawnil \clwWidth2574\clftsWidth3 \clmart10 \clmarl10 \clmarb10 \clmarr10 \clbrdrt\brdrnil \clbrdrl\brdrnil \clbrdrb\brdrnil \clbrdrr\brdrnil \clpadt20 \clpadl20 \clpadb20 \clpadr20 \gaph\cellx5184
+\clvertalc \clshdrawnil \clwWidth1560\clftsWidth3 \clmart10 \clmarl10 \clmarb10 \clmarr10 \clbrdrt\brdrnil \clbrdrl\brdrnil \clbrdrb\brdrnil \clbrdrr\brdrnil \clpadt20 \clpadl20 \clpadb20 \clpadr20 \gaph\cellx6912
+\clvertalc \clshdrawnil \clwWidth9178\clftsWidth3 \clmart10 \clmarl10 \clmarb10 \clmarr10 \clbrdrt\brdrnil \clbrdrl\brdrnil \clbrdrb\brdrnil \clbrdrr\brdrnil \clpadt20 \clpadl20 \clpadb20 \clpadr20 \gaph\cellx8640
+\pard\intbl\itap1\pardeftab720\partightenfactor0
+\cf2 2\cell 
+\pard\intbl\itap1\pardeftab720\partightenfactor0
+\cf2 Stepper\cell 
+\pard\intbl\itap1\pardeftab720\partightenfactor0
+\cf2 How many days does your 
+\f0\b period last?
+\f1\b0 \cell 
+\pard\intbl\itap1\pardeftab720\partightenfactor0
+
+\f2\fs26 \cf2 periodLen
+\f1\fs24 \cell 
+\pard\intbl\itap1\pardeftab720\partightenfactor0
+\cf2 Min 1, Max 10, Default 5, unit "days"\cell \row
+
+\itap1\trowd \taflags0 \trgaph108\trleft-108 \trbrdrl\brdrnil \trbrdrr\brdrnil 
+\clvertalc \clshdrawnil \clwWidth453\clftsWidth3 \clmart10 \clmarl10 \clmarb10 \clmarr10 \clbrdrt\brdrnil \clbrdrl\brdrnil \clbrdrb\brdrnil \clbrdrr\brdrnil \clpadt20 \clpadl20 \clpadb20 \clpadr20 \gaph\cellx1728
+\clvertalc \clshdrawnil \clwWidth1173\clftsWidth3 \clmart10 \clmarl10 \clmarb10 \clmarr10 \clbrdrt\brdrnil \clbrdrl\brdrnil \clbrdrb\brdrnil \clbrdrr\brdrnil \clpadt20 \clpadl20 \clpadb20 \clpadr20 \gaph\cellx3456
+\clvertalc \clshdrawnil \clwWidth2574\clftsWidth3 \clmart10 \clmarl10 \clmarb10 \clmarr10 \clbrdrt\brdrnil \clbrdrl\brdrnil \clbrdrb\brdrnil \clbrdrr\brdrnil \clpadt20 \clpadl20 \clpadb20 \clpadr20 \gaph\cellx5184
+\clvertalc \clshdrawnil \clwWidth1560\clftsWidth3 \clmart10 \clmarl10 \clmarb10 \clmarr10 \clbrdrt\brdrnil \clbrdrl\brdrnil \clbrdrb\brdrnil \clbrdrr\brdrnil \clpadt20 \clpadl20 \clpadb20 \clpadr20 \gaph\cellx6912
+\clvertalc \clshdrawnil \clwWidth9178\clftsWidth3 \clmart10 \clmarl10 \clmarb10 \clmarr10 \clbrdrt\brdrnil \clbrdrl\brdrnil \clbrdrb\brdrnil \clbrdrr\brdrnil \clpadt20 \clpadl20 \clpadb20 \clpadr20 \gaph\cellx8640
+\pard\intbl\itap1\pardeftab720\partightenfactor0
+\cf2 3\cell 
+\pard\intbl\itap1\pardeftab720\partightenfactor0
+\cf2 ChipsSingle\cell 
+\pard\intbl\itap1\pardeftab720\partightenfactor0
+\cf2 How would you describe your 
+\f0\b usual flow?
+\f1\b0 \cell 
+\pard\intbl\itap1\pardeftab720\partightenfactor0
+
+\f2\fs26 \cf2 flow
+\f1\fs24 \cell 
+\pard\intbl\itap1\pardeftab720\partightenfactor0
+
+\f7 \cf2 \uc0\u55357 \u56487 
+\f1  Light \'b7 
+\f7 \uc0\u55357 \u57312 
+\f1  Medium \'b7 
+\f7 \uc0\u55357 \u56628 
+\f1  Heavy \'b7 
+\f7 \uc0\u55357 \u56576 
+\f1  Varies\cell \row
+
+\itap1\trowd \taflags0 \trgaph108\trleft-108 \trbrdrl\brdrnil \trbrdrt\brdrnil \trbrdrr\brdrnil 
+\clvertalc \clshdrawnil \clwWidth453\clftsWidth3 \clmart10 \clmarl10 \clmarb10 \clmarr10 \clbrdrt\brdrnil \clbrdrl\brdrnil \clbrdrb\brdrnil \clbrdrr\brdrnil \clpadt20 \clpadl20 \clpadb20 \clpadr20 \gaph\cellx1728
+\clvertalc \clshdrawnil \clwWidth1173\clftsWidth3 \clmart10 \clmarl10 \clmarb10 \clmarr10 \clbrdrt\brdrnil \clbrdrl\brdrnil \clbrdrb\brdrnil \clbrdrr\brdrnil \clpadt20 \clpadl20 \clpadb20 \clpadr20 \gaph\cellx3456
+\clvertalc \clshdrawnil \clwWidth2574\clftsWidth3 \clmart10 \clmarl10 \clmarb10 \clmarr10 \clbrdrt\brdrnil \clbrdrl\brdrnil \clbrdrb\brdrnil \clbrdrr\brdrnil \clpadt20 \clpadl20 \clpadb20 \clpadr20 \gaph\cellx5184
+\clvertalc \clshdrawnil \clwWidth1560\clftsWidth3 \clmart10 \clmarl10 \clmarb10 \clmarr10 \clbrdrt\brdrnil \clbrdrl\brdrnil \clbrdrb\brdrnil \clbrdrr\brdrnil \clpadt20 \clpadl20 \clpadb20 \clpadr20 \gaph\cellx6912
+\clvertalc \clshdrawnil \clwWidth9178\clftsWidth3 \clmart10 \clmarl10 \clmarb10 \clmarr10 \clbrdrt\brdrnil \clbrdrl\brdrnil \clbrdrb\brdrnil \clbrdrr\brdrnil \clpadt20 \clpadl20 \clpadb20 \clpadr20 \gaph\cellx8640
+\pard\intbl\itap1\pardeftab720\partightenfactor0
+\cf2 4\cell 
+\pard\intbl\itap1\pardeftab720\partightenfactor0
+\cf2 ChipsMulti\cell 
+\pard\intbl\itap1\pardeftab720\partightenfactor0
+\cf2 Symptoms you 
+\f0\b often get?
+\f1\b0 \cell 
+\pard\intbl\itap1\pardeftab720\partightenfactor0
+
+\f2\fs26 \cf2 symptoms
+\f1\fs24 \cell 
+\pard\intbl\itap1\pardeftab720\partightenfactor0
+
+\f7 \cf2 \uc0\u55356 \u57088 
+\f1  Cramps \'b7 
+\f7 \uc0\u55358 \u56597 
+\f1  Headache \'b7 
+\f7 \uc0\u55357 \u56884 
+\f1  Fatigue \'b7 
+\f7 \uc0\u55358 \u56610 
+\f1  Nausea \'b7 
+\f7 \uc0\u55356 \u57098 
+\f1  Bloating \'b7 
+\f7 \uc0\u55357 \u56454 
+\f1  Back Pain \'b7 
+\f7 \uc0\u55356 \u57195 
+\f1  Cravings \'b7 
+\f7 \uc0\u55357 \u56868 
+\f1  Mood Swings \'b7 
+\f7 \uc0\u55356 \u57121 \u65039 
+\f1  Breast Tenderness \'b7 
+\f7 \uc0\u10024 
+\f1  None usually\cell \lastrow\row
+\pard\pardeftab720\partightenfactor0
+\cf2 \strokec4 \
+\pard\pardeftab720\sa280\partightenfactor0
+
+\f0\b\fs28 \cf2 \strokec3 Pregnancy Journey (5 steps)\
+
+\itap1\trowd \taflags0 \trgaph108\trleft-108 \trbrdrt\brdrnil \trbrdrl\brdrnil \trbrdrr\brdrnil 
+\clvertalc \clshdrawnil \clwWidth453\clftsWidth3 \clmart10 \clmarl10 \clmarb10 \clmarr10 \clbrdrt\brdrnil \clbrdrl\brdrnil \clbrdrb\brdrnil \clbrdrr\brdrnil \clpadt20 \clpadl20 \clpadb20 \clpadr20 \gaph\cellx1728
+\clvertalc \clshdrawnil \clwWidth1520\clftsWidth3 \clmart10 \clmarl10 \clmarb10 \clmarr10 \clbrdrt\brdrnil \clbrdrl\brdrnil \clbrdrb\brdrnil \clbrdrr\brdrnil \clpadt20 \clpadl20 \clpadb20 \clpadr20 \gaph\cellx3456
+\clvertalc \clshdrawnil \clwWidth2567\clftsWidth3 \clmart10 \clmarl10 \clmarb10 \clmarr10 \clbrdrt\brdrnil \clbrdrl\brdrnil \clbrdrb\brdrnil \clbrdrr\brdrnil \clpadt20 \clpadl20 \clpadb20 \clpadr20 \gaph\cellx5184
+\clvertalc \clshdrawnil \clwWidth1560\clftsWidth3 \clmart10 \clmarl10 \clmarb10 \clmarr10 \clbrdrt\brdrnil \clbrdrl\brdrnil \clbrdrb\brdrnil \clbrdrr\brdrnil \clpadt20 \clpadl20 \clpadb20 \clpadr20 \gaph\cellx6912
+\clvertalc \clshdrawnil \clwWidth8838\clftsWidth3 \clmart10 \clmarl10 \clmarb10 \clmarr10 \clbrdrt\brdrnil \clbrdrl\brdrnil \clbrdrb\brdrnil \clbrdrr\brdrnil \clpadt20 \clpadl20 \clpadb20 \clpadr20 \gaph\cellx8640
+\pard\intbl\itap1\pardeftab720\qc\partightenfactor0
+
+\fs24 \cf2 \strokec2 Step\cell 
+\pard\intbl\itap1\pardeftab720\qc\partightenfactor0
+\cf2 Type\cell 
+\pard\intbl\itap1\pardeftab720\qc\partightenfactor0
+\cf2 Question\cell 
+\pard\intbl\itap1\pardeftab720\qc\partightenfactor0
+\cf2 Key\cell 
+\pard\intbl\itap1\pardeftab720\qc\partightenfactor0
+\cf2 Special\cell \row
+
+\itap1\trowd \taflags0 \trgaph108\trleft-108 \trbrdrl\brdrnil \trbrdrr\brdrnil 
+\clvertalc \clshdrawnil \clwWidth453\clftsWidth3 \clmart10 \clmarl10 \clmarb10 \clmarr10 \clbrdrt\brdrnil \clbrdrl\brdrnil \clbrdrb\brdrnil \clbrdrr\brdrnil \clpadt20 \clpadl20 \clpadb20 \clpadr20 \gaph\cellx1728
+\clvertalc \clshdrawnil \clwWidth1520\clftsWidth3 \clmart10 \clmarl10 \clmarb10 \clmarr10 \clbrdrt\brdrnil \clbrdrl\brdrnil \clbrdrb\brdrnil \clbrdrr\brdrnil \clpadt20 \clpadl20 \clpadb20 \clpadr20 \gaph\cellx3456
+\clvertalc \clshdrawnil \clwWidth2567\clftsWidth3 \clmart10 \clmarl10 \clmarb10 \clmarr10 \clbrdrt\brdrnil \clbrdrl\brdrnil \clbrdrb\brdrnil \clbrdrr\brdrnil \clpadt20 \clpadl20 \clpadb20 \clpadr20 \gaph\cellx5184
+\clvertalc \clshdrawnil \clwWidth1560\clftsWidth3 \clmart10 \clmarl10 \clmarb10 \clmarr10 \clbrdrt\brdrnil \clbrdrl\brdrnil \clbrdrb\brdrnil \clbrdrr\brdrnil \clpadt20 \clpadl20 \clpadb20 \clpadr20 \gaph\cellx6912
+\clvertalc \clshdrawnil \clwWidth8838\clftsWidth3 \clmart10 \clmarl10 \clmarb10 \clmarr10 \clbrdrt\brdrnil \clbrdrl\brdrnil \clbrdrb\brdrnil \clbrdrr\brdrnil \clpadt20 \clpadl20 \clpadb20 \clpadr20 \gaph\cellx8640
+\pard\intbl\itap1\pardeftab720\partightenfactor0
+
+\f1\b0 \cf2 0\cell 
+\pard\intbl\itap1\pardeftab720\partightenfactor0
+\cf2 ChipsBigSingle\cell 
+\pard\intbl\itap1\pardeftab720\partightenfactor0
+
+\f0\b \cf2 Are you currently pregnant?
+\f1\b0 \cell 
+\pard\intbl\itap1\pardeftab720\partightenfactor0
+
+\f2\fs26 \cf2 isPreg
+\f1\fs24 \cell 
+\pard\intbl\itap1\pardeftab720\partightenfactor0
+
+\f7 \cf2 \uc0\u9989 
+\f1  Yes \'b7 
+\f7 \uc0\u55358 \u56596 
+\f1  I think so \'b7 
+\f7 \uc0\u55357 \u56580 
+\f1  Actually I'm not (routes to Mode Selection)\cell \row
+
+\itap1\trowd \taflags0 \trgaph108\trleft-108 \trbrdrl\brdrnil \trbrdrr\brdrnil 
+\clvertalc \clshdrawnil \clwWidth453\clftsWidth3 \clmart10 \clmarl10 \clmarb10 \clmarr10 \clbrdrt\brdrnil \clbrdrl\brdrnil \clbrdrb\brdrnil \clbrdrr\brdrnil \clpadt20 \clpadl20 \clpadb20 \clpadr20 \gaph\cellx1728
+\clvertalc \clshdrawnil \clwWidth1520\clftsWidth3 \clmart10 \clmarl10 \clmarb10 \clmarr10 \clbrdrt\brdrnil \clbrdrl\brdrnil \clbrdrb\brdrnil \clbrdrr\brdrnil \clpadt20 \clpadl20 \clpadb20 \clpadr20 \gaph\cellx3456
+\clvertalc \clshdrawnil \clwWidth2567\clftsWidth3 \clmart10 \clmarl10 \clmarb10 \clmarr10 \clbrdrt\brdrnil \clbrdrl\brdrnil \clbrdrb\brdrnil \clbrdrr\brdrnil \clpadt20 \clpadl20 \clpadb20 \clpadr20 \gaph\cellx5184
+\clvertalc \clshdrawnil \clwWidth1560\clftsWidth3 \clmart10 \clmarl10 \clmarb10 \clmarr10 \clbrdrt\brdrnil \clbrdrl\brdrnil \clbrdrb\brdrnil \clbrdrr\brdrnil \clpadt20 \clpadl20 \clpadb20 \clpadr20 \gaph\cellx6912
+\clvertalc \clshdrawnil \clwWidth8838\clftsWidth3 \clmart10 \clmarl10 \clmarb10 \clmarr10 \clbrdrt\brdrnil \clbrdrl\brdrnil \clbrdrb\brdrnil \clbrdrr\brdrnil \clpadt20 \clpadl20 \clpadb20 \clpadr20 \gaph\cellx8640
+\pard\intbl\itap1\pardeftab720\partightenfactor0
+\cf2 1\cell 
+\pard\intbl\itap1\pardeftab720\partightenfactor0
+\cf2 DueDateStep\cell 
+\pard\intbl\itap1\pardeftab720\partightenfactor0
+\cf2 Do you know your 
+\f0\b due date?
+\f1\b0 \cell 
+\pard\intbl\itap1\pardeftab720\partightenfactor0
+
+\f2\fs26 \cf2 dueDate
+\f1\fs24 \cell 
+\pard\intbl\itap1\pardeftab720\partightenfactor0
+\cf2 \'97\cell \row
+
+\itap1\trowd \taflags0 \trgaph108\trleft-108 \trbrdrl\brdrnil \trbrdrr\brdrnil 
+\clvertalc \clshdrawnil \clwWidth453\clftsWidth3 \clmart10 \clmarl10 \clmarb10 \clmarr10 \clbrdrt\brdrnil \clbrdrl\brdrnil \clbrdrb\brdrnil \clbrdrr\brdrnil \clpadt20 \clpadl20 \clpadb20 \clpadr20 \gaph\cellx1728
+\clvertalc \clshdrawnil \clwWidth1520\clftsWidth3 \clmart10 \clmarl10 \clmarb10 \clmarr10 \clbrdrt\brdrnil \clbrdrl\brdrnil \clbrdrb\brdrnil \clbrdrr\brdrnil \clpadt20 \clpadl20 \clpadb20 \clpadr20 \gaph\cellx3456
+\clvertalc \clshdrawnil \clwWidth2567\clftsWidth3 \clmart10 \clmarl10 \clmarb10 \clmarr10 \clbrdrt\brdrnil \clbrdrl\brdrnil \clbrdrb\brdrnil \clbrdrr\brdrnil \clpadt20 \clpadl20 \clpadb20 \clpadr20 \gaph\cellx5184
+\clvertalc \clshdrawnil \clwWidth1560\clftsWidth3 \clmart10 \clmarl10 \clmarb10 \clmarr10 \clbrdrt\brdrnil \clbrdrl\brdrnil \clbrdrb\brdrnil \clbrdrr\brdrnil \clpadt20 \clpadl20 \clpadb20 \clpadr20 \gaph\cellx6912
+\clvertalc \clshdrawnil \clwWidth8838\clftsWidth3 \clmart10 \clmarl10 \clmarb10 \clmarr10 \clbrdrt\brdrnil \clbrdrl\brdrnil \clbrdrb\brdrnil \clbrdrr\brdrnil \clpadt20 \clpadl20 \clpadb20 \clpadr20 \gaph\cellx8640
+\pard\intbl\itap1\pardeftab720\partightenfactor0
+\cf2 2\cell 
+\pard\intbl\itap1\pardeftab720\partightenfactor0
+\cf2 ChipsBigSingle\cell 
+\pard\intbl\itap1\pardeftab720\partightenfactor0
+\cf2 Is this your 
+\f0\b first pregnancy?
+\f1\b0 \cell 
+\pard\intbl\itap1\pardeftab720\partightenfactor0
+
+\f2\fs26 \cf2 firstPreg
+\f1\fs24 \cell 
+\pard\intbl\itap1\pardeftab720\partightenfactor0
+
+\f7 \cf2 \uc0\u55356 \u57137 
+\f1  First \'b7 
+\f7 \uc0\u55357 \u56423 
+\f1  One child \'b7 
+\f7 \uc0\u55357 \u56424 \u8205 \u55357 \u56425 \u8205 \u55357 \u56423 \u8205 \u55357 \u56422 
+\f1  Two+ children\cell \row
+
+\itap1\trowd \taflags0 \trgaph108\trleft-108 \trbrdrl\brdrnil \trbrdrr\brdrnil 
+\clvertalc \clshdrawnil \clwWidth453\clftsWidth3 \clmart10 \clmarl10 \clmarb10 \clmarr10 \clbrdrt\brdrnil \clbrdrl\brdrnil \clbrdrb\brdrnil \clbrdrr\brdrnil \clpadt20 \clpadl20 \clpadb20 \clpadr20 \gaph\cellx1728
+\clvertalc \clshdrawnil \clwWidth1520\clftsWidth3 \clmart10 \clmarl10 \clmarb10 \clmarr10 \clbrdrt\brdrnil \clbrdrl\brdrnil \clbrdrb\brdrnil \clbrdrr\brdrnil \clpadt20 \clpadl20 \clpadb20 \clpadr20 \gaph\cellx3456
+\clvertalc \clshdrawnil \clwWidth2567\clftsWidth3 \clmart10 \clmarl10 \clmarb10 \clmarr10 \clbrdrt\brdrnil \clbrdrl\brdrnil \clbrdrb\brdrnil \clbrdrr\brdrnil \clpadt20 \clpadl20 \clpadb20 \clpadr20 \gaph\cellx5184
+\clvertalc \clshdrawnil \clwWidth1560\clftsWidth3 \clmart10 \clmarl10 \clmarb10 \clmarr10 \clbrdrt\brdrnil \clbrdrl\brdrnil \clbrdrb\brdrnil \clbrdrr\brdrnil \clpadt20 \clpadl20 \clpadb20 \clpadr20 \gaph\cellx6912
+\clvertalc \clshdrawnil \clwWidth8838\clftsWidth3 \clmart10 \clmarl10 \clmarb10 \clmarr10 \clbrdrt\brdrnil \clbrdrl\brdrnil \clbrdrb\brdrnil \clbrdrr\brdrnil \clpadt20 \clpadl20 \clpadb20 \clpadr20 \gaph\cellx8640
+\pard\intbl\itap1\pardeftab720\partightenfactor0
+\cf2 3\cell 
+\pard\intbl\itap1\pardeftab720\partightenfactor0
+\cf2 ChipsMulti\cell 
+\pard\intbl\itap1\pardeftab720\partightenfactor0
+\cf2 Any conditions to 
+\f0\b track together?
+\f1\b0 \cell 
+\pard\intbl\itap1\pardeftab720\partightenfactor0
+
+\f2\fs26 \cf2 conditions
+\f1\fs24 \cell 
+\pard\intbl\itap1\pardeftab720\partightenfactor0
+
+\f7 \cf2 \uc0\u55358 \u56954 
+\f1  Gestational Diabetes \'b7 
+\f7 \uc0\u55357 \u56467 
+\f1  High BP \'b7 
+\f7 \uc0\u55358 \u56610 
+\f1  Morning Sickness \'b7 
+\f7 \uc0\u55358 \u56952 
+\f1  Anaemia \'b7 
+\f7 \uc0\u55358 \u56800 
+\f1  Prenatal Anxiety \'b7 
+\f7 \uc0\u55357 \u56884 
+\f1  Sleep Issues \'b7 
+\f7 \uc0\u10024 
+\f1  All good\cell \row
+
+\itap1\trowd \taflags0 \trgaph108\trleft-108 \trbrdrl\brdrnil \trbrdrt\brdrnil \trbrdrr\brdrnil 
+\clvertalc \clshdrawnil \clwWidth453\clftsWidth3 \clmart10 \clmarl10 \clmarb10 \clmarr10 \clbrdrt\brdrnil \clbrdrl\brdrnil \clbrdrb\brdrnil \clbrdrr\brdrnil \clpadt20 \clpadl20 \clpadb20 \clpadr20 \gaph\cellx1728
+\clvertalc \clshdrawnil \clwWidth1520\clftsWidth3 \clmart10 \clmarl10 \clmarb10 \clmarr10 \clbrdrt\brdrnil \clbrdrl\brdrnil \clbrdrb\brdrnil \clbrdrr\brdrnil \clpadt20 \clpadl20 \clpadb20 \clpadr20 \gaph\cellx3456
+\clvertalc \clshdrawnil \clwWidth2567\clftsWidth3 \clmart10 \clmarl10 \clmarb10 \clmarr10 \clbrdrt\brdrnil \clbrdrl\brdrnil \clbrdrb\brdrnil \clbrdrr\brdrnil \clpadt20 \clpadl20 \clpadb20 \clpadr20 \gaph\cellx5184
+\clvertalc \clshdrawnil \clwWidth1560\clftsWidth3 \clmart10 \clmarl10 \clmarb10 \clmarr10 \clbrdrt\brdrnil \clbrdrl\brdrnil \clbrdrb\brdrnil \clbrdrr\brdrnil \clpadt20 \clpadl20 \clpadb20 \clpadr20 \gaph\cellx6912
+\clvertalc \clshdrawnil \clwWidth8838\clftsWidth3 \clmart10 \clmarl10 \clmarb10 \clmarr10 \clbrdrt\brdrnil \clbrdrl\brdrnil \clbrdrb\brdrnil \clbrdrr\brdrnil \clpadt20 \clpadl20 \clpadb20 \clpadr20 \gaph\cellx8640
+\pard\intbl\itap1\pardeftab720\partightenfactor0
+\cf2 4\cell 
+\pard\intbl\itap1\pardeftab720\partightenfactor0
+\cf2 ChipsMulti\cell 
+\pard\intbl\itap1\pardeftab720\partightenfactor0
+\cf2 What support do you 
+\f0\b want from us?
+\f1\b0 \cell 
+\pard\intbl\itap1\pardeftab720\partightenfactor0
+
+\f2\fs26 \cf2 support
+\f1\fs24 \cell 
+\pard\intbl\itap1\pardeftab720\partightenfactor0
+
+\f7 \cf2 \uc0\u55357 \u56523 
+\f1  Weekly baby updates \'b7 
+\f7 \uc0\u55358 \u56954 
+\f1  Appointments \'b7 
+\f7 \uc0\u55357 \u56438 
+\f1  Kick counter \'b7 
+\f7 \uc0\u55356 \u57151 
+\f1  Nutrition \'b7 
+\f7 \uc0\u55358 \u56792 
+\f1  Mental health \'b7 
+\f7 \uc0\u55357 \u56534 
+\f1  Birth prep\cell \lastrow\row
+\pard\pardeftab720\sa240\partightenfactor0
+
+\f0\b \cf2 \strokec3 Important:
+\f1\b0 \strokec3  On step 0, show a soft yellow info box below the chips: "
+\f7 \strokec3 \uc0\u55357 \u56481 
+\f1 \strokec3  You can switch back to Period or Ovulation tracker anytime from your home screen."\
+\pard\pardeftab720\partightenfactor0
+\cf2 \strokec4 \
+\pard\pardeftab720\sa280\partightenfactor0
+
+\f0\b\fs28 \cf2 \strokec3 Ovulation Journey (5 steps)\
+
+\itap1\trowd \taflags0 \trgaph108\trleft-108 \trbrdrt\brdrnil \trbrdrl\brdrnil \trbrdrr\brdrnil 
+\clvertalc \clshdrawnil \clwWidth453\clftsWidth3 \clmart10 \clmarl10 \clmarb10 \clmarr10 \clbrdrt\brdrnil \clbrdrl\brdrnil \clbrdrb\brdrnil \clbrdrr\brdrnil \clpadt20 \clpadl20 \clpadb20 \clpadr20 \gaph\cellx1728
+\clvertalc \clshdrawnil \clwWidth1520\clftsWidth3 \clmart10 \clmarl10 \clmarb10 \clmarr10 \clbrdrt\brdrnil \clbrdrl\brdrnil \clbrdrb\brdrnil \clbrdrr\brdrnil \clpadt20 \clpadl20 \clpadb20 \clpadr20 \gaph\cellx3456
+\clvertalc \clshdrawnil \clwWidth2412\clftsWidth3 \clmart10 \clmarl10 \clmarb10 \clmarr10 \clbrdrt\brdrnil \clbrdrl\brdrnil \clbrdrb\brdrnil \clbrdrr\brdrnil \clpadt20 \clpadl20 \clpadb20 \clpadr20 \gaph\cellx5184
+\clvertalc \clshdrawnil \clwWidth1560\clftsWidth3 \clmart10 \clmarl10 \clmarb10 \clmarr10 \clbrdrt\brdrnil \clbrdrl\brdrnil \clbrdrb\brdrnil \clbrdrr\brdrnil \clpadt20 \clpadl20 \clpadb20 \clpadr20 \gaph\cellx6912
+\clvertalc \clshdrawnil \clwWidth8994\clftsWidth3 \clmart10 \clmarl10 \clmarb10 \clmarr10 \clbrdrt\brdrnil \clbrdrl\brdrnil \clbrdrb\brdrnil \clbrdrr\brdrnil \clpadt20 \clpadl20 \clpadb20 \clpadr20 \gaph\cellx8640
+\pard\intbl\itap1\pardeftab720\qc\partightenfactor0
+
+\fs24 \cf2 \strokec2 Step\cell 
+\pard\intbl\itap1\pardeftab720\qc\partightenfactor0
+\cf2 Type\cell 
+\pard\intbl\itap1\pardeftab720\qc\partightenfactor0
+\cf2 Question\cell 
+\pard\intbl\itap1\pardeftab720\qc\partightenfactor0
+\cf2 Key\cell 
+\pard\intbl\itap1\pardeftab720\qc\partightenfactor0
+\cf2 Options\cell \row
+
+\itap1\trowd \taflags0 \trgaph108\trleft-108 \trbrdrl\brdrnil \trbrdrr\brdrnil 
+\clvertalc \clshdrawnil \clwWidth453\clftsWidth3 \clmart10 \clmarl10 \clmarb10 \clmarr10 \clbrdrt\brdrnil \clbrdrl\brdrnil \clbrdrb\brdrnil \clbrdrr\brdrnil \clpadt20 \clpadl20 \clpadb20 \clpadr20 \gaph\cellx1728
+\clvertalc \clshdrawnil \clwWidth1520\clftsWidth3 \clmart10 \clmarl10 \clmarb10 \clmarr10 \clbrdrt\brdrnil \clbrdrl\brdrnil \clbrdrb\brdrnil \clbrdrr\brdrnil \clpadt20 \clpadl20 \clpadb20 \clpadr20 \gaph\cellx3456
+\clvertalc \clshdrawnil \clwWidth2412\clftsWidth3 \clmart10 \clmarl10 \clmarb10 \clmarr10 \clbrdrt\brdrnil \clbrdrl\brdrnil \clbrdrb\brdrnil \clbrdrr\brdrnil \clpadt20 \clpadl20 \clpadb20 \clpadr20 \gaph\cellx5184
+\clvertalc \clshdrawnil \clwWidth1560\clftsWidth3 \clmart10 \clmarl10 \clmarb10 \clmarr10 \clbrdrt\brdrnil \clbrdrl\brdrnil \clbrdrb\brdrnil \clbrdrr\brdrnil \clpadt20 \clpadl20 \clpadb20 \clpadr20 \gaph\cellx6912
+\clvertalc \clshdrawnil \clwWidth8994\clftsWidth3 \clmart10 \clmarl10 \clmarb10 \clmarr10 \clbrdrt\brdrnil \clbrdrl\brdrnil \clbrdrb\brdrnil \clbrdrr\brdrnil \clpadt20 \clpadl20 \clpadb20 \clpadr20 \gaph\cellx8640
+\pard\intbl\itap1\pardeftab720\partightenfactor0
+
+\f1\b0 \cf2 0\cell 
+\pard\intbl\itap1\pardeftab720\partightenfactor0
+\cf2 ChipsBigSingle\cell 
+\pard\intbl\itap1\pardeftab720\partightenfactor0
+\cf2 What's your 
+\f0\b main goal?
+\f1\b0 \cell 
+\pard\intbl\itap1\pardeftab720\partightenfactor0
+
+\f2\fs26 \cf2 goal
+\f1\fs24 \cell 
+\pard\intbl\itap1\pardeftab720\partightenfactor0
+
+\f7 \cf2 \uc0\u55357 \u56438 
+\f1  Trying to conceive \'b7 
+\f7 \uc0\u55356 \u57151 
+\f1  Natural family planning \'b7 
+\f7 \uc0\u55357 \u56620 
+\f1  Understanding my body\cell \row
+
+\itap1\trowd \taflags0 \trgaph108\trleft-108 \trbrdrl\brdrnil \trbrdrr\brdrnil 
+\clvertalc \clshdrawnil \clwWidth453\clftsWidth3 \clmart10 \clmarl10 \clmarb10 \clmarr10 \clbrdrt\brdrnil \clbrdrl\brdrnil \clbrdrb\brdrnil \clbrdrr\brdrnil \clpadt20 \clpadl20 \clpadb20 \clpadr20 \gaph\cellx1728
+\clvertalc \clshdrawnil \clwWidth1520\clftsWidth3 \clmart10 \clmarl10 \clmarb10 \clmarr10 \clbrdrt\brdrnil \clbrdrl\brdrnil \clbrdrb\brdrnil \clbrdrr\brdrnil \clpadt20 \clpadl20 \clpadb20 \clpadr20 \gaph\cellx3456
+\clvertalc \clshdrawnil \clwWidth2412\clftsWidth3 \clmart10 \clmarl10 \clmarb10 \clmarr10 \clbrdrt\brdrnil \clbrdrl\brdrnil \clbrdrb\brdrnil \clbrdrr\brdrnil \clpadt20 \clpadl20 \clpadb20 \clpadr20 \gaph\cellx5184
+\clvertalc \clshdrawnil \clwWidth1560\clftsWidth3 \clmart10 \clmarl10 \clmarb10 \clmarr10 \clbrdrt\brdrnil \clbrdrl\brdrnil \clbrdrb\brdrnil \clbrdrr\brdrnil \clpadt20 \clpadl20 \clpadb20 \clpadr20 \gaph\cellx6912
+\clvertalc \clshdrawnil \clwWidth8994\clftsWidth3 \clmart10 \clmarl10 \clmarb10 \clmarr10 \clbrdrt\brdrnil \clbrdrl\brdrnil \clbrdrb\brdrnil \clbrdrr\brdrnil \clpadt20 \clpadl20 \clpadb20 \clpadr20 \gaph\cellx8640
+\pard\intbl\itap1\pardeftab720\partightenfactor0
+\cf2 1\cell 
+\pard\intbl\itap1\pardeftab720\partightenfactor0
+\cf2 DatePicker\cell 
+\pard\intbl\itap1\pardeftab720\partightenfactor0
+\cf2 When did your 
+\f0\b last period start?
+\f1\b0 \cell 
+\pard\intbl\itap1\pardeftab720\partightenfactor0
+
+\f2\fs26 \cf2 lastPeriod
+\f1\fs24 \cell 
+\pard\intbl\itap1\pardeftab720\partightenfactor0
+\cf2 Skip: "Skip for now"\cell \row
+
+\itap1\trowd \taflags0 \trgaph108\trleft-108 \trbrdrl\brdrnil \trbrdrr\brdrnil 
+\clvertalc \clshdrawnil \clwWidth453\clftsWidth3 \clmart10 \clmarl10 \clmarb10 \clmarr10 \clbrdrt\brdrnil \clbrdrl\brdrnil \clbrdrb\brdrnil \clbrdrr\brdrnil \clpadt20 \clpadl20 \clpadb20 \clpadr20 \gaph\cellx1728
+\clvertalc \clshdrawnil \clwWidth1520\clftsWidth3 \clmart10 \clmarl10 \clmarb10 \clmarr10 \clbrdrt\brdrnil \clbrdrl\brdrnil \clbrdrb\brdrnil \clbrdrr\brdrnil \clpadt20 \clpadl20 \clpadb20 \clpadr20 \gaph\cellx3456
+\clvertalc \clshdrawnil \clwWidth2412\clftsWidth3 \clmart10 \clmarl10 \clmarb10 \clmarr10 \clbrdrt\brdrnil \clbrdrl\brdrnil \clbrdrb\brdrnil \clbrdrr\brdrnil \clpadt20 \clpadl20 \clpadb20 \clpadr20 \gaph\cellx5184
+\clvertalc \clshdrawnil \clwWidth1560\clftsWidth3 \clmart10 \clmarl10 \clmarb10 \clmarr10 \clbrdrt\brdrnil \clbrdrl\brdrnil \clbrdrb\brdrnil \clbrdrr\brdrnil \clpadt20 \clpadl20 \clpadb20 \clpadr20 \gaph\cellx6912
+\clvertalc \clshdrawnil \clwWidth8994\clftsWidth3 \clmart10 \clmarl10 \clmarb10 \clmarr10 \clbrdrt\brdrnil \clbrdrl\brdrnil \clbrdrb\brdrnil \clbrdrr\brdrnil \clpadt20 \clpadl20 \clpadb20 \clpadr20 \gaph\cellx8640
+\pard\intbl\itap1\pardeftab720\partightenfactor0
+\cf2 2\cell 
+\pard\intbl\itap1\pardeftab720\partightenfactor0
+\cf2 Stepper\cell 
+\pard\intbl\itap1\pardeftab720\partightenfactor0
+\cf2 How long is your cycle 
+\f0\b usually?
+\f1\b0 \cell 
+\pard\intbl\itap1\pardeftab720\partightenfactor0
+
+\f2\fs26 \cf2 cycleLen
+\f1\fs24 \cell 
+\pard\intbl\itap1\pardeftab720\partightenfactor0
+\cf2 Min 18, Max 45, Default 28, unit "days". Skip: "Not sure yet"\cell \row
+
+\itap1\trowd \taflags0 \trgaph108\trleft-108 \trbrdrl\brdrnil \trbrdrr\brdrnil 
+\clvertalc \clshdrawnil \clwWidth453\clftsWidth3 \clmart10 \clmarl10 \clmarb10 \clmarr10 \clbrdrt\brdrnil \clbrdrl\brdrnil \clbrdrb\brdrnil \clbrdrr\brdrnil \clpadt20 \clpadl20 \clpadb20 \clpadr20 \gaph\cellx1728
+\clvertalc \clshdrawnil \clwWidth1520\clftsWidth3 \clmart10 \clmarl10 \clmarb10 \clmarr10 \clbrdrt\brdrnil \clbrdrl\brdrnil \clbrdrb\brdrnil \clbrdrr\brdrnil \clpadt20 \clpadl20 \clpadb20 \clpadr20 \gaph\cellx3456
+\clvertalc \clshdrawnil \clwWidth2412\clftsWidth3 \clmart10 \clmarl10 \clmarb10 \clmarr10 \clbrdrt\brdrnil \clbrdrl\brdrnil \clbrdrb\brdrnil \clbrdrr\brdrnil \clpadt20 \clpadl20 \clpadb20 \clpadr20 \gaph\cellx5184
+\clvertalc \clshdrawnil \clwWidth1560\clftsWidth3 \clmart10 \clmarl10 \clmarb10 \clmarr10 \clbrdrt\brdrnil \clbrdrl\brdrnil \clbrdrb\brdrnil \clbrdrr\brdrnil \clpadt20 \clpadl20 \clpadb20 \clpadr20 \gaph\cellx6912
+\clvertalc \clshdrawnil \clwWidth8994\clftsWidth3 \clmart10 \clmarl10 \clmarb10 \clmarr10 \clbrdrt\brdrnil \clbrdrl\brdrnil \clbrdrb\brdrnil \clbrdrr\brdrnil \clpadt20 \clpadl20 \clpadb20 \clpadr20 \gaph\cellx8640
+\pard\intbl\itap1\pardeftab720\partightenfactor0
+\cf2 3\cell 
+\pard\intbl\itap1\pardeftab720\partightenfactor0
+\cf2 ChipsMulti\cell 
+\pard\intbl\itap1\pardeftab720\partightenfactor0
+\cf2 What do you currently 
+\f0\b track?
+\f1\b0 \cell 
+\pard\intbl\itap1\pardeftab720\partightenfactor0
+
+\f2\fs26 \cf2 methods
+\f1\fs24 \cell 
+\pard\intbl\itap1\pardeftab720\partightenfactor0
+
+\f7 \cf2 \uc0\u55356 \u57121 \u65039 
+\f1  BBT \'b7 
+\f7 \uc0\u55357 \u56458 
+\f1  OPK Strips \'b7 
+\f7 \uc0\u55357 \u56487 
+\f1  Cervical Mucus \'b7 
+\f7 \uc0\u55357 \u56517 
+\f1  Period dates only \'b7 
+\f7 \uc0\u55358 \u56952 
+\f1  Mid-cycle spotting \'b7 
+\f7 \uc0\u55356 \u56725 
+\f1  Nothing yet\cell \row
+
+\itap1\trowd \taflags0 \trgaph108\trleft-108 \trbrdrl\brdrnil \trbrdrt\brdrnil \trbrdrr\brdrnil 
+\clvertalc \clshdrawnil \clwWidth453\clftsWidth3 \clmart10 \clmarl10 \clmarb10 \clmarr10 \clbrdrt\brdrnil \clbrdrl\brdrnil \clbrdrb\brdrnil \clbrdrr\brdrnil \clpadt20 \clpadl20 \clpadb20 \clpadr20 \gaph\cellx1728
+\clvertalc \clshdrawnil \clwWidth1520\clftsWidth3 \clmart10 \clmarl10 \clmarb10 \clmarr10 \clbrdrt\brdrnil \clbrdrl\brdrnil \clbrdrb\brdrnil \clbrdrr\brdrnil \clpadt20 \clpadl20 \clpadb20 \clpadr20 \gaph\cellx3456
+\clvertalc \clshdrawnil \clwWidth2412\clftsWidth3 \clmart10 \clmarl10 \clmarb10 \clmarr10 \clbrdrt\brdrnil \clbrdrl\brdrnil \clbrdrb\brdrnil \clbrdrr\brdrnil \clpadt20 \clpadl20 \clpadb20 \clpadr20 \gaph\cellx5184
+\clvertalc \clshdrawnil \clwWidth1560\clftsWidth3 \clmart10 \clmarl10 \clmarb10 \clmarr10 \clbrdrt\brdrnil \clbrdrl\brdrnil \clbrdrb\brdrnil \clbrdrr\brdrnil \clpadt20 \clpadl20 \clpadb20 \clpadr20 \gaph\cellx6912
+\clvertalc \clshdrawnil \clwWidth8994\clftsWidth3 \clmart10 \clmarl10 \clmarb10 \clmarr10 \clbrdrt\brdrnil \clbrdrl\brdrnil \clbrdrb\brdrnil \clbrdrr\brdrnil \clpadt20 \clpadl20 \clpadb20 \clpadr20 \gaph\cellx8640
+\pard\intbl\itap1\pardeftab720\partightenfactor0
+\cf2 4\cell 
+\pard\intbl\itap1\pardeftab720\partightenfactor0
+\cf2 ChipsMulti\cell 
+\pard\intbl\itap1\pardeftab720\partightenfactor0
+\cf2 How should we 
+\f0\b alert you?
+\f1\b0 \cell 
+\pard\intbl\itap1\pardeftab720\partightenfactor0
+
+\f2\fs26 \cf2 alerts
+\f1\fs24 \cell 
+\pard\intbl\itap1\pardeftab720\partightenfactor0
+
+\f7 \cf2 \uc0\u55357 \u57314 
+\f1  Fertile window opens \'b7 
+\f7 \uc0\u55356 \u57263 
+\f1  Peak ovulation \'b7 
+\f7 \uc0\u55357 \u56521 
+\f1  Window closing \'b7 
+\f7 \uc0\u55357 \u56517 
+\f1  Period reminder \'b7 
+\f7 \uc0\u55356 \u57121 \u65039 
+\f1  BBT reminder \'b7 
+\f7 \uc0\u55357 \u56458 
+\f1  OPK reminder\cell \lastrow\row
+\pard\pardeftab720\partightenfactor0
+\cf2 \strokec4 \
+\pard\pardeftab720\sa240\partightenfactor0
+
+\f0\b \cf2 \strokec3 On final step completion (step 4, any mode):
+\f1\b0 \strokec3 \
+\pard\tx220\tx720\pardeftab720\li720\fi-720\partightenfactor0
+\ls13\ilvl0\cf2 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	1	}\expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec3 Save all collected 
+\f2\fs26 \strokec3 jrnData
+\f1\fs24 \strokec3  to local/shared storage\
+\ls13\ilvl0\kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	2	}\expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec3 Save 
+\f2\fs26 \strokec3 currentMode
+\f1\fs24 \strokec3  to shared preferences\
+\ls13\ilvl0\kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	3	}\expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec3 Save 
+\f2\fs26 \strokec3 isOnboarded = true
+\f1\fs24 \strokec3 \
+\ls13\ilvl0\kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	4	}\expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec3 Navigate to 
+\f2\fs26 \strokec3 HomeScreen
+\f1\fs24 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \strokec4 \
+\pard\pardeftab720\sa298\partightenfactor0
+
+\f0\b\fs36 \cf2 \strokec3 7. Screen: Home Screen 
+\f5 \strokec3 \uc0\u8592 
+\f0 \strokec3  EXISTING, make mode-aware\
+\pard\pardeftab720\sa240\partightenfactor0
+
+\f1\b0\fs24 \cf2 \strokec3 The Home screen must render different content depending on 
+\f2\fs26 \strokec3 currentMode
+\f1\fs24 \strokec3 . All three versions share the same base layout (greeting, name, circle, stats row, card), but the content inside differs.\
+\pard\pardeftab720\sa280\partightenfactor0
+
+\f0\b\fs28 \cf2 \strokec3 7a. Home \'97 Period Mode (existing content, keep as-is)\
+\pard\tx220\tx720\pardeftab720\li720\fi-720\partightenfactor0
+\ls14\ilvl0
+\f1\b0\fs24 \cf2 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec3 Circle: Cycle Day number, "Fertile Window 
+\f7 \strokec3 \uc0\u55356 \u57151 
+\f1 \strokec3 " phase badge (pink)\
+\ls14\ilvl0\kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec3 Stats row: Avg Cycle / Period Days / Logged\
+\ls14\ilvl0\kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec3 Mini calendar with period/fertile/today markers\
+\ls14\ilvl0\kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec3 Legend: Period \'b7 Fertile \'b7 Today\
+\ls14\ilvl0\kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec3 Next Period banner with ring progress indicator\
+\pard\tx220\tx720\pardeftab720\li720\fi-720\partightenfactor0
+\ls14\ilvl0
+\f0\b \cf2 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec3 NEW: Switch Tracker card at bottom
+\f1\b0 \strokec3  (see section 9)\
+\pard\pardeftab720\sa280\partightenfactor0
+
+\f0\b\fs28 \cf2 \strokec3 7b. Home \'97 Pregnancy Mode 
+\f5 \strokec3 \uc0\u8592 
+\f0 \strokec3  NEW content\
+\pard\tx220\tx720\pardeftab720\li720\fi-720\partightenfactor0
+\ls15\ilvl0
+\f1\b0\fs24 \cf2 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec3 Circle: Week number (e.g. 
+\f2\fs26 \strokec3 24
+\f1\fs24 \strokec3 ), label "Weeks", badge "2nd Trimester 
+\f7 \strokec3 \uc0\u55357 \u56473 
+\f1 \strokec3 " (blue accent)\
+\ls15\ilvl0\kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec3 Stats row: Days to Go / Due Date / Logs\
+\ls15\ilvl0\kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec3 Baby development card (blue-tinted):\
+\pard\tx940\tx1440\pardeftab720\li1440\fi-1440\partightenfactor0
+\ls15\ilvl1\cf2 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	
+\f4 \uc0\u9702 
+\f1 	}\expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec3 Week label, baby size emoji (
+\f7 \strokec3 \uc0\u55356 \u57149 
+\f1 \strokec3 ), size title ("Baby is the size of a corn cob!"), 1-2 sentence description\
+\pard\tx220\tx720\pardeftab720\li720\fi-720\partightenfactor0
+\ls15\ilvl0\cf2 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec3 Next Appointment banner (blue-tinted): appointment name + date\
+\pard\tx220\tx720\pardeftab720\li720\fi-720\partightenfactor0
+\ls15\ilvl0
+\f0\b \cf2 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec3 Switch Tracker card
+\f1\b0 \strokec3  (see section 9)\
+\pard\pardeftab720\sa280\partightenfactor0
+
+\f0\b\fs28 \cf2 \strokec3 7c. Home \'97 Ovulation Mode 
+\f5 \strokec3 \uc0\u8592 
+\f0 \strokec3  NEW content\
+\pard\tx220\tx720\pardeftab720\li720\fi-720\partightenfactor0
+\ls16\ilvl0
+\f1\b0\fs24 \cf2 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec3 Circle: Cycle Day, label "Cycle Day", badge "
+\f7 \strokec3 \uc0\u55356 \u57263 
+\f1 \strokec3  Peak Fertile" (green accent)\
+\ls16\ilvl0\kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec3 Stats row: Ovulation (Today/date) / Next Period / Cycle Length\
+\ls16\ilvl0\kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec3 Fertile Window progress bar card (green-tinted):\
+\pard\tx940\tx1440\pardeftab720\li1440\fi-1440\partightenfactor0
+\ls16\ilvl1\cf2 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	
+\f4 \uc0\u9702 
+\f1 	}\expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec3 Title "
+\f7 \strokec3 \uc0\u55357 \u57314 
+\f1 \strokec3  Fertile Window \'97 Day X to Day Y"\
+\ls16\ilvl1\kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	
+\f4 \uc0\u9702 
+\f1 	}\expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec3 Linear progress bar\
+\ls16\ilvl1\kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	
+\f4 \uc0\u9702 
+\f1 	}\expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec3 Labels: start day / "Peak (Day X)" / end day\
+\pard\tx220\tx720\pardeftab720\li720\fi-720\partightenfactor0
+\ls16\ilvl0\cf2 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec3 Ovulation Prediction banner with green ring progress indicator + confidence %\
+\pard\tx220\tx720\pardeftab720\li720\fi-720\partightenfactor0
+\ls16\ilvl0
+\f0\b \cf2 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec3 Switch Tracker card
+\f1\b0 \strokec3  (see section 9)\
+\pard\pardeftab720\partightenfactor0
+\cf2 \strokec4 \
+\pard\pardeftab720\sa298\partightenfactor0
+
+\f0\b\fs36 \cf2 \strokec3 8. Bottom Navigation \'97 4 Items\
+\pard\pardeftab720\sa240\partightenfactor0
+
+\fs24 \cf2 \strokec3 Change the existing bottom nav from its current state to exactly 4 items:
+\f1\b0 \strokec3 \
+
+\itap1\trowd \taflags0 \trgaph108\trleft-108 \trbrdrt\brdrnil \trbrdrl\brdrnil \trbrdrr\brdrnil 
+\clvertalc \clshdrawnil \clwWidth826\clftsWidth3 \clmart10 \clmarl10 \clmarb10 \clmarr10 \clbrdrt\brdrnil \clbrdrl\brdrnil \clbrdrb\brdrnil \clbrdrr\brdrnil \clpadt20 \clpadl20 \clpadb20 \clpadr20 \gaph\cellx2160
+\clvertalc \clshdrawnil \clwWidth453\clftsWidth3 \clmart10 \clmarl10 \clmarb10 \clmarr10 \clbrdrt\brdrnil \clbrdrl\brdrnil \clbrdrb\brdrnil \clbrdrr\brdrnil \clpadt20 \clpadl20 \clpadb20 \clpadr20 \gaph\cellx4320
+\clvertalc \clshdrawnil \clwWidth760\clftsWidth3 \clmart10 \clmarl10 \clmarb10 \clmarr10 \clbrdrt\brdrnil \clbrdrl\brdrnil \clbrdrb\brdrnil \clbrdrr\brdrnil \clpadt20 \clpadl20 \clpadb20 \clpadr20 \gaph\cellx6480
+\clvertalc \clshdrawnil \clwWidth1404\clftsWidth3 \clmart10 \clmarl10 \clmarb10 \clmarr10 \clbrdrt\brdrnil \clbrdrl\brdrnil \clbrdrb\brdrnil \clbrdrr\brdrnil \clpadt20 \clpadl20 \clpadb20 \clpadr20 \gaph\cellx8640
+\pard\intbl\itap1\pardeftab720\qc\partightenfactor0
+
+\f0\b \cf2 \strokec2 Position\cell 
+\pard\intbl\itap1\pardeftab720\qc\partightenfactor0
+\cf2 Icon\cell 
+\pard\intbl\itap1\pardeftab720\qc\partightenfactor0
+\cf2 Label\cell 
+\pard\intbl\itap1\pardeftab720\qc\partightenfactor0
+\cf2 Route\cell \row
+
+\itap1\trowd \taflags0 \trgaph108\trleft-108 \trbrdrl\brdrnil \trbrdrr\brdrnil 
+\clvertalc \clshdrawnil \clwWidth826\clftsWidth3 \clmart10 \clmarl10 \clmarb10 \clmarr10 \clbrdrt\brdrnil \clbrdrl\brdrnil \clbrdrb\brdrnil \clbrdrr\brdrnil \clpadt20 \clpadl20 \clpadb20 \clpadr20 \gaph\cellx2160
+\clvertalc \clshdrawnil \clwWidth453\clftsWidth3 \clmart10 \clmarl10 \clmarb10 \clmarr10 \clbrdrt\brdrnil \clbrdrl\brdrnil \clbrdrb\brdrnil \clbrdrr\brdrnil \clpadt20 \clpadl20 \clpadb20 \clpadr20 \gaph\cellx4320
+\clvertalc \clshdrawnil \clwWidth760\clftsWidth3 \clmart10 \clmarl10 \clmarb10 \clmarr10 \clbrdrt\brdrnil \clbrdrl\brdrnil \clbrdrb\brdrnil \clbrdrr\brdrnil \clpadt20 \clpadl20 \clpadb20 \clpadr20 \gaph\cellx6480
+\clvertalc \clshdrawnil \clwWidth1404\clftsWidth3 \clmart10 \clmarl10 \clmarb10 \clmarr10 \clbrdrt\brdrnil \clbrdrl\brdrnil \clbrdrb\brdrnil \clbrdrr\brdrnil \clpadt20 \clpadl20 \clpadb20 \clpadr20 \gaph\cellx8640
+\pard\intbl\itap1\pardeftab720\partightenfactor0
+
+\f1\b0 \cf2 1\cell 
+\pard\intbl\itap1\pardeftab720\partightenfactor0
+
+\f7 \cf2 \uc0\u55356 \u57312 
+\f1 \cell 
+\pard\intbl\itap1\pardeftab720\partightenfactor0
+\cf2 Home\cell 
+\pard\intbl\itap1\pardeftab720\partightenfactor0
+
+\f2\fs26 \cf2 /home
+\f1\fs24 \cell \row
+
+\itap1\trowd \taflags0 \trgaph108\trleft-108 \trbrdrl\brdrnil \trbrdrr\brdrnil 
+\clvertalc \clshdrawnil \clwWidth826\clftsWidth3 \clmart10 \clmarl10 \clmarb10 \clmarr10 \clbrdrt\brdrnil \clbrdrl\brdrnil \clbrdrb\brdrnil \clbrdrr\brdrnil \clpadt20 \clpadl20 \clpadb20 \clpadr20 \gaph\cellx2160
+\clvertalc \clshdrawnil \clwWidth453\clftsWidth3 \clmart10 \clmarl10 \clmarb10 \clmarr10 \clbrdrt\brdrnil \clbrdrl\brdrnil \clbrdrb\brdrnil \clbrdrr\brdrnil \clpadt20 \clpadl20 \clpadb20 \clpadr20 \gaph\cellx4320
+\clvertalc \clshdrawnil \clwWidth760\clftsWidth3 \clmart10 \clmarl10 \clmarb10 \clmarr10 \clbrdrt\brdrnil \clbrdrl\brdrnil \clbrdrb\brdrnil \clbrdrr\brdrnil \clpadt20 \clpadl20 \clpadb20 \clpadr20 \gaph\cellx6480
+\clvertalc \clshdrawnil \clwWidth1404\clftsWidth3 \clmart10 \clmarl10 \clmarb10 \clmarr10 \clbrdrt\brdrnil \clbrdrl\brdrnil \clbrdrb\brdrnil \clbrdrr\brdrnil \clpadt20 \clpadl20 \clpadb20 \clpadr20 \gaph\cellx8640
+\pard\intbl\itap1\pardeftab720\partightenfactor0
+\cf2 2\cell 
+\pard\intbl\itap1\pardeftab720\partightenfactor0
+
+\f7 \cf2 \uc0\u55356 \u57144 
+\f1 \cell 
+\pard\intbl\itap1\pardeftab720\partightenfactor0
+\cf2 Log\cell 
+\pard\intbl\itap1\pardeftab720\partightenfactor0
+
+\f2\fs26 \cf2 /log
+\f1\fs24 \cell \row
+
+\itap1\trowd \taflags0 \trgaph108\trleft-108 \trbrdrl\brdrnil \trbrdrr\brdrnil 
+\clvertalc \clshdrawnil \clwWidth826\clftsWidth3 \clmart10 \clmarl10 \clmarb10 \clmarr10 \clbrdrt\brdrnil \clbrdrl\brdrnil \clbrdrb\brdrnil \clbrdrr\brdrnil \clpadt20 \clpadl20 \clpadb20 \clpadr20 \gaph\cellx2160
+\clvertalc \clshdrawnil \clwWidth453\clftsWidth3 \clmart10 \clmarl10 \clmarb10 \clmarr10 \clbrdrt\brdrnil \clbrdrl\brdrnil \clbrdrb\brdrnil \clbrdrr\brdrnil \clpadt20 \clpadl20 \clpadb20 \clpadr20 \gaph\cellx4320
+\clvertalc \clshdrawnil \clwWidth760\clftsWidth3 \clmart10 \clmarl10 \clmarb10 \clmarr10 \clbrdrt\brdrnil \clbrdrl\brdrnil \clbrdrb\brdrnil \clbrdrr\brdrnil \clpadt20 \clpadl20 \clpadb20 \clpadr20 \gaph\cellx6480
+\clvertalc \clshdrawnil \clwWidth1404\clftsWidth3 \clmart10 \clmarl10 \clmarb10 \clmarr10 \clbrdrt\brdrnil \clbrdrl\brdrnil \clbrdrb\brdrnil \clbrdrr\brdrnil \clpadt20 \clpadl20 \clpadb20 \clpadr20 \gaph\cellx8640
+\pard\intbl\itap1\pardeftab720\partightenfactor0
+\cf2 3\cell 
+\pard\intbl\itap1\pardeftab720\partightenfactor0
+
+\f7 \cf2 \uc0\u10024 
+\f1 \cell 
+\pard\intbl\itap1\pardeftab720\partightenfactor0
+\cf2 Insights\cell 
+\pard\intbl\itap1\pardeftab720\partightenfactor0
+
+\f2\fs26 \cf2 /insights
+\f1\fs24 \cell \row
+
+\itap1\trowd \taflags0 \trgaph108\trleft-108 \trbrdrl\brdrnil \trbrdrt\brdrnil \trbrdrr\brdrnil 
+\clvertalc \clshdrawnil \clwWidth826\clftsWidth3 \clmart10 \clmarl10 \clmarb10 \clmarr10 \clbrdrt\brdrnil \clbrdrl\brdrnil \clbrdrb\brdrnil \clbrdrr\brdrnil \clpadt20 \clpadl20 \clpadb20 \clpadr20 \gaph\cellx2160
+\clvertalc \clshdrawnil \clwWidth453\clftsWidth3 \clmart10 \clmarl10 \clmarb10 \clmarr10 \clbrdrt\brdrnil \clbrdrl\brdrnil \clbrdrb\brdrnil \clbrdrr\brdrnil \clpadt20 \clpadl20 \clpadb20 \clpadr20 \gaph\cellx4320
+\clvertalc \clshdrawnil \clwWidth760\clftsWidth3 \clmart10 \clmarl10 \clmarb10 \clmarr10 \clbrdrt\brdrnil \clbrdrl\brdrnil \clbrdrb\brdrnil \clbrdrr\brdrnil \clpadt20 \clpadl20 \clpadb20 \clpadr20 \gaph\cellx6480
+\clvertalc \clshdrawnil \clwWidth1404\clftsWidth3 \clmart10 \clmarl10 \clmarb10 \clmarr10 \clbrdrt\brdrnil \clbrdrl\brdrnil \clbrdrb\brdrnil \clbrdrr\brdrnil \clpadt20 \clpadl20 \clpadb20 \clpadr20 \gaph\cellx8640
+\pard\intbl\itap1\pardeftab720\partightenfactor0
+\cf2 4\cell 
+\pard\intbl\itap1\pardeftab720\partightenfactor0
+
+\f7 \cf2 \uc0\u55357 \u56534 
+\f1 \cell 
+\pard\intbl\itap1\pardeftab720\partightenfactor0
+\cf2 Learn\cell 
+\pard\intbl\itap1\pardeftab720\partightenfactor0
+
+\f2\fs26 \cf2 /learn
+\f1\fs24 \cell \lastrow\row
+\pard\pardeftab720\sa240\partightenfactor0
+\cf2 \strokec3 Remove the FAB (floating action button) if it was previously used for Log \'97 the Log tab in the bottom nav replaces it.\
+The active nav item colour changes based on current mode:\
+\pard\tx220\tx720\pardeftab720\li720\fi-720\partightenfactor0
+\ls17\ilvl0\cf2 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec3 Period: 
+\f2\fs26 \strokec3 #d97b8a
+\f1\fs24 \strokec3 \
+\ls17\ilvl0\kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec3 Pregnancy: 
+\f2\fs26 \strokec3 #4a70b0
+\f1\fs24 \strokec3 \
+\ls17\ilvl0\kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec3 Ovulation: 
+\f2\fs26 \strokec3 #5a8e6a
+\f1\fs24 \strokec3 \
+\pard\pardeftab720\sa240\partightenfactor0
+\cf2 \strokec3 The bottom nav is hidden on: Splash, Let's Go, Mode Selection, and Journey Wizard screens.\
+\pard\pardeftab720\partightenfactor0
+\cf2 \strokec4 \
+\pard\pardeftab720\sa298\partightenfactor0
+
+\f0\b\fs36 \cf2 \strokec3 9. Switch Tracker Card (component, used on all 3 Home screens)\
+\pard\pardeftab720\sa240\partightenfactor0
+
+\f1\b0\fs24 \cf2 \strokec3 This is a card at the bottom of every Home screen. It shows different options depending on the current mode. All buttons navigate to 
+\f2\fs26 \strokec3 ModeSelectionScreen
+\f1\fs24 \strokec3  (which then restarts the Journey Wizard for the selected mode).\
+\pard\pardeftab720\sa240\partightenfactor0
+
+\f0\b \cf2 \strokec3 Period mode shows:
+\f1\b0 \strokec3 \
+\pard\pardeftab720\qc\partightenfactor0
+
+\f3\fs22 \cf2 \strokec5 \
+\
+\pard\pardeftab720\partightenfactor0
+
+\f4\fs24 \cf2 \strokec6 \uc0\u9472 \u9472 
+\f1 \strokec6  Switch tracker 
+\f4 \strokec6 \uc0\u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 
+\f1 \strokec6 \
+[
+\f7 \strokec6 \uc0\u55358 \u56624 
+\f1 \strokec6  Expecting? 
+\f4 \strokec6 \uc0\u8594 
+\f1 \strokec6  Track Pregnancy       ]\
+[
+\f7 \strokec6 \uc0\u55356 \u57151 
+\f1 \strokec6  Trying to conceive? 
+\f4 \strokec6 \uc0\u8594 
+\f1 \strokec6  Track Ovul\'85  ]\
+\pard\pardeftab720\sa240\partightenfactor0
+
+\f0\b \cf2 \strokec3 Pregnancy mode shows:
+\f1\b0 \strokec3 \
+\pard\pardeftab720\qc\partightenfactor0
+
+\f3\fs22 \cf2 \strokec5 \
+\
+\pard\pardeftab720\partightenfactor0
+
+\f4\fs24 \cf2 \strokec6 \uc0\u9472 \u9472 
+\f1 \strokec6  Switch tracker 
+\f4 \strokec6 \uc0\u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 
+\f1 \strokec6 \
+[
+\f7 \strokec6 \uc0\u9888 \u65039 
+\f1 \strokec6  Selected by mistake? 
+\f4 \strokec6 \uc0\u8594 
+\f1 \strokec6  Period Track]   
+\f4 \strokec6 \uc0\u8592 
+\f1 \strokec6  highlighted border\
+[
+\f7 \strokec6 \uc0\u55356 \u57151 
+\f1 \strokec6  Not pregnant yet? 
+\f4 \strokec6 \uc0\u8594 
+\f1 \strokec6  Ovulation Tra\'85  ]\
+\pard\pardeftab720\sa240\partightenfactor0
+
+\f0\b \cf2 \strokec3 Ovulation mode shows:
+\f1\b0 \strokec3 \
+\pard\pardeftab720\qc\partightenfactor0
+
+\f3\fs22 \cf2 \strokec5 \
+\
+\pard\pardeftab720\partightenfactor0
+
+\f4\fs24 \cf2 \strokec6 \uc0\u9472 \u9472 
+\f1 \strokec6  Switch tracker 
+\f4 \strokec6 \uc0\u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 
+\f1 \strokec6 \
+[
+\f7 \strokec6 \uc0\u55356 \u57225 
+\f1 \strokec6  Got a positive test? 
+\f4 \strokec6 \uc0\u8594 
+\f1 \strokec6  Pregnancy   ]\
+[
+\f7 \strokec6 \uc0\u55358 \u56952 
+\f1 \strokec6  Just track my period 
+\f4 \strokec6 \uc0\u8594 
+\f1 \strokec6  Period Trac ]\
+\pard\pardeftab720\sa240\partightenfactor0
+\cf2 \strokec3 Each button is a full-width outlined button (white bg, 
+\f2\fs26 \strokec3 #fce8e4
+\f1\fs24 \strokec3  border, rounded 14px). The pregnancy "mistake" button has a slightly more prominent pink border 
+\f2\fs26 \strokec3 rgba(217,123,138,0.35)
+\f1\fs24 \strokec3 .\
+Tapping any button navigates to 
+\f2\fs26 \strokec3 ModeSelectionScreen
+\f1\fs24 \strokec3 , which starts the journey from scratch for the new mode.\
+\pard\pardeftab720\partightenfactor0
+\cf2 \strokec4 \
+\pard\pardeftab720\sa298\partightenfactor0
+
+\f0\b\fs36 \cf2 \strokec3 10. Screen: Log 
+\f5 \strokec3 \uc0\u8592 
+\f0 \strokec3  EXISTING, make mode-aware\
+\pard\pardeftab720\sa240\partightenfactor0
+
+\f1\b0\fs24 \cf2 \strokec3 The Log screen renders different content per mode. All share the page title and date subtitle.\
+\pard\pardeftab720\sa280\partightenfactor0
+
+\f0\b\fs28 \cf2 \strokec3 Log \'97 Period Mode (existing, keep as-is)\
+\pard\pardeftab720\sa240\partightenfactor0
+
+\f1\b0\fs24 \cf2 \strokec3 Sections: Flow today (Heavy/Medium/Light/None chips) 
+\f4 \strokec3 \uc0\u8594 
+\f1 \strokec3  Mood (emoji row) 
+\f4 \strokec3 \uc0\u8594 
+\f1 \strokec3  Physical symptoms (chip grid, multi-select) 
+\f4 \strokec3 \uc0\u8594 
+\f1 \strokec3  Wellness (water + sleep steppers) 
+\f4 \strokec3 \uc0\u8594 
+\f1 \strokec3  Note (text area) 
+\f4 \strokec3 \uc0\u8594 
+\f1 \strokec3  Save button (pink gradient)\
+\pard\pardeftab720\sa280\partightenfactor0
+
+\f0\b\fs28 \cf2 \strokec3 Log \'97 Pregnancy Mode 
+\f5 \strokec3 \uc0\u8592 
+\f0 \strokec3  NEW content\
+\pard\pardeftab720\sa240\partightenfactor0
+
+\f1\b0\fs24 \cf2 \strokec3 Page title: "Daily Log 
+\f7 \strokec3 \uc0\u55357 \u56473 
+\f1 \strokec3 "\
+Sections:\
+\pard\tx220\tx720\pardeftab720\li720\fi-720\partightenfactor0
+\ls18\ilvl0
+\f0\b \cf2 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	1	}\expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec3 Kick Counter card
+\f1\b0 \strokec3  (blue-tinted):\
+\pard\tx940\tx1440\pardeftab720\li1440\fi-1440\partightenfactor0
+\ls18\ilvl1\cf2 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	
+\f4 \uc0\u9702 
+\f1 	}\expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec3 Label "
+\f7 \strokec3 \uc0\u55357 \u56438 
+\f1 \strokec3  Kick Counter \'97 Today"\
+\ls18\ilvl1\kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	
+\f4 \uc0\u9702 
+\f1 	}\expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec3 Large number (starts at 0)\
+\ls18\ilvl1\kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	
+\f4 \uc0\u9702 
+\f1 	}\expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec3 Round tap button with 
+\f7 \strokec3 \uc0\u55357 \u56438 
+\f1 \strokec3  emoji \'97 increments counter + scale animation on tap\
+\ls18\ilvl1\kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	
+\f4 \uc0\u9702 
+\f1 	}\expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec3 Hint text: "Tap when you feel baby move \'97 aim for 10 kicks in 2 hours"\
+\pard\tx220\tx720\pardeftab720\li720\fi-720\partightenfactor0
+\ls18\ilvl0
+\f0\b \cf2 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	2	}\expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec3 Mood
+\f1\b0 \strokec3  \'97 same emoji row component\
+\ls18\ilvl0
+\f0\b \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	3	}\expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec3 Symptoms
+\f1\b0 \strokec3  (multi-select chips, blue selected state): 
+\f7 \strokec3 \uc0\u55358 \u56610 
+\f1 \strokec3  Nausea \'b7 
+\f7 \strokec3 \uc0\u55357 \u56613 
+\f1 \strokec3  Heartburn \'b7 
+\f7 \strokec3 \uc0\u55357 \u56884 
+\f1 \strokec3  Fatigue \'b7 
+\f7 \strokec3 \uc0\u55357 \u56454 
+\f1 \strokec3  Back Pain \'b7 
+\f7 \strokec3 \uc0\u55358 \u56757 
+\f1 \strokec3  Leg Cramps \'b7 
+\f7 \strokec3 \uc0\u55356 \u57098 
+\f1 \strokec3  Swelling \'b7 
+\f7 \strokec3 \uc0\u55357 \u56880 
+\f1 \strokec3  Anxiety \'b7 
+\f7 \strokec3 \uc0\u55357 \u56884 
+\f1 \strokec3  Insomnia \'b7 
+\f7 \strokec3 \uc0\u55358 \u56623 
+\f1 \strokec3  Brain Fog \'b7 
+\f7 \strokec3 \uc0\u10024 
+\f1 \strokec3  Feeling great!\
+\ls18\ilvl0
+\f0\b \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	4	}\expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec3 Wellness
+\f1\b0 \strokec3  row: Water (stepper) + Weight in kg (stepper, range 50\'96120)\
+\ls18\ilvl0
+\f0\b \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	5	}\expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec3 Note
+\f1\b0 \strokec3  text area (placeholder: "Notes from your last visit, questions for next time\'85")\
+\ls18\ilvl0
+\f0\b \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	6	}\expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec3 Save button
+\f1\b0 \strokec3  (blue gradient 
+\f2\fs26 \strokec3 #7aa0e0 
+\f6 \strokec3 \uc0\u8594 
+\f2 \strokec3  #4a70b0
+\f1\fs24 \strokec3 )\
+\pard\pardeftab720\sa280\partightenfactor0
+
+\f0\b\fs28 \cf2 \strokec3 Log \'97 Ovulation Mode 
+\f5 \strokec3 \uc0\u8592 
+\f0 \strokec3  NEW content\
+\pard\pardeftab720\sa240\partightenfactor0
+
+\f1\b0\fs24 \cf2 \strokec3 Page title: "Daily Log 
+\f7 \strokec3 \uc0\u55356 \u57151 
+\f1 \strokec3 "\
+Sections:\
+\pard\tx220\tx720\pardeftab720\li720\fi-720\partightenfactor0
+\ls19\ilvl0
+\f0\b \cf2 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	1	}\expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec3 BBT Temperature input card
+\f1\b0 \strokec3  (green-tinted border):\
+\pard\tx940\tx1440\pardeftab720\li1440\fi-1440\partightenfactor0
+\ls19\ilvl1\cf2 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	
+\f4 \uc0\u9702 
+\f1 	}\expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec3 Label "
+\f7 \strokec3 \uc0\u55356 \u57121 \u65039 
+\f1 \strokec3  Basal Body Temperature"\
+\ls19\ilvl1\kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	
+\f4 \uc0\u9702 
+\f1 	}\expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec3 Large number input, step 0.01, range 35\'9638.5\
+\ls19\ilvl1\kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	
+\f4 \uc0\u9702 
+\f1 	}\expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec3 Hint below: "\'b0C \'97 taken immediately on waking, before getting up"\
+\pard\tx220\tx720\pardeftab720\li720\fi-720\partightenfactor0
+\ls19\ilvl0
+\f0\b \cf2 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	2	}\expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec3 Cervical mucus
+\f1\b0 \strokec3  (single-select chips, green selected state): 
+\f7 \strokec3 \uc0\u55356 \u57308 \u65039 
+\f1 \strokec3  Dry/None \'b7 
+\f7 \strokec3 \uc0\u55356 \u57196 
+\f1 \strokec3  Sticky \'b7 
+\f7 \strokec3 \uc0\u55358 \u56667 
+\f1 \strokec3  Creamy \'b7 
+\f7 \strokec3 \uc0\u55357 \u56487 
+\f1 \strokec3  Watery \'b7 
+\f7 \strokec3 \uc0\u55358 \u56666 
+\f1 \strokec3  Egg White (peak!)\
+\ls19\ilvl0
+\f0\b \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	3	}\expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec3 OPK Test result
+\f1\b0 \strokec3  (single-select chips): 
+\f7 \strokec3 \uc0\u11036 
+\f1 \strokec3  Negative \'b7 
+\f7 \strokec3 \uc0\u55357 \u57313 
+\f1 \strokec3  Low \'b7 
+\f7 \strokec3 \uc0\u55357 \u57312 
+\f1 \strokec3  High \'b7 
+\f7 \strokec3 \uc0\u55356 \u57263 
+\f1 \strokec3  Peak! \'b7 
+\f7 \strokec3 \uc0\u9197 \u65039 
+\f1 \strokec3  Didn't test\
+\ls19\ilvl0
+\f0\b \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	4	}\expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec3 Mood & energy
+\f1\b0 \strokec3  \'97 same emoji row\
+\ls19\ilvl0
+\f0\b \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	5	}\expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec3 Other symptoms
+\f1\b0 \strokec3  (multi-select, green selected): 
+\f7 \strokec3 \uc0\u55358 \u56952 
+\f1 \strokec3  Mid-cycle spotting \'b7 
+\f7 \strokec3 \uc0\u55357 \u56491 
+\f1 \strokec3  Ovulation pain \'b7 
+\f7 \strokec3 \uc0\u55356 \u57151 
+\f1 \strokec3  High libido \'b7 
+\f7 \strokec3 \uc0\u55356 \u57121 \u65039 
+\f1 \strokec3  Feeling warm\
+\ls19\ilvl0
+\f0\b \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	6	}\expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec3 Note
+\f1\b0 \strokec3  text area\
+\ls19\ilvl0
+\f0\b \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	7	}\expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec3 Save button
+\f1\b0 \strokec3  (green gradient 
+\f2\fs26 \strokec3 #78c890 
+\f6 \strokec3 \uc0\u8594 
+\f2 \strokec3  #5a8e6a
+\f1\fs24 \strokec3 )\
+\pard\pardeftab720\partightenfactor0
+\cf2 \strokec4 \
+\pard\pardeftab720\sa298\partightenfactor0
+
+\f0\b\fs36 \cf2 \strokec3 11. Screen: Insights 
+\f5 \strokec3 \uc0\u8592 
+\f0 \strokec3  EXISTING, make mode-aware\
+\pard\pardeftab720\sa280\partightenfactor0
+
+\fs28 \cf2 \strokec3 Insights \'97 Period Mode (existing content, keep as-is)\
+\pard\pardeftab720\sa240\partightenfactor0
+
+\f1\b0\fs24 \cf2 \strokec3 Hero insight card (pink) 
+\f4 \strokec3 \uc0\u8594 
+\f1 \strokec3  Cycle length bar chart (6 months) 
+\f4 \strokec3 \uc0\u8594 
+\f1 \strokec3  Most common symptoms bars 
+\f4 \strokec3 \uc0\u8594 
+\f1 \strokec3  What's coming up (period / fertile / ovulation rows) 
+\f4 \strokec3 \uc0\u8594 
+\f1 \strokec3  Mood by phase bars\
+\pard\pardeftab720\sa280\partightenfactor0
+
+\f0\b\fs28 \cf2 \strokec3 Insights \'97 Pregnancy Mode 
+\f5 \strokec3 \uc0\u8592 
+\f0 \strokec3  NEW content\
+\pard\pardeftab720\sa240\partightenfactor0
+
+\f1\b0\fs24 \cf2 \strokec3 Page title: "Your Journey 
+\f7 \strokec3 \uc0\u55357 \u56473 
+\f1 \strokec3 "\
+Cards (top to bottom):\
+\pard\tx220\tx720\pardeftab720\li720\fi-720\partightenfactor0
+\ls20\ilvl0
+\f0\b \cf2 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	1	}\expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec3 Hero card
+\f1\b0 \strokec3  (blue-tinted): emoji 
+\f7 \strokec3 \uc0\u55357 \u56473 
+\f1 \strokec3 , title "You're doing amazing!", body "Week 24 \'97 you've completed 60% of your pregnancy\'85"\
+\ls20\ilvl0
+\f0\b \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	2	}\expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec3 Kick count chart
+\f1\b0 \strokec3  \'97 7-bar chart (last 7 days), blue bars, one highlighted bar\
+\ls20\ilvl0
+\f0\b \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	3	}\expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec3 Weight gain card
+\f1\b0 \strokec3 : two bar rows \'97 "Current" vs "Recommended" with note "
+\f7 \strokec3 \uc0\u9989 
+\f1 \strokec3  You're within the healthy range"\
+\ls20\ilvl0
+\f0\b \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	4	}\expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec3 Upcoming milestones
+\f1\b0 \strokec3  list rows (blue chip style): Next appointment \'b7 3rd trimester begins \'b7 Birth class \'b7 Due date\
+\ls20\ilvl0
+\f0\b \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	5	}\expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec3 Symptom frequency bars
+\f1\b0 \strokec3  (blue): Fatigue / Back pain / Heartburn with day counts\
+\pard\pardeftab720\sa280\partightenfactor0
+
+\f0\b\fs28 \cf2 \strokec3 Insights \'97 Ovulation Mode 
+\f5 \strokec3 \uc0\u8592 
+\f0 \strokec3  NEW content\
+\pard\pardeftab720\sa240\partightenfactor0
+
+\f1\b0\fs24 \cf2 \strokec3 Page title: "Your Fertility 
+\f7 \strokec3 \uc0\u55356 \u57151 
+\f1 \strokec3 "\
+Cards:\
+\pard\tx220\tx720\pardeftab720\li720\fi-720\partightenfactor0
+\ls21\ilvl0
+\f0\b \cf2 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	1	}\expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec3 Hero card
+\f1\b0 \strokec3  (green-tinted): emoji 
+\f7 \strokec3 \uc0\u55356 \u57263 
+\f1 \strokec3 , title "Ovulation confirmed today!", body with BBT/mucus/OPK confirmation + prediction accuracy %\
+\ls21\ilvl0
+\f0\b \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	2	}\expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec3 BBT chart card
+\f1\b0 \strokec3 : 14-bar chart representing daily temps. Pre-ovulation bars are light green, post-ovulation bars are darker green, tallest bar = today. Vertical dashed line marking estimated ovulation. Labels: "Day 1" / "Ovulation 
+\f4 \strokec3 \uc0\u8593 
+\f1 \strokec3 " / "Today"\
+\ls21\ilvl0
+\f0\b \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	3	}\expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec3 Fertile window history
+\f1\b0 \strokec3 : horizontal bars per month showing ovulation day (e.g. "Day 13", "Day 14")\
+\ls21\ilvl0
+\f0\b \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	4	}\expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec3 Upcoming predictions
+\f1\b0 \strokec3  rows (green chip style): Fertile window closes \'b7 Next period \'b7 Next fertile window \'b7 Next ovulation estimate\
+\pard\pardeftab720\partightenfactor0
+\cf2 \strokec4 \
+\pard\pardeftab720\sa298\partightenfactor0
+
+\f0\b\fs36 \cf2 \strokec3 12. Screen: Learn 
+\f5 \strokec3 \uc0\u8592 
+\f0 \strokec3  EXISTING, make mode-aware\
+\pard\pardeftab720\sa240\partightenfactor0
+
+\f1\b0\fs24 \cf2 \strokec3 The Learn screen structure is identical across modes (search bar + category filter chips + article cards). Only the 
+\f0\b \strokec3 categories
+\f1\b0 \strokec3  and 
+\f0\b \strokec3 article content
+\f1\b0 \strokec3  change.\
+\pard\pardeftab720\sa280\partightenfactor0
+
+\f0\b\fs28 \cf2 \strokec3 Learn \'97 Period Mode (existing content, keep as-is)\
+\pard\pardeftab720\sa240\partightenfactor0
+
+\f1\b0\fs24 \cf2 \strokec3 Categories: All \'b7 
+\f7 \strokec3 \uc0\u55356 \u57144 
+\f1 \strokec3  Phases \'b7 
+\f7 \strokec3 \uc0\u55357 \u56454 
+\f1 \strokec3  Symptoms \'b7 
+\f7 \strokec3 \uc0\u55358 \u56828 
+\f1 \strokec3  Hygiene \'b7 
+\f7 \strokec3 \uc0\u10060 
+\f1 \strokec3  Myths \'b7 
+\f7 \strokec3 \uc0\u55356 \u57317 
+\f1 \strokec3  Doctor\
+Articles (existing, keep as-is):\
+\pard\tx220\tx720\pardeftab720\li720\fi-720\partightenfactor0
+\ls22\ilvl0\cf2 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec3 "The 4 phases of your cycle \'97 what's actually happening"\
+\ls22\ilvl0\kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec3 "Natural ways to ease period cramps"\
+\ls22\ilvl0\kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec3 "10 period myths \'97 completely debunked!"\
+\ls22\ilvl0\kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec3 "When should you see a doctor about your period?"\
+\ls22\ilvl0\kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec3 "Period products guide \'97 pads, cups, discs, underwear"\
+\ls22\ilvl0\kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec3 "PMS vs PMDD \'97 know the difference"\
+\pard\pardeftab720\sa280\partightenfactor0
+
+\f0\b\fs28 \cf2 \strokec3 Learn \'97 Pregnancy Mode 
+\f5 \strokec3 \uc0\u8592 
+\f0 \strokec3  NEW content\
+\pard\pardeftab720\sa240\partightenfactor0
+
+\f1\b0\fs24 \cf2 \strokec3 Active category chip colour: 
+\f2\fs26 \strokec3 #4a70b0
+\f1\fs24 \strokec3  (blue)\
+Categories: All \'b7 
+\f7 \strokec3 \uc0\u55357 \u56438 
+\f1 \strokec3  This Week \'b7 
+\f7 \strokec3 \uc0\u55358 \u56663 
+\f1 \strokec3  Nutrition \'b7 
+\f7 \strokec3 \uc0\u55358 \u56792 
+\f1 \strokec3  Mental Health \'b7 
+\f7 \strokec3 \uc0\u55356 \u57317 
+\f1 \strokec3  Birth Prep \'b7 
+\f7 \strokec3 \uc0\u55357 \u56444 
+\f1 \strokec3  Newborn\
+Articles:\
+\pard\tx220\tx720\pardeftab720\li720\fi-720\partightenfactor0
+\ls23\ilvl0\cf2 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}
+\f7 \expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec3 \uc0\u55357 \u56438 
+\f1 \strokec3  [This Week] "Week 24: What's developing in your baby right now" \'97 5 min \'b7 NHS\
+\ls23\ilvl0\kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}
+\f7 \expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec3 \uc0\u55358 \u56663 
+\f1 \strokec3  [Nutrition] "Iron-rich foods every pregnant woman needs" \'97 4 min \'b7 Dietitian-reviewed\
+\ls23\ilvl0\kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}
+\f7 \expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec3 \uc0\u55358 \u56792 
+\f1 \strokec3  [Mental Health] "Prenatal anxiety \'97 it's more common than you think" \'97 6 min \'b7 Clinical\
+\ls23\ilvl0\kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}
+\f7 \expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec3 \uc0\u55356 \u57317 
+\f1 \strokec3  [Birth Prep] "What to pack in your hospital bag \'97 complete checklist" \'97 5 min \'b7 Guide\
+\ls23\ilvl0\kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}
+\f7 \expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec3 \uc0\u55357 \u56458 
+\f1 \strokec3  [Nutrition] "Folic acid, Vitamin D & supplements in pregnancy" \'97 4 min \'b7 Medical\
+\ls23\ilvl0\kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}
+\f7 \expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec3 \uc0\u55357 \u56444 
+\f1 \strokec3  [Newborn] "The first 24 hours after birth \'97 what to expect" \'97 6 min \'b7 Midwife-reviewed\
+\pard\pardeftab720\sa280\partightenfactor0
+
+\f0\b\fs28 \cf2 \strokec3 Learn \'97 Ovulation Mode 
+\f5 \strokec3 \uc0\u8592 
+\f0 \strokec3  NEW content\
+\pard\pardeftab720\sa240\partightenfactor0
+
+\f1\b0\fs24 \cf2 \strokec3 Active category chip colour: 
+\f2\fs26 \strokec3 #5a8e6a
+\f1\fs24 \strokec3  (green)\
+Categories: All \'b7 
+\f7 \strokec3 \uc0\u55356 \u57121 \u65039 
+\f1 \strokec3  BBT \'b7 
+\f7 \strokec3 \uc0\u55357 \u56458 
+\f1 \strokec3  OPK \'b7 
+\f7 \strokec3 \uc0\u55357 \u56438 
+\f1 \strokec3  TTC Tips \'b7 
+\f7 \strokec3 \uc0\u55357 \u56620 
+\f1 \strokec3  PCOS \'b7 
+\f7 \strokec3 \uc0\u55356 \u57151 
+\f1 \strokec3  Natural\
+Articles:\
+\pard\tx220\tx720\pardeftab720\li720\fi-720\partightenfactor0
+\ls24\ilvl0\cf2 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}
+\f7 \expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec3 \uc0\u55356 \u57121 \u65039 
+\f1 \strokec3  [BBT] "How to take your basal body temperature correctly" \'97 4 min \'b7 Fertility Expert\
+\ls24\ilvl0\kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}
+\f7 \expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec3 \uc0\u55357 \u56458 
+\f1 \strokec3  [OPK] "OPK strips \'97 how to read them and when to test" \'97 5 min \'b7 Clinical\
+\ls24\ilvl0\kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}
+\f7 \expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec3 \uc0\u55357 \u56487 
+\f1 \strokec3  [TTC Tips] "Cervical mucus: your most underrated fertility sign" \'97 4 min \'b7 Evidence-based\
+\ls24\ilvl0\kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}
+\f7 \expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec3 \uc0\u55357 \u56438 
+\f1 \strokec3  [TTC Tips] "Best timing for conception \'97 the science explained" \'97 5 min \'b7 Research\
+\ls24\ilvl0\kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}
+\f7 \expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec3 \uc0\u55357 \u56620 
+\f1 \strokec3  [PCOS] "PCOS and ovulation \'97 can you still get pregnant?" \'97 7 min \'b7 Endocrinologist\
+\ls24\ilvl0\kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}
+\f7 \expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec3 \uc0\u55356 \u57151 
+\f1 \strokec3  [Natural] "Seed cycling for hormone balance \'97 does it work?" \'97 5 min \'b7 Nutritionist\
+\pard\pardeftab720\sa240\partightenfactor0
+\cf2 \strokec3 Page subtitle changes per mode:\
+\pard\tx220\tx720\pardeftab720\li720\fi-720\partightenfactor0
+\ls25\ilvl0\cf2 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec3 Period: "Cycle & body wisdom"\
+\ls25\ilvl0\kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec3 Pregnancy: "Your pregnancy guide"\
+\ls25\ilvl0\kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec3 Ovulation: "Fertility & ovulation"\
+\pard\pardeftab720\partightenfactor0
+\cf2 \strokec4 \
+\pard\pardeftab720\sa298\partightenfactor0
+
+\f0\b\fs36 \cf2 \strokec3 13. State Management Summary\
+\pard\pardeftab720\sa240\partightenfactor0
+
+\f1\b0\fs24 \cf2 \strokec3 Save to shared preferences:\
+\pard\tx220\tx720\pardeftab720\li720\fi-720\partightenfactor0
+\ls26\ilvl0
+\f2\fs26 \cf2 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec3 isOnboarded
+\f1\fs24 \strokec3  \'97 bool, false by default\
+\ls26\ilvl0
+\f2\fs26 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec3 currentMode
+\f1\fs24 \strokec3  \'97 string: 
+\f2\fs26 \strokec3 "period"
+\f1\fs24 \strokec3  | 
+\f2\fs26 \strokec3 "preg"
+\f1\fs24 \strokec3  | 
+\f2\fs26 \strokec3 "ovul"
+\f1\fs24 \strokec3 , default 
+\f2\fs26 \strokec3 "period"
+\f1\fs24 \strokec3 \
+\ls26\ilvl0
+\f2\fs26 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec3 journeyData
+\f1\fs24 \strokec3  \'97 JSON map of answers from the journey wizard\
+\pard\pardeftab720\sa240\partightenfactor0
+\cf2 \strokec3 On app launch:\
+\pard\tx220\tx720\pardeftab720\li720\fi-720\partightenfactor0
+\ls27\ilvl0\cf2 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec3 If 
+\f2\fs26 \strokec3 isOnboarded == false
+\f1\fs24 \strokec3  
+\f4 \strokec3 \uc0\u8594 
+\f1 \strokec3  Splash 
+\f4 \strokec3 \uc0\u8594 
+\f1 \strokec3  Let's Go 
+\f4 \strokec3 \uc0\u8594 
+\f1 \strokec3  Mode Selection 
+\f4 \strokec3 \uc0\u8594 
+\f1 \strokec3  Journey 
+\f4 \strokec3 \uc0\u8594 
+\f1 \strokec3  Home\
+\ls27\ilvl0\kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec3 If 
+\f2\fs26 \strokec3 isOnboarded == true
+\f1\fs24 \strokec3  
+\f4 \strokec3 \uc0\u8594 
+\f1 \strokec3  Splash 
+\f4 \strokec3 \uc0\u8594 
+\f1 \strokec3  Home (with saved 
+\f2\fs26 \strokec3 currentMode
+\f1\fs24 \strokec3 )\
+\pard\pardeftab720\sa240\partightenfactor0
+\cf2 \strokec3 When user taps a Switch Tracker button on Home 
+\f4 \strokec3 \uc0\u8594 
+\f1 \strokec3  navigate to Mode Selection 
+\f4 \strokec3 \uc0\u8594 
+\f1 \strokec3  user picks mode 
+\f4 \strokec3 \uc0\u8594 
+\f1 \strokec3  Journey Wizard 
+\f4 \strokec3 \uc0\u8594 
+\f1 \strokec3  Home (mode updated, 
+\f2\fs26 \strokec3 isOnboarded
+\f1\fs24 \strokec3  stays true)\
+\pard\pardeftab720\partightenfactor0
+\cf2 \strokec4 \
+\pard\pardeftab720\sa298\partightenfactor0
+
+\f0\b\fs36 \cf2 \strokec3 14. What NOT to Change\
+\pard\tx220\tx720\pardeftab720\li720\fi-720\partightenfactor0
+\ls28\ilvl0
+\f1\b0\fs24 \cf2 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec3 Privacy screen (if it exists) \'97 no changes needed\
+\ls28\ilvl0\kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec3 Any authentication or account screens\
+\ls28\ilvl0\kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec3 Any existing data persistence / database logic\
+\ls28\ilvl0\kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec3 Any API or service layer\
+\ls28\ilvl0\kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec3 The existing Splash screen animation (only change where it navigates after)\
+\ls28\ilvl0\kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec3 Any screen or widget not explicitly mentioned in this document\
+\pard\pardeftab720\partightenfactor0
+\cf2 \strokec4 \
+\pard\pardeftab720\sa298\partightenfactor0
+
+\f0\b\fs36 \cf2 \strokec3 Reference File\
+\pard\pardeftab720\sa240\partightenfactor0
+
+\f1\b0\fs24 \cf2 \strokec3 The attached HTML file 
+\f2\fs26 \strokec3 metrustual-7.html
+\f1\fs24 \strokec3  is the complete visual prototype. All colours, font sizes, padding, border radii, and component states are defined in the CSS and rendered in the browser. Please use it as the exact visual reference for all new screens.\
+If anything in this document conflicts with the HTML file, 
+\f0\b \strokec3 the HTML file takes priority
+\f1\b0 \strokec3 .\
+}
