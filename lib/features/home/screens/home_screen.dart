@@ -544,7 +544,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         onPressed: onTap,
         style: TextButton.styleFrom(
           padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
-          backgroundColor: urgent ? const Color(0xFFFFF5F5) : AppColors.bgMain,
+          backgroundColor:
+              urgent ? const Color(0xFFFFF5F5) : AppColors.background,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(14),
             side: BorderSide(
