@@ -59,7 +59,10 @@ class _SplashScreenState extends ConsumerState<SplashScreen> with TickerProvider
     // Navigate after animation
     Future.delayed(const Duration(milliseconds: 3200), () {
       if (mounted) {
-        _fadeController.forward().then((_) {
+        _fadeController.forward().then((_) async {
+          // Sync with Firestore before deciding navigation
+          await ref.read(modeProvider.notifier).syncFromFirestore();
+          
           final hasCompleted = ref.read(modeProvider.notifier).hasCompletedJourney;
           if (hasCompleted) {
             context.go('/home');
