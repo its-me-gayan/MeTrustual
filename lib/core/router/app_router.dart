@@ -9,6 +9,7 @@ import '../../features/insights/screens/insights_screen.dart';
 import '../../features/education/screens/education_screen.dart';
 import '../../features/privacy/screens/privacy_screen.dart';
 import '../../features/profile/screens/profile_screen.dart';
+import '../../features/profile/screens/premium_screen.dart';
 
 final GoRouter appRouter = GoRouter(
   initialLocation: '/splash',
@@ -55,6 +56,10 @@ final GoRouter appRouter = GoRouter(
     GoRoute(
       path: '/profile',
       builder: (context, state) => const ProfileScreen(),
+    ),
+    GoRoute(
+      path: '/premium',
+      builder: (context, state) => const PremiumScreen(),
     ),
   ],
 );

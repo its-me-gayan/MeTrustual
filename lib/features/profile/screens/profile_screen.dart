@@ -104,13 +104,20 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       body: SafeArea(
         child: StreamBuilder(
           stream: user != null 
-            ? firestore.collection('users').doc(user.uid).collection('profile').doc('current').snapshots()
+            ? firestore.collection('users').doc(user.uid).snapshots()
             : const Stream.empty(),
           builder: (context, snapshot) {
-            UserProfile? profile;
-            if (snapshot.hasData && snapshot.data!.exists) {
-              profile = UserProfile.fromFirestore(snapshot.data!);
-            }
+            final isPremium = snapshot.hasData && snapshot.data!.exists && (snapshot.data!.data()?['isPremium'] ?? false);
+            
+            return StreamBuilder(
+              stream: user != null 
+                ? firestore.collection('users').doc(user.uid).collection('profile').doc('current').snapshots()
+                : const Stream.empty(),
+              builder: (context, profileSnapshot) {
+                UserProfile? profile;
+                if (profileSnapshot.hasData && profileSnapshot.data!.exists) {
+                  profile = UserProfile.fromFirestore(profileSnapshot.data!);
+                }
 
             return SingleChildScrollView(
               padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 20),
@@ -135,7 +142,14 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   ),
                   const SizedBox(height: 30),
                   _buildProfileHeader(profile?.displayName ?? 'Lovely User', user?.isAnonymous == true ? 'Anonymous Mode' : (user?.email ?? 'No Email')),
-                  const SizedBox(height: 30),
+                  const SizedBox(height: 24),
+                  if (!isPremium) ...[
+                    _buildPremiumBanner(),
+                    const SizedBox(height: 30),
+                  ] else ...[
+                    _buildPremiumStatusCard(),
+                    const SizedBox(height: 30),
+                  ],
                   _buildSectionTitle('ACCOUNT'),
                   _buildSettingsCard([
                     _buildSettingsTile(Icons.person_outline, 'Edit Profile', () => _editProfile(profile)),
@@ -204,6 +218,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   ),
                 ],
               ),
+                );
+              }
             );
           }
         ),
@@ -231,6 +247,81 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           const SizedBox(height: 16),
           Text(name, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w900, color: AppColors.textDark)),
           Text(email, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.textMuted)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPremiumBanner() {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        gradient: AppColors.primaryGradient,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(color: AppColors.primaryRose.withOpacity(0.3), blurRadius: 15, offset: const Offset(0, 8)),
+        ],
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text('MeTrustual Premium', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w900)),
+                const SizedBox(height: 4),
+                Text(
+                  'Unlock all features and sync across devices.',
+                  style: TextStyle(color: Colors.white.withOpacity(0.9), fontSize: 13, fontWeight: FontWeight.w600),
+                ),
+              ],
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () => context.push('/premium'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.white,
+              foregroundColor: AppColors.primaryRose,
+              elevation: 0,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+            ),
+            child: const Text('Upgrade', style: TextStyle(fontWeight: FontWeight.w900)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPremiumStatusCard() {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: const Color(0xFFFFF9F9),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: AppColors.primaryRose.withOpacity(0.3), width: 1.5),
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: const BoxDecoration(color: AppColors.primaryRose, shape: BoxShape.circle),
+            child: const Icon(Icons.star, color: Colors.white, size: 24),
+          ),
+          const SizedBox(width: 16),
+          const Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Premium Member', style: TextStyle(color: AppColors.textDark, fontSize: 18, fontWeight: FontWeight.w900)),
+                SizedBox(height: 4),
+                Text(
+                  'Enjoy your unlimited access!',
+                  style: TextStyle(color: AppColors.textMid, fontSize: 13, fontWeight: FontWeight.w600),
+                ),
+              ],
+            ),
+          ),
         ],
       ),
     );
