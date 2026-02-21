@@ -58,7 +58,6 @@ class ModeSelectionScreen extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 24),
-                
                 Expanded(
                   child: Column(
                     children: [
@@ -66,7 +65,8 @@ class ModeSelectionScreen extends StatelessWidget {
                         context,
                         emoji: '🩸',
                         title: 'Track my period',
-                        desc: 'Predict your next period, fertile window, and manage symptoms.',
+                        desc:
+                            'Predict your next period, fertile window, and manage symptoms.',
                         color: AppColors.primaryRose,
                         mode: 'period',
                       ),
@@ -75,7 +75,8 @@ class ModeSelectionScreen extends StatelessWidget {
                         context,
                         emoji: '🤰',
                         title: 'I\'m pregnant',
-                        desc: 'Week-by-week baby updates, kick counter, and wellness tracking.',
+                        desc:
+                            'Week-by-week baby updates, kick counter, and wellness tracking.',
                         color: const Color(0xFF4A70B0),
                         mode: 'preg',
                       ),
@@ -84,7 +85,8 @@ class ModeSelectionScreen extends StatelessWidget {
                         context,
                         emoji: '🌿',
                         title: 'Track ovulation',
-                        desc: 'Advanced tracking for conception or natural family planning.',
+                        desc:
+                            'Advanced tracking for conception or natural family planning.',
                         color: const Color(0xFF5A8E6A),
                         mode: 'ovul',
                       ),

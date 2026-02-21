@@ -28,17 +28,26 @@ class _JourneyScreenState extends State<JourneyScreen> {
 
   Color _getModeColor(String mode) {
     switch (mode) {
-      case 'preg': return const Color(0xFF4A70B0);
-      case 'ovul': return const Color(0xFF5A8E6A);
-      default: return AppColors.primaryRose;
+      case 'preg':
+        return const Color(0xFF4A70B0);
+      case 'ovul':
+        return const Color(0xFF5A8E6A);
+      default:
+        return AppColors.primaryRose;
     }
   }
 
   LinearGradient _getModeGradient(String mode) {
     switch (mode) {
-      case 'preg': return const LinearGradient(colors: [Color(0xFF7AA0E0), Color(0xFF4A70B0)]);
-      case 'ovul': return const LinearGradient(colors: [Color(0xFF78C890), Color(0xFF5A8E6A)]);
-      default: return const LinearGradient(colors: [Color(0xFFF09090), AppColors.primaryRose]);
+      case 'preg':
+        return const LinearGradient(
+            colors: [Color(0xFF7AA0E0), Color(0xFF4A70B0)]);
+      case 'ovul':
+        return const LinearGradient(
+            colors: [Color(0xFF78C890), Color(0xFF5A8E6A)]);
+      default:
+        return const LinearGradient(
+            colors: [Color(0xFFF09090), AppColors.primaryRose]);
     }
   }
 
@@ -48,20 +57,28 @@ class _JourneyScreenState extends State<JourneyScreen> {
         {
           'icon': '🤰',
           'q': 'Are you currently pregnant?',
-          'sub': 'This helps us set up the right tracker for you. No judgement either way.',
+          'sub':
+              'This helps us set up the right tracker for you. No judgement either way.',
           'type': 'chips-big-single',
           'key': 'isPreg',
           'opts': [
             {'e': '✅', 'l': "Yes, I'm pregnant!", 'v': 'yes'},
             {'e': '🤔', 'l': 'I think I might be', 'v': 'maybe'},
-            {'e': '🔄', 'l': "Actually, I'm not — switch tracker", 'v': 'switch', 'special': true}
+            {
+              'e': '🔄',
+              'l': "Actually, I'm not — switch tracker",
+              'v': 'switch',
+              'special': true
+            }
           ],
-          'warn': 'You can switch back to Period or Ovulation tracker anytime from your home screen.'
+          'warn':
+              'You can switch back to Period or Ovulation tracker anytime from your home screen.'
         },
         {
           'icon': '📅',
           'q': 'Do you know your due date?',
-          'sub': 'If yes, enter it. If not, enter your last period start date and we\'ll calculate.',
+          'sub':
+              'If yes, enter it. If not, enter your last period start date and we\'ll calculate.',
           'type': 'due-date',
           'key': 'dueDate'
         },
@@ -80,7 +97,8 @@ class _JourneyScreenState extends State<JourneyScreen> {
         {
           'icon': '🩺',
           'q': 'Any conditions to track together?',
-          'sub': 'Optional — select any for extra personalised support and reminders.',
+          'sub':
+              'Optional — select any for extra personalised support and reminders.',
           'type': 'chips-multi',
           'key': 'conditions',
           'opts': [
@@ -96,7 +114,8 @@ class _JourneyScreenState extends State<JourneyScreen> {
         {
           'icon': '💙',
           'q': 'What support do you want from us?',
-          'sub': 'We\'ll send you the content that matters most. Adjust anytime.',
+          'sub':
+              'We\'ll send you the content that matters most. Adjust anytime.',
           'type': 'chips-multi',
           'key': 'support',
           'opts': [
@@ -114,7 +133,8 @@ class _JourneyScreenState extends State<JourneyScreen> {
         {
           'icon': '🌿',
           'q': 'What\'s your main goal?',
-          'sub': 'This shapes your insights, alerts, and what tools we highlight for you.',
+          'sub':
+              'This shapes your insights, alerts, and what tools we highlight for you.',
           'type': 'chips-big-single',
           'key': 'goal',
           'opts': [
@@ -126,7 +146,8 @@ class _JourneyScreenState extends State<JourneyScreen> {
         {
           'icon': '📅',
           'q': 'When did your last period start?',
-          'sub': 'We calculate your fertile window from this. Ovulation is usually ~14 days before your next period.',
+          'sub':
+              'We calculate your fertile window from this. Ovulation is usually ~14 days before your next period.',
           'type': 'date',
           'key': 'lastPeriod',
           'skip': 'Skip for now'
@@ -146,7 +167,8 @@ class _JourneyScreenState extends State<JourneyScreen> {
         {
           'icon': '🌡️',
           'q': 'What do you currently track?',
-          'sub': 'Select all that apply — we\'ll guide you on using each method together.',
+          'sub':
+              'Select all that apply — we\'ll guide you on using each method together.',
           'type': 'chips-multi',
           'key': 'methods',
           'opts': [
@@ -179,7 +201,8 @@ class _JourneyScreenState extends State<JourneyScreen> {
         {
           'icon': '🩸',
           'q': 'When did your last period start?',
-          'sub': 'This helps us predict your next period and fertile window accurately.',
+          'sub':
+              'This helps us predict your next period and fertile window accurately.',
           'type': 'date',
           'key': 'lastPeriod',
           'skip': 'Not sure / this is my first time tracking'
@@ -187,7 +210,8 @@ class _JourneyScreenState extends State<JourneyScreen> {
         {
           'icon': '📅',
           'q': 'How long is your cycle usually?',
-          'sub': 'Day 1 of one period to Day 1 of the next. Most cycles are 21–35 days.',
+          'sub':
+              'Day 1 of one period to Day 1 of the next. Most cycles are 21–35 days.',
           'type': 'stepper',
           'key': 'cycleLen',
           'min': 18,
@@ -210,7 +234,8 @@ class _JourneyScreenState extends State<JourneyScreen> {
         {
           'icon': '💧',
           'q': 'How would you describe your usual flow?',
-          'sub': 'Helps us give you better predictions and product recommendations.',
+          'sub':
+              'Helps us give you better predictions and product recommendations.',
           'type': 'chips-single',
           'key': 'flow',
           'opts': [
@@ -223,7 +248,8 @@ class _JourneyScreenState extends State<JourneyScreen> {
         {
           'icon': '🌀',
           'q': 'Symptoms you often get?',
-          'sub': 'Select all that apply — we\'ll personalise your care tips each phase.',
+          'sub':
+              'Select all that apply — we\'ll personalise your care tips each phase.',
           'type': 'chips-multi',
           'key': 'symptoms',
           'opts': [
@@ -290,7 +316,8 @@ class _JourneyScreenState extends State<JourneyScreen> {
                         decoration: BoxDecoration(
                           color: Colors.white,
                           shape: BoxShape.circle,
-                          border: Border.all(color: const Color(0xFFFCE8E4), width: 1.5),
+                          border: Border.all(
+                              color: const Color(0xFFFCE8E4), width: 1.5),
                         ),
                         child: const Icon(Icons.chevron_left, size: 20),
                       ),
@@ -335,7 +362,7 @@ class _JourneyScreenState extends State<JourneyScreen> {
                   ],
                 ),
               ),
-              
+
               // Body
               Expanded(
                 child: SingleChildScrollView(
@@ -373,11 +400,15 @@ class _JourneyScreenState extends State<JourneyScreen> {
                           decoration: BoxDecoration(
                             color: Colors.white,
                             borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: accentColor.withOpacity(0.2)),
+                            border:
+                                Border.all(color: accentColor.withOpacity(0.2)),
                           ),
                           child: Text(
                             '💡 ${step['warn']}',
-                            style: TextStyle(fontSize: 11, color: accentColor, fontWeight: FontWeight.w700),
+                            style: TextStyle(
+                                fontSize: 11,
+                                color: accentColor,
+                                fontWeight: FontWeight.w700),
                           ),
                         ),
                       ],
@@ -388,7 +419,7 @@ class _JourneyScreenState extends State<JourneyScreen> {
                   ),
                 ),
               ),
-              
+
               // Bottom Button
               Padding(
                 padding: const EdgeInsets.all(24.0),
@@ -401,14 +432,18 @@ class _JourneyScreenState extends State<JourneyScreen> {
                       backgroundColor: accentColor,
                       foregroundColor: Colors.white,
                       elevation: 0,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(18)),
                       shadowColor: accentColor.withOpacity(0.35),
                     ).copyWith(
                       backgroundColor: WidgetStateProperty.all(accentColor),
                     ),
                     child: Text(
-                      currentStep == steps.length - 1 ? "Done! Let's go →" : "Continue →",
-                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w900),
+                      currentStep == steps.length - 1
+                          ? "Done! Let's go →"
+                          : "Continue →",
+                      style: const TextStyle(
+                          fontSize: 16, fontWeight: FontWeight.w900),
                     ),
                   ),
                 ),
@@ -448,14 +483,17 @@ class _JourneyScreenState extends State<JourneyScreen> {
                   firstDate: DateTime(2000),
                   lastDate: DateTime(2100),
                 );
-                if (date != null) setState(() => journeyData[step['key']] = date.toString());
+                if (date != null)
+                  setState(() => journeyData[step['key']] = date.toString());
               },
               child: Container(
-                padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
+                padding:
+                    const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(14),
-                  border: Border.all(color: accentColor.withOpacity(0.3), width: 1.5),
+                  border: Border.all(
+                      color: accentColor.withOpacity(0.3), width: 1.5),
                 ),
                 child: Row(
                   children: [
@@ -466,7 +504,9 @@ class _JourneyScreenState extends State<JourneyScreen> {
                       style: TextStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.w800,
-                        color: journeyData[step['key']] == null ? Colors.grey : AppColors.textDark,
+                        color: journeyData[step['key']] == null
+                            ? Colors.grey
+                            : AppColors.textDark,
                       ),
                     ),
                   ],
@@ -479,7 +519,11 @@ class _JourneyScreenState extends State<JourneyScreen> {
                 onTap: _nextStep,
                 child: Text(
                   step['skip'],
-                  style: const TextStyle(fontSize: 12, color: Color(0xFFD0B0B8), fontWeight: FontWeight.w700, decoration: TextDecoration.underline),
+                  style: const TextStyle(
+                      fontSize: 12,
+                      color: Color(0xFFD0B0B8),
+                      fontWeight: FontWeight.w700,
+                      decoration: TextDecoration.underline),
                 ),
               ),
             ]
@@ -501,17 +545,27 @@ class _JourneyScreenState extends State<JourneyScreen> {
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(step['unit'], style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w800, color: Color(0xFFD0B0B8))),
-                      Text(val.toString(), style: TextStyle(fontSize: 32, fontWeight: FontWeight.w900, color: accentColor)),
+                      Text(step['unit'],
+                          style: const TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w800,
+                              color: Color(0xFFD0B0B8))),
+                      Text(val.toString(),
+                          style: TextStyle(
+                              fontSize: 32,
+                              fontWeight: FontWeight.w900,
+                              color: accentColor)),
                     ],
                   ),
                   const Spacer(),
                   _buildStepperBtn(Icons.remove, () {
-                    if (val > step['min']) setState(() => journeyData[step['key']] = val - 1);
+                    if (val > step['min'])
+                      setState(() => journeyData[step['key']] = val - 1);
                   }),
                   const SizedBox(width: 12),
                   _buildStepperBtn(Icons.add, () {
-                    if (val < step['max']) setState(() => journeyData[step['key']] = val + 1);
+                    if (val < step['max'])
+                      setState(() => journeyData[step['key']] = val + 1);
                   }),
                 ],
               ),
@@ -522,7 +576,11 @@ class _JourneyScreenState extends State<JourneyScreen> {
                 onTap: _nextStep,
                 child: Text(
                   step['skip'],
-                  style: const TextStyle(fontSize: 12, color: Color(0xFFD0B0B8), fontWeight: FontWeight.w700, decoration: TextDecoration.underline),
+                  style: const TextStyle(
+                      fontSize: 12,
+                      color: Color(0xFFD0B0B8),
+                      fontWeight: FontWeight.w700,
+                      decoration: TextDecoration.underline),
                 ),
               ),
             ]
@@ -542,8 +600,10 @@ class _JourneyScreenState extends State<JourneyScreen> {
               onTap: () {
                 setState(() {
                   if (isMulti) {
-                    if (selected.contains(o['l'])) selected.remove(o['l']);
-                    else selected.add(o['l']);
+                    if (selected.contains(o['l']))
+                      selected.remove(o['l']);
+                    else
+                      selected.add(o['l']);
                     journeyData[step['key']] = selected;
                   } else {
                     journeyData[step['key']] = o['v'];
@@ -551,15 +611,21 @@ class _JourneyScreenState extends State<JourneyScreen> {
                 });
               },
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 decoration: BoxDecoration(
                   color: on ? accentColor : Colors.white,
                   borderRadius: BorderRadius.circular(14),
-                  border: Border.all(color: on ? accentColor : const Color(0xFFFCE8E4), width: 1.5),
+                  border: Border.all(
+                      color: on ? accentColor : const Color(0xFFFCE8E4),
+                      width: 1.5),
                 ),
                 child: Text(
                   '${o['e']} ${o['l']}',
-                  style: TextStyle(fontSize: 13, fontWeight: FontWeight.w800, color: on ? Colors.white : AppColors.textDark),
+                  style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w800,
+                      color: on ? Colors.white : AppColors.textDark),
                 ),
               ),
             );
@@ -576,8 +642,10 @@ class _JourneyScreenState extends State<JourneyScreen> {
                 '${o['e']} ${o['l']}',
                 on,
                 () {
-                  if (o['special'] == true) context.go('/mode-selection');
-                  else setState(() => journeyData[step['key']] = o['v']);
+                  if (o['special'] == true)
+                    context.go('/mode-selection');
+                  else
+                    setState(() => journeyData[step['key']] = o['v']);
                 },
               ),
             );
@@ -597,11 +665,15 @@ class _JourneyScreenState extends State<JourneyScreen> {
         decoration: BoxDecoration(
           color: on ? accentColor : Colors.white,
           borderRadius: BorderRadius.circular(18),
-          border: Border.all(color: on ? accentColor : const Color(0xFFFCE8E4), width: 1.5),
+          border: Border.all(
+              color: on ? accentColor : const Color(0xFFFCE8E4), width: 1.5),
         ),
         child: Text(
           text,
-          style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: on ? Colors.white : AppColors.textDark),
+          style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w800,
+              color: on ? Colors.white : AppColors.textDark),
         ),
       ),
     );
