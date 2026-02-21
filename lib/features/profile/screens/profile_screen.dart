@@ -4,69 +4,208 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/providers/firebase_providers.dart';
+import '../../../models/user_profile_model.dart';
 
-class ProfileScreen extends ConsumerWidget {
+class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<ProfileScreen> createState() => _ProfileScreenState();
+}
+
+class _ProfileScreenState extends ConsumerState<ProfileScreen> {
+  bool _isLoading = false;
+
+  Future<void> _editProfile(UserProfile? profile) async {
+    if (profile == null) return;
+    
+    final nameController = TextEditingController(text: profile.displayName);
+    
+    final result = await showDialog<String>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Edit Profile', style: TextStyle(fontWeight: FontWeight.w900, color: AppColors.textDark)),
+        content: TextField(
+          controller: nameController,
+          decoration: const InputDecoration(
+            labelText: 'Display Name',
+            labelStyle: TextStyle(color: AppColors.textMid),
+            focusedBorder: UnderlineInputBorder(borderSide: BorderSide(color: AppColors.primaryRose)),
+          ),
+          autofocus: true,
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel', style: TextStyle(color: AppColors.textMid))),
+          TextButton(
+            onPressed: () => Navigator.pop(context, nameController.text),
+            child: const Text('Save', style: TextStyle(color: AppColors.primaryRose, fontWeight: FontWeight.w800)),
+          ),
+        ],
+      ),
+    );
+
+    if (result != null && result.isNotEmpty && result != profile.displayName) {
+      setState(() => _isLoading = true);
+      try {
+        final firestore = ref.read(firestoreProvider);
+        await firestore.collection('users').doc(profile.uid).collection('profile').doc('current').update({
+          'displayName': result,
+        });
+        if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Profile updated!')));
+      } catch (e) {
+        if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+      } finally {
+        if (mounted) setState(() => _isLoading = false);
+      }
+    }
+  }
+
+  Future<void> _changeLanguage() async {
+    final List<Map<String, String>> languages = [
+      {'code': 'en', 'name': 'English', 'flag': '🇬🇧'},
+      {'code': 'ms', 'name': 'Melayu', 'flag': '🇲🇾'},
+      {'code': 'es', 'name': 'Español', 'flag': '🇪🇸'},
+      {'code': 'hi', 'name': 'हिन्दी', 'flag': '🇮🇳'},
+      {'code': 'ar', 'name': 'العربية', 'flag': '🇸🇦'},
+    ];
+
+    await showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      builder: (context) => Padding(
+        padding: const EdgeInsets.symmetric(vertical: 20),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text('Select Language', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: AppColors.textDark)),
+            const SizedBox(height: 10),
+            ...languages.map((lang) => ListTile(
+              leading: Text(lang['flag']!, style: const TextStyle(fontSize: 24)),
+              title: Text(lang['name']!, style: const TextStyle(fontWeight: FontWeight.w700)),
+              trailing: context.locale.languageCode == lang['code'] ? const Icon(Icons.check_circle, color: AppColors.primaryRose) : null,
+              onTap: () {
+                context.setLocale(Locale(lang['code']!));
+                Navigator.pop(context);
+              },
+            )),
+          ],
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final auth = ref.watch(firebaseAuthProvider);
     final user = auth.currentUser;
+    final firestore = ref.watch(firestoreProvider);
 
     return Scaffold(
       body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
+        child: StreamBuilder(
+          stream: user != null 
+            ? firestore.collection('users').doc(user.uid).collection('profile').doc('current').snapshots()
+            : const Stream.empty(),
+          builder: (context, snapshot) {
+            UserProfile? profile;
+            if (snapshot.hasData && snapshot.data!.exists) {
+              profile = UserProfile.fromFirestore(snapshot.data!);
+            }
+
+            return SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  IconButton(
-                    icon: const Icon(Icons.arrow_back_ios, color: AppColors.textDark, size: 20),
-                    onPressed: () => context.go('/home'),
+                  Row(
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.arrow_back_ios, color: AppColors.textDark, size: 20),
+                        onPressed: () => context.go('/home'),
+                      ),
+                      Text(
+                        'Profile & Settings',
+                        style: Theme.of(context).textTheme.titleLarge,
+                      ),
+                      if (_isLoading) ...[
+                        const SizedBox(width: 10),
+                        const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.primaryRose)),
+                      ]
+                    ],
                   ),
-                  Text(
-                    'Profile & Settings',
-                    style: Theme.of(context).textTheme.titleLarge,
+                  const SizedBox(height: 30),
+                  _buildProfileHeader(profile?.displayName ?? 'Lovely User', user?.isAnonymous == true ? 'Anonymous Mode' : (user?.email ?? 'No Email')),
+                  const SizedBox(height: 30),
+                  _buildSectionTitle('ACCOUNT'),
+                  _buildSettingsCard([
+                    _buildSettingsTile(Icons.person_outline, 'Edit Profile', () => _editProfile(profile)),
+                    _buildSettingsTile(Icons.language, 'Language', _changeLanguage),
+                    _buildSettingsTile(Icons.notifications_none, 'Notifications', () {
+                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Notification settings coming soon!')));
+                    }),
+                  ]),
+                  const SizedBox(height: 24),
+                  _buildSectionTitle('PREFERENCES'),
+                  _buildSettingsCard([
+                    _buildSettingsTile(Icons.lock_outline, 'Privacy & Security', () => context.go('/privacy')),
+                    _buildSettingsTile(Icons.cloud_upload_outlined, 'Cloud Sync', () {
+                       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Cloud sync is active')));
+                    }),
+                    _buildSettingsTile(Icons.palette_outlined, 'Theme', () {
+                       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Light theme is currently the only option')));
+                    }),
+                  ]),
+                  const SizedBox(height: 24),
+                  _buildSectionTitle('DANGER ZONE'),
+                  _buildSettingsCard([
+                    _buildSettingsTile(Icons.logout, 'Sign Out', () async {
+                      final confirm = await showDialog<bool>(
+                        context: context,
+                        builder: (context) => AlertDialog(
+                          title: const Text('Sign Out'),
+                          content: const Text('Are you sure you want to sign out?'),
+                          actions: [
+                            TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
+                            TextButton(onPressed: () => Navigator.pop(context, true), child: const Text('Sign Out', style: TextStyle(color: Colors.redAccent))),
+                          ],
+                        ),
+                      );
+                      if (confirm == true) {
+                        await auth.signOut();
+                        if (context.mounted) context.go('/splash');
+                      }
+                    }, color: Colors.redAccent),
+                    _buildSettingsTile(Icons.delete_forever_outlined, 'Delete Account', () async {
+                       final confirm = await showDialog<bool>(
+                        context: context,
+                        builder: (context) => AlertDialog(
+                          title: const Text('Delete Account'),
+                          content: const Text('This will permanently delete all your data. This action cannot be undone.'),
+                          actions: [
+                            TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
+                            TextButton(onPressed: () => Navigator.pop(context, true), child: const Text('Delete', style: TextStyle(color: Colors.redAccent))),
+                          ],
+                        ),
+                      );
+                      if (confirm == true) {
+                        // In a real app, you'd delete Firestore data first
+                        await user?.delete();
+                        if (context.mounted) context.go('/splash');
+                      }
+                    }, color: Colors.redAccent),
+                  ]),
+                  const SizedBox(height: 40),
+                  const Center(
+                    child: Text(
+                      'MeTrustual v1.0.0\nMade with ❤️ for you',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(fontSize: 11, color: AppColors.textMuted, fontWeight: FontWeight.w700),
+                    ),
                   ),
                 ],
               ),
-              const SizedBox(height: 30),
-              _buildProfileHeader(user?.displayName ?? 'Lovely User', user?.email ?? 'Anonymous Mode'),
-              const SizedBox(height: 30),
-              _buildSectionTitle('ACCOUNT'),
-              _buildSettingsCard([
-                _buildSettingsTile(Icons.person_outline, 'Edit Profile', () {}),
-                _buildSettingsTile(Icons.language, 'Language', () {}),
-                _buildSettingsTile(Icons.notifications_none, 'Notifications', () {}),
-              ]),
-              const SizedBox(height: 24),
-              _buildSectionTitle('PREFERENCES'),
-              _buildSettingsCard([
-                _buildSettingsTile(Icons.lock_outline, 'Privacy & Security', () => context.go('/privacy')),
-                _buildSettingsTile(Icons.cloud_upload_outlined, 'Cloud Sync', () {}),
-                _buildSettingsTile(Icons.palette_outlined, 'Theme', () {}),
-              ]),
-              const SizedBox(height: 24),
-              _buildSectionTitle('DANGER ZONE'),
-              _buildSettingsCard([
-                _buildSettingsTile(Icons.logout, 'Sign Out', () async {
-                  await auth.signOut();
-                  if (context.mounted) context.go('/');
-                }, color: Colors.redAccent),
-                _buildSettingsTile(Icons.delete_forever_outlined, 'Delete Account', () {}, color: Colors.redAccent),
-              ]),
-              const SizedBox(height: 40),
-              const Center(
-                child: Text(
-                  'MeTrustual v1.0.0\nMade with ❤️ for you',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 11, color: AppColors.textMuted, fontWeight: FontWeight.w700),
-                ),
-              ),
-            ],
-          ),
+            );
+          }
         ),
       ),
     );

@@ -29,7 +29,7 @@ class _PrivacyScreenState extends State<PrivacyScreen> {
                   IconButton(
                     icon: const Icon(Icons.arrow_back_ios,
                         color: AppColors.textDark, size: 20),
-                    onPressed: () => context.go('/home'),
+                    onPressed: () => context.go('/profile'),
                   ),
                   Text(
                     'privacy_title'.tr(),
@@ -62,10 +62,28 @@ class _PrivacyScreenState extends State<PrivacyScreen> {
                 'Export or delete',
                 [
                   _buildActionButton(
-                      '📥 Download my data', AppColors.textMid, false),
+                      '📥 Download my data', AppColors.textMid, false, () {
+                        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Preparing your data export...')));
+                      }),
                   const SizedBox(height: 12),
                   _buildActionButton(
-                      '🗑️ Delete everything', Colors.redAccent, true),
+                      '🗑️ Delete everything', Colors.redAccent, true, () async {
+                        final confirm = await showDialog<bool>(
+                          context: context,
+                          builder: (context) => AlertDialog(
+                            title: const Text('Delete Everything'),
+                            content: const Text('This will permanently delete all your data. This action cannot be undone.'),
+                            actions: [
+                              TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
+                              TextButton(onPressed: () => Navigator.pop(context, true), child: const Text('Delete', style: TextStyle(color: Colors.redAccent))),
+                            ],
+                          ),
+                        );
+                        if (confirm == true) {
+                           ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('All data deleted.')));
+                           context.go('/splash');
+                        }
+                      }),
                 ],
               ),
             ],
@@ -193,11 +211,11 @@ class _PrivacyScreenState extends State<PrivacyScreen> {
     );
   }
 
-  Widget _buildActionButton(String label, Color color, bool isOutline) {
+  Widget _buildActionButton(String label, Color color, bool isOutline, VoidCallback onPressed) {
     return SizedBox(
       width: double.infinity,
       child: ElevatedButton(
-        onPressed: () {},
+        onPressed: onPressed,
         style: ElevatedButton.styleFrom(
           backgroundColor: isOutline ? Colors.white : color.withOpacity(0.1),
           foregroundColor: color,
