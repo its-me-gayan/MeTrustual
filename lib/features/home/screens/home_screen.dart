@@ -164,7 +164,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         return 1;
       case '/education':
         return 2;
-      case '/privacy':
+      case '/care':
         return 3;
       default:
         return 0;

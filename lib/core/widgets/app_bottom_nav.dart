@@ -24,7 +24,7 @@ class AppBottomNav extends StatelessWidget {
           _buildNavItem(context, '✨', 'Insights', activeIndex == 1, '/insights'),
           const SizedBox(width: 52), // Space for FAB
           _buildNavItem(context, '📖', 'Learn', activeIndex == 2, '/education'),
-          _buildNavItem(context, '🌿', 'Care', activeIndex == 3, '/privacy'), // Using privacy for now as care placeholder
+          _buildNavItem(context, '🌿', 'Care', activeIndex == 3, '/care'),
         ],
       ),
     );
