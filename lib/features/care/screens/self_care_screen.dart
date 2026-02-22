@@ -15,6 +15,7 @@ class SelfCareScreen extends ConsumerStatefulWidget {
 
 class _SelfCareScreenState extends ConsumerState<SelfCareScreen> {
   int _affIdx = 0;
+  String? _selectedPhase; // Track selected phase
 
   final Map<String, List<String>> _allAffirmations = {
     'period': [
@@ -52,6 +53,11 @@ class _SelfCareScreenState extends ConsumerState<SelfCareScreen> {
             ? const Color(0xFF5A8E6A)
             : AppColors.primaryRose;
 
+    // Initialize selected phase on first build
+    if (_selectedPhase == null) {
+      _selectedPhase = _getDefaultPhase(currentMode);
+    }
+
     return Scaffold(
       extendBody: true,
       body: SafeArea(
@@ -84,7 +90,7 @@ class _SelfCareScreenState extends ConsumerState<SelfCareScreen> {
               const SizedBox(height: 24),
               _buildPhaseStrip(currentMode, color),
               const SizedBox(height: 24),
-              _buildCareHero(currentMode, color),
+              _buildCareHero(currentMode, color, _selectedPhase!),
               const SizedBox(height: 24),
               _buildAffirmationCard(currentMode),
               const SizedBox(height: 24),
@@ -112,7 +118,7 @@ class _SelfCareScreenState extends ConsumerState<SelfCareScreen> {
                 ),
               ),
               const SizedBox(height: 12),
-              ..._buildRituals(currentMode, color),
+              ..._buildRituals(currentMode, color, _selectedPhase!),
               const SizedBox(height: 32),
               Center(
                 child: Text(
@@ -156,56 +162,74 @@ class _SelfCareScreenState extends ConsumerState<SelfCareScreen> {
     }
   }
 
+  String _getDefaultPhase(String currentMode) {
+    if (currentMode == 'period') {
+      return 'Follicular';
+    } else if (currentMode == 'preg') {
+      return '2nd Trim';
+    } else {
+      return 'Pre-Ovul';
+    }
+  }
+
   Widget _buildPhaseStrip(String currentMode, Color color) {
     final List<Map<String, dynamic>> phases = currentMode == 'period'
         ? [
-            {'e': '🩸', 'l': 'Menstrual'},
-            {'e': '🌱', 'l': 'Follicular', 'active': true},
-            {'e': '🎯', 'l': 'Ovulation'},
-            {'e': '🍂', 'l': 'Luteal'}
+            {'e': '🩸', 'l': 'Menstrual', 'key': 'Menstrual'},
+            {'e': '🌱', 'l': 'Follicular', 'key': 'Follicular'},
+            {'e': '✨', 'l': 'Ovulatory', 'key': 'Ovulatory'},
+            {'e': '🌙', 'l': 'Luteal', 'key': 'Luteal'}
           ]
         : currentMode == 'preg'
             ? [
-                {'e': '🌱', 'l': '1st Trim'},
-                {'e': '💙', 'l': '2nd Trim', 'active': true},
-                {'e': '🎁', 'l': '3rd Trim'}
+                {'e': '💙', 'l': '1st Trim', 'key': '1st Trim'},
+                {'e': '🌸', 'l': '2nd Trim', 'key': '2nd Trim'},
+                {'e': '🌟', 'l': '3rd Trim', 'key': '3rd Trim'},
+                {'e': '👼', 'l': 'Newborn', 'key': 'Newborn'}
               ]
             : [
-                {'e': '🩸', 'l': 'Period'},
-                {'e': '🌿', 'l': 'Fertile', 'active': true},
-                {'e': '🎯', 'l': 'Ovulation'},
-                {'e': '⌛', 'l': 'Wait'}
+                {'e': '📅', 'l': 'Early', 'key': 'Early'},
+                {'e': '🌱', 'l': 'Pre-Ovul', 'key': 'Pre-Ovul'},
+                {'e': '🎯', 'l': 'Peak', 'key': 'Peak'},
+                {'e': '📉', 'l': 'Post-Ovul', 'key': 'Post-Ovul'}
               ];
 
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       child: Row(
         children: phases.map((p) {
-          final active = p['active'] == true;
-          return Container(
-            margin: const EdgeInsets.only(right: 10),
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            decoration: BoxDecoration(
-              color: active ? color.withOpacity(0.15) : Colors.white,
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(
-                color: active ? color.withOpacity(0.3) : AppColors.border,
-                width: 1.5,
-              ),
-            ),
-            child: Row(
-              children: [
-                Text(p['e'], style: const TextStyle(fontSize: 16)),
-                const SizedBox(width: 6),
-                Text(
-                  p['l'],
-                  style: GoogleFonts.nunito(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w800,
-                    color: active ? color : AppColors.textMid,
-                  ),
+          final isActive = _selectedPhase == p['key'];
+          return GestureDetector(
+            onTap: () {
+              setState(() {
+                _selectedPhase = p['key'];
+              });
+            },
+            child: Container(
+              margin: const EdgeInsets.only(right: 10),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              decoration: BoxDecoration(
+                color: isActive ? color.withOpacity(0.15) : Colors.white,
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(
+                  color: isActive ? color.withOpacity(0.3) : AppColors.border,
+                  width: 1.5,
                 ),
-              ],
+              ),
+              child: Row(
+                children: [
+                  Text(p['e'], style: const TextStyle(fontSize: 16)),
+                  const SizedBox(width: 6),
+                  Text(
+                    p['l'],
+                    style: GoogleFonts.nunito(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w800,
+                      color: isActive ? color : AppColors.textMid,
+                    ),
+                  ),
+                ],
+              ),
             ),
           );
         }).toList(),
@@ -213,8 +237,8 @@ class _SelfCareScreenState extends ConsumerState<SelfCareScreen> {
     );
   }
 
-  Widget _buildCareHero(String currentMode, Color color) {
-    final ritual = _getTodayRitual(currentMode);
+  Widget _buildCareHero(String currentMode, Color color, String selectedPhase) {
+    final ritual = _getRitualForPhase(currentMode, selectedPhase);
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(24),
@@ -455,8 +479,8 @@ class _SelfCareScreenState extends ConsumerState<SelfCareScreen> {
     );
   }
 
-  List<Widget> _buildRituals(String currentMode, Color color) {
-    final ritualData = _getRitualList(currentMode);
+  List<Widget> _buildRituals(String currentMode, Color color, String selectedPhase) {
+    final ritualData = _getRitualListForPhase(currentMode, selectedPhase);
     return ritualData.map((r) {
       return Container(
         margin: const EdgeInsets.only(bottom: 10),
@@ -517,50 +541,220 @@ class _SelfCareScreenState extends ConsumerState<SelfCareScreen> {
     }).toList();
   }
 
-  Map<String, String> _getTodayRitual(String currentMode) {
+  // ─── PHASE-SPECIFIC DATA ───
+
+  Map<String, String> _getRitualForPhase(String currentMode, String phase) {
     if (currentMode == 'period') {
-      return {
-        'e': '🧘',
-        't': 'Follicular Phase Flow',
-        'd': 'Your energy is rising — perfect for gentle stretching & breathwork to welcome the new cycle.'
-      };
+      switch (phase) {
+        case 'Menstrual':
+          return {
+            'e': '🧘',
+            't': 'Menstrual Phase Flow',
+            'd': 'Rest and restore — gentle practices to honor your body\'s need for recovery.'
+          };
+        case 'Follicular':
+          return {
+            'e': '🧘',
+            't': 'Follicular Phase Flow',
+            'd': 'Your energy is rising — perfect for gentle stretching & breathwork to welcome the new cycle.'
+          };
+        case 'Ovulatory':
+          return {
+            'e': '✨',
+            't': 'Ovulatory Phase Energy',
+            'd': 'Harness your peak energy — dynamic movement and social connection shine now.'
+          };
+        case 'Luteal':
+          return {
+            'e': '🌙',
+            't': 'Luteal Phase Calm',
+            'd': 'Slow down and nurture — introspective practices support your inner wisdom.'
+          };
+        default:
+          return {
+            'e': '🧘',
+            't': 'Follicular Phase Flow',
+            'd': 'Your energy is rising — perfect for gentle stretching & breathwork to welcome the new cycle.'
+          };
+      }
     } else if (currentMode == 'preg') {
-      return {
-        'e': '🤰',
-        't': '2nd Trimester Wellness',
-        'd': 'Your energy is back — nurture your body and bond with baby with these gentle daily rituals.'
-      };
+      switch (phase) {
+        case '1st Trim':
+          return {
+            'e': '💙',
+            't': '1st Trimester Wellness',
+            'd': 'Nourish and rest — support your body through these early changes with gentle care.'
+          };
+        case '2nd Trim':
+          return {
+            'e': '🌸',
+            't': '2nd Trimester Wellness',
+            'd': 'Your energy is back — nurture your body and bond with baby with these gentle daily rituals.'
+          };
+        case '3rd Trim':
+          return {
+            'e': '🌟',
+            't': '3rd Trimester Wellness',
+            'd': 'Prepare for birth — grounding practices to ease discomfort and build confidence.'
+          };
+        case 'Newborn':
+          return {
+            'e': '👼',
+            't': 'Postpartum Care',
+            'd': 'Recovery and bonding — gentle rituals to support your healing journey.'
+          };
+        default:
+          return {
+            'e': '🌸',
+            't': '2nd Trimester Wellness',
+            'd': 'Your energy is back — nurture your body and bond with baby with these gentle daily rituals.'
+          };
+      }
     } else {
-      return {
-        'e': '🌿',
-        't': 'Pre-Ovulation Rituals',
-        'd': 'Your fertile window is near — support your hormones with nurturing daily practices.'
-      };
+      switch (phase) {
+        case 'Early':
+          return {
+            'e': '📅',
+            't': 'Early Cycle Rituals',
+            'd': 'Begin your journey — prepare your body and mind for the fertile window ahead.'
+          };
+        case 'Pre-Ovul':
+          return {
+            'e': '🌱',
+            't': 'Pre-Ovulation Rituals',
+            'd': 'Your fertile window is near — support your hormones with nurturing daily practices.'
+          };
+        case 'Peak':
+          return {
+            'e': '🎯',
+            't': 'Peak Fertility Rituals',
+            'd': 'Your most fertile moment — celebrate your body\'s natural rhythm and power.'
+          };
+        case 'Post-Ovul':
+          return {
+            'e': '📉',
+            't': 'Post-Ovulation Rituals',
+            'd': 'Transition phase — balance and grounding practices as hormones shift.'
+          };
+        default:
+          return {
+            'e': '🌱',
+            't': 'Pre-Ovulation Rituals',
+            'd': 'Your fertile window is near — support your hormones with nurturing daily practices.'
+          };
+      }
     }
   }
 
-  List<Map<String, String>> _getRitualList(String currentMode) {
+  List<Map<String, String>> _getRitualListForPhase(String currentMode, String phase) {
     if (currentMode == 'period') {
-      return [
-        {'e': '🧘', 't': 'Morning Yoga — Sun Salutation', 's': 'Energise your body as oestrogen rises', 'dur': '8 min'},
-        {'e': '💆', 't': 'Gua Sha Face Massage', 's': 'Lymphatic drainage & glow routine', 'dur': '5 min'},
-        {'e': '🛁', 't': 'Rose & Magnesium Bath Soak', 's': 'Relax muscles & ease lingering cramps', 'dur': '20 min'},
-        {'e': '📓', 't': 'Cycle Journal Prompt', 's': '"What do I want to invite this cycle?"', 'dur': '5 min'},
-      ];
+      switch (phase) {
+        case 'Menstrual':
+          return [
+            {'e': '🧘', 't': 'Restorative Yoga', 's': 'Gentle poses to ease cramps', 'dur': '10 min'},
+            {'e': '🛁', 't': 'Warm Herbal Bath', 's': 'Relax and restore energy', 'dur': '20 min'},
+            {'e': '📓', 't': 'Reflection Journal', 's': 'Explore your inner wisdom', 'dur': '10 min'},
+            {'e': '🍵', 't': 'Herbal Tea Ritual', 's': 'Nourish with warming herbs', 'dur': '5 min'},
+          ];
+        case 'Follicular':
+          return [
+            {'e': '🧘', 't': 'Morning Yoga — Sun Salutation', 's': 'Energise your body as oestrogen rises', 'dur': '8 min'},
+            {'e': '💆', 't': 'Gua Sha Face Massage', 's': 'Lymphatic drainage & glow routine', 'dur': '5 min'},
+            {'e': '🛁', 't': 'Rose & Magnesium Bath Soak', 's': 'Relax muscles & ease lingering cramps', 'dur': '20 min'},
+            {'e': '📓', 't': 'Cycle Journal Prompt', 's': '"What do I want to invite this cycle?"', 'dur': '5 min'},
+          ];
+        case 'Ovulatory':
+          return [
+            {'e': '🏃', 't': 'High-Energy Workout', 's': 'Harness peak energy levels', 'dur': '30 min'},
+            {'e': '💃', 't': 'Dance & Movement', 's': 'Express your confidence', 'dur': '15 min'},
+            {'e': '🤝', 't': 'Social Connection', 's': 'Reach out to loved ones', 'dur': '30 min'},
+            {'e': '✨', 't': 'Confidence Affirmation', 's': 'Celebrate your power', 'dur': '5 min'},
+          ];
+        case 'Luteal':
+          return [
+            {'e': '🧘', 't': 'Yin Yoga Flow', 's': 'Deep stretches and release', 'dur': '20 min'},
+            {'e': '🎨', 't': 'Creative Expression', 's': 'Art, music, or writing', 'dur': '20 min'},
+            {'e': '📚', 't': 'Mindful Reading', 's': 'Nourish your mind', 'dur': '15 min'},
+            {'e': '🌙', 't': 'Moon Meditation', 's': 'Connect with inner stillness', 'dur': '10 min'},
+          ];
+        default:
+          return [
+            {'e': '🧘', 't': 'Morning Yoga — Sun Salutation', 's': 'Energise your body as oestrogen rises', 'dur': '8 min'},
+            {'e': '💆', 't': 'Gua Sha Face Massage', 's': 'Lymphatic drainage & glow routine', 'dur': '5 min'},
+          ];
+      }
     } else if (currentMode == 'preg') {
-      return [
-        {'e': '🧘', 't': 'Prenatal Yoga — Hip Opener', 's': 'Safe stretches for your changing body', 'dur': '12 min'},
-        {'e': '🌬️', 't': '4-7-8 Breathing for Calm', 's': 'Reduce pregnancy anxiety & improve sleep', 'dur': '5 min'},
-        {'e': '💆', 't': 'Perineal Massage', 's': 'Prepare for birth — from week 34', 'dur': '5 min'},
-        {'e': '📓', 't': 'Baby Letter Journal', 's': '"Dear baby, today I felt…"', 'dur': '5 min'},
-      ];
+      switch (phase) {
+        case '1st Trim':
+          return [
+            {'e': '🧘', 't': 'Gentle Prenatal Yoga', 's': 'Support your changing body', 'dur': '15 min'},
+            {'e': '🌿', 't': 'Herbal Support', 's': 'Nourish with pregnancy teas', 'dur': '5 min'},
+            {'e': '😴', 't': 'Rest & Restoration', 's': 'Honor your body\'s needs', 'dur': '20 min'},
+            {'e': '📓', 't': 'Pregnancy Journal', 's': 'Document your journey', 'dur': '10 min'},
+          ];
+        case '2nd Trim':
+          return [
+            {'e': '🧘', 't': 'Prenatal Yoga — Hip Opener', 's': 'Safe stretches for your changing body', 'dur': '12 min'},
+            {'e': '🌬️', 't': '4-7-8 Breathing for Calm', 's': 'Reduce pregnancy anxiety & improve sleep', 'dur': '5 min'},
+            {'e': '💆', 't': 'Perineal Massage', 's': 'Prepare for birth — from week 34', 'dur': '5 min'},
+            {'e': '📓', 't': 'Baby Letter Journal', 's': '"Dear baby, today I felt…"', 'dur': '5 min'},
+          ];
+        case '3rd Trim':
+          return [
+            {'e': '🚶', 't': 'Pelvic Floor Walks', 's': 'Prepare for labor', 'dur': '15 min'},
+            {'e': '🧘', 't': 'Birth Ball Exercises', 's': 'Ease discomfort and prepare', 'dur': '10 min'},
+            {'e': '🌬️', 't': 'Labor Breathing Practice', 's': 'Build confidence for birth', 'dur': '5 min'},
+            {'e': '💆', 't': 'Partner Massage', 's': 'Ease tension and connect', 'dur': '15 min'},
+          ];
+        case 'Newborn':
+          return [
+            {'e': '🧘', 't': 'Gentle Postpartum Yoga', 's': 'Support your healing', 'dur': '10 min'},
+            {'e': '💆', 't': 'Self-Massage & Care', 's': 'Nurture your recovery', 'dur': '10 min'},
+            {'e': '🤝', 't': 'Bonding Ritual', 's': 'Connect with your baby', 'dur': '20 min'},
+            {'e': '😴', 't': 'Rest When Baby Rests', 's': 'Prioritize your sleep', 'dur': '30 min'},
+          ];
+        default:
+          return [
+            {'e': '🧘', 't': 'Prenatal Yoga — Hip Opener', 's': 'Safe stretches for your changing body', 'dur': '12 min'},
+            {'e': '🌬️', 't': '4-7-8 Breathing for Calm', 's': 'Reduce pregnancy anxiety & improve sleep', 'dur': '5 min'},
+          ];
+      }
     } else {
-      return [
-        {'e': '🧘', 't': 'Core & Hip Yoga Flow', 's': 'Boost blood flow to reproductive organs', 'dur': '10 min'},
-        {'e': '🌿', 't': 'Seed Cycling — Flax & Pumpkin', 's': 'Day 1–14: oestrogen-supporting seeds', 'dur': '2 min'},
-        {'e': '🌡️', 't': 'BBT Journaling', 's': 'Log your temp trend and cervical signs', 'dur': '3 min'},
-        {'e': '💧', 't': 'Hydration Ritual', 's': 'Cervical mucus loves water — drink up!', 'dur': 'All day'},
-      ];
+      switch (phase) {
+        case 'Early':
+          return [
+            {'e': '📅', 't': 'Cycle Tracking', 's': 'Begin your observation', 'dur': '5 min'},
+            {'e': '🧘', 't': 'Grounding Yoga', 's': 'Center yourself', 'dur': '15 min'},
+            {'e': '💧', 't': 'Hydration Ritual', 's': 'Start hydrating well', 'dur': 'All day'},
+            {'e': '📓', 't': 'Fertility Journal', 's': 'Note your observations', 'dur': '5 min'},
+          ];
+        case 'Pre-Ovul':
+          return [
+            {'e': '🧘', 't': 'Core & Hip Yoga Flow', 's': 'Boost blood flow to reproductive organs', 'dur': '10 min'},
+            {'e': '🌿', 't': 'Seed Cycling — Flax & Pumpkin', 's': 'Day 1–14: oestrogen-supporting seeds', 'dur': '2 min'},
+            {'e': '🌡️', 't': 'BBT Journaling', 's': 'Log your temp trend and cervical signs', 'dur': '3 min'},
+            {'e': '💧', 't': 'Hydration Ritual', 's': 'Cervical mucus loves water — drink up!', 'dur': 'All day'},
+          ];
+        case 'Peak':
+          return [
+            {'e': '🎯', 't': 'Peak Fertility Yoga', 's': 'Celebrate your power', 'dur': '15 min'},
+            {'e': '💃', 't': 'Sensual Movement', 's': 'Connect with your body', 'dur': '10 min'},
+            {'e': '🌿', 't': 'Seed Cycling — Sesame & Sunflower', 's': 'Peak phase seeds', 'dur': '2 min'},
+            {'e': '💕', 't': 'Intimacy Ritual', 's': 'Connect with your partner', 'dur': '30 min'},
+          ];
+        case 'Post-Ovul':
+          return [
+            {'e': '📉', 't': 'Transition Yoga', 's': 'Balance as hormones shift', 'dur': '12 min'},
+            {'e': '🌿', 't': 'Seed Cycling — Sesame & Sunflower', 's': 'Post-peak phase seeds', 'dur': '2 min'},
+            {'e': '🧘', 't': 'Grounding Meditation', 's': 'Find your center', 'dur': '10 min'},
+            {'e': '📓', 't': 'Cycle Reflection', 's': 'Document your experience', 'dur': '5 min'},
+          ];
+        default:
+          return [
+            {'e': '🧘', 't': 'Core & Hip Yoga Flow', 's': 'Boost blood flow to reproductive organs', 'dur': '10 min'},
+            {'e': '🌿', 't': 'Seed Cycling — Flax & Pumpkin', 's': 'Day 1–14: oestrogen-supporting seeds', 'dur': '2 min'},
+          ];
+      }
     }
   }
 }
