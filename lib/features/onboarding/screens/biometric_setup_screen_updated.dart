@@ -6,6 +6,7 @@ import '../../../core/services/biometric_service.dart';
 import '../../../core/services/uuid_persistence_service.dart';
 import '../../../core/widgets/custom_pin_input.dart';
 import '../../../core/providers/security_provider.dart';
+import '../../../core/services/notification_service.dart';
 
 class BiometricSetupScreen extends ConsumerStatefulWidget {
   final String uid;
@@ -68,13 +69,7 @@ class _BiometricSetupScreenState extends ConsumerState<BiometricSetupScreen> {
 
     if (success) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('✅ PIN set successfully!'),
-            backgroundColor: AppColors.sageGreen,
-            duration: Duration(seconds: 2),
-          ),
-        );
+        NotificationService.showSuccess(context, 'PIN set successfully!');
         Future.delayed(const Duration(milliseconds: 500), () {
           if (mounted) context.go('/mode-selection');
         });
@@ -82,12 +77,7 @@ class _BiometricSetupScreenState extends ConsumerState<BiometricSetupScreen> {
     } else {
       final errorMsg = ref.read(securityProvider).errorMessage ?? 'Failed to save PIN';
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('❌ $errorMsg'),
-            backgroundColor: Colors.redAccent,
-          ),
-        );
+        NotificationService.showError(context, errorMsg);
       }
     }
 

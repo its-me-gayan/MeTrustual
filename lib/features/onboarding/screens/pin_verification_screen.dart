@@ -5,6 +5,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/services/biometric_service.dart';
 import '../../../core/widgets/custom_pin_input.dart';
 import '../../../core/providers/security_provider.dart';
+import '../../../core/services/notification_service.dart';
 import '../../../core/providers/firebase_providers.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -247,13 +248,7 @@ class _PinVerificationScreenState extends ConsumerState<PinVerificationScreen> {
 
       if (verified) {
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('✅ PIN verified successfully!'),
-              backgroundColor: AppColors.sageGreen,
-              duration: Duration(seconds: 1),
-            ),
-          );
+          NotificationService.showSuccess(context, 'PIN verified successfully!');
 
           Future.delayed(const Duration(milliseconds: 500), () {
             if (mounted) {
@@ -273,12 +268,7 @@ class _PinVerificationScreenState extends ConsumerState<PinVerificationScreen> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error: ${e.toString()}'),
-            backgroundColor: Colors.redAccent,
-          ),
-        );
+        NotificationService.showError(context, 'Error: ${e.toString()}');
       }
     } finally {
       if (mounted) setState(() => _isLoading = false);
@@ -348,22 +338,11 @@ class _PinVerificationScreenState extends ConsumerState<PinVerificationScreen> {
                   await BiometricService.setBiometricPin("1234");
 
                   if (mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(
-                            '✅ Temporary PIN sent to $targetEmail! Check your inbox.'),
-                        backgroundColor: AppColors.sageGreen,
-                      ),
-                    );
+                    NotificationService.showSuccess(context, 'Temporary PIN sent to $targetEmail! Check your inbox.');
                   }
                 } catch (e) {
                   if (mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text('Error: ${e.toString()}'),
-                        backgroundColor: Colors.redAccent,
-                      ),
-                    );
+                    NotificationService.showError(context, 'Error: ${e.toString()}');
                   }
                 } finally {
                   if (mounted) setState(() => _isLoading = false);

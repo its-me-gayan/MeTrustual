@@ -8,6 +8,7 @@ import '../../../core/providers/mode_provider.dart';
 import '../../../core/services/biometric_service.dart';
 import '../../../core/providers/firebase_providers.dart';
 import '../../../core/providers/security_provider.dart';
+import '../../../core/services/notification_service.dart';
 
 class SplashScreen extends ConsumerStatefulWidget {
   const SplashScreen({super.key});
@@ -183,14 +184,8 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
 
         print('❌ Wrong PIN. Attempt ${attempt + 1}/3');
         if (mounted && attempt < 2) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                '❌ Incorrect PIN. Attempts remaining: ${3 - attempt - 1}',
-              ),
-              duration: const Duration(seconds: 2),
-            ),
-          );
+          // Don't show notifications on splash screen - they'll be shown in the PIN dialog instead
+          print('Attempts remaining: ${3 - attempt - 1}');
         }
       }
 

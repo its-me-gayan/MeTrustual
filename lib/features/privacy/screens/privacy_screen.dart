@@ -3,6 +3,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_colors.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../../core/services/notification_service.dart';
 
 class PrivacyScreen extends StatefulWidget {
   const PrivacyScreen({super.key});
@@ -64,7 +65,7 @@ class _PrivacyScreenState extends State<PrivacyScreen> {
                 [
                   _buildActionButton(
                       '📥 Download my data', AppColors.textMid, false, () {
-                        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Preparing your data export...')));
+                        NotificationService.showInfo(context, 'Preparing your data export...');
                       }),
                   SizedBox(height: 12),
                   _buildActionButton(
@@ -81,8 +82,10 @@ class _PrivacyScreenState extends State<PrivacyScreen> {
                           ),
                         );
                         if (confirm == true) {
-                           ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('All data deleted.')));
-                           context.go('/splash');
+                           NotificationService.showSuccess(context, 'All data deleted.');
+                           Future.delayed(const Duration(seconds: 2), () {
+                             if (mounted) context.go('/splash');
+                           });
                         }
                       }),
                 ],

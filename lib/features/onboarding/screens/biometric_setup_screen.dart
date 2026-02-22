@@ -5,6 +5,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/services/biometric_service.dart';
 import '../../../core/services/uuid_persistence_service.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../../core/services/notification_service.dart';
 
 class BiometricSetupScreen extends ConsumerStatefulWidget {
   final String uid;
@@ -122,12 +123,7 @@ class _BiometricSetupScreenState extends ConsumerState<BiometricSetupScreen> {
   }
 
   void _showError(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: Colors.red,
-      ),
-    );
+    NotificationService.showError(context, message);
   }
 
   @override

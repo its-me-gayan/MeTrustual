@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/services/notification_service.dart';
 import '../../../core/widgets/premium_gate.dart';
 import '../../../core/providers/mode_provider.dart';
 import '../widgets/cycle_circle.dart';
@@ -98,10 +99,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                 GestureDetector(
                                   onTap: () {
                                     setState(() => _isEditingNickname = false);
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(
-                                          content: Text('✅ Nickname saved!')),
-                                    );
+                                    NotificationService.showSuccess(context, 'Nickname saved!');
                                   },
                                   child: Container(
                                     padding: const EdgeInsets.all(8),

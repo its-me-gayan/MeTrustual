@@ -6,6 +6,7 @@ import '../../../core/providers/firebase_providers.dart';
 import '../../../core/services/biometric_service.dart';
 import '../../../core/services/uuid_persistence_service.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../../core/services/notification_service.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -69,12 +70,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   }
 
   void _showError(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: Colors.redAccent,
-      ),
-    );
+    NotificationService.showError(context, message);
   }
 
   @override
@@ -144,9 +140,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       ref.read(firebaseAuthProvider).sendPasswordResetEmail(
                         email: _emailController.text.trim(),
                       );
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Password reset email sent!')),
-                      );
+                      NotificationService.showSuccess(context, 'Password reset email sent!');
                     } else {
                       _showError('Please enter your email first');
                     }
