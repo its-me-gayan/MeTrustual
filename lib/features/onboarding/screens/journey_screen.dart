@@ -38,33 +38,54 @@ class _JourneyScreenState extends ConsumerState<JourneyScreen> {
   Future<void> _loadJourneyStepsAndData() async {
     setState(() => _isLoading = true);
     try {
-      // Try to load combined data (static steps + user selections)
-      final combinedData = await ref.read(combinedJourneyDataProvider(widget.mode).future);
-      final stepsAsyncValue = combinedData['steps'] as List<Map<String, dynamic>>;
-      final userSelections = combinedData['userSelections'] as Map<String, dynamic>;
-      
+      final auth = ref.read(firebaseAuthProvider);
+      final firestore = ref.read(firestoreProvider);
+      final uid = auth.currentUser?.uid;
+
+      // 1. Fetch static journey steps from top-level collection
+      final staticDoc =
+          await firestore.collection('journey').doc(widget.mode).get();
+
+      // 2. Fetch user's saved selections
+      Map<String, dynamic> userSelections = {};
+      if (uid != null) {
+        final userDoc = await firestore
+            .collection('users')
+            .doc(uid)
+            .collection('journey')
+            .doc(widget.mode)
+            .get();
+
+        if (userDoc.exists) {
+          userSelections = userDoc.data() ?? {};
+          debugPrint('User selections loaded: $userSelections');
+        }
+      }
+
+      // 3. Parse static steps
+      final List<Map<String, dynamic>> loadedSteps = staticDoc.exists
+          ? List<Map<String, dynamic>>.from(
+              (staticDoc.data()?['steps'] as List? ?? [])
+                  .map((e) => Map<String, dynamic>.from(e)))
+          : await ref.read(journeyStepsProvider(widget.mode).future);
+
       setState(() {
-        steps = stepsAsyncValue;
-        journeyData.addAll(userSelections);
+        steps = loadedSteps;
+        journeyData.addAll(userSelections); // pre-fill with saved data
         _stepsLoaded = true;
       });
     } catch (e) {
-      debugPrint('Error loading combined journey data: $e');
+      debugPrint('Error loading journey data: $e');
+      // Fallback to just provider steps
       try {
-        // Fallback: load just the steps
-        final stepsAsyncValue = await ref.read(journeyStepsProvider(widget.mode).future);
+        final fallbackSteps =
+            await ref.read(journeyStepsProvider(widget.mode).future);
         setState(() {
-          steps = stepsAsyncValue;
+          steps = fallbackSteps;
           _stepsLoaded = true;
         });
-        await _loadExistingData();
       } catch (e2) {
-        debugPrint('Error loading journey steps fallback: $e2');
-        setState(() {
-          steps = _getHardcodedJourneySteps(widget.mode);
-          _stepsLoaded = true;
-        });
-        await _loadExistingData();
+        debugPrint('Fallback also failed: $e2');
       }
     } finally {
       setState(() => _isLoading = false);
