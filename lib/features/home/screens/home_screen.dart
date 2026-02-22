@@ -249,7 +249,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             : 0;
         final avgCycle = homeData?['prediction']?.averageLength ?? 28;
         const avgPeriod = 5;
-
         return Column(
           children: [
             Center(
@@ -268,132 +267,236 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 'color': const Color(0xFFC9A0D0)
               },
             ),
-            const SizedBox(height: 30),
-            const MiniCalendar(),
-            const SizedBox(height: 20),
+            const SizedBox(height: 24),
+            const PremiumGate(
+              message: 'Unlock Advanced Calendar',
+              child: MiniCalendar(),
+            ),
+            const SizedBox(height: 24),
             const NextPeriodCard(),
           ],
         );
       case 'preg':
-        final lastCycle = homeData?['lastCycle'];
-        final conceptionDate = lastCycle?.startDate ?? DateTime.now();
-        final daysPregnant = DateTime.now().difference(conceptionDate).inDays;
-        final weeks = daysPregnant ~/ 7;
-        final days = daysPregnant % 7;
-
         return Column(
           children: [
-            Center(
+            const Center(
               child: CycleCircle(
-                day: weeks,
-                phase: 'Week $weeks, Day $days',
-                isPregnancy: true,
+                day: 24,
+                phase: '2nd Trimester 💙',
+                color: Color(0xFF4A70B0),
+                label: 'Weeks',
               ),
             ),
             const SizedBox(height: 16),
             _buildPillsRow(
               {
-                'value': '280',
-                'label': 'Total Days',
+                'value': '113',
+                'label': 'Days to Go',
                 'color': const Color(0xFF4A70B0)
               },
               {
-                'value': (280 - daysPregnant).toString(),
-                'label': 'Days to Go',
-                'color': const Color(0xFF7BA8D9)
+                'value': 'Jun 5',
+                'label': 'Due Date',
+                'color': const Color(0xFF9870C0)
               },
             ),
-            const SizedBox(height: 30),
+            const SizedBox(height: 24),
+            PremiumGate(
+              message: 'Unlock Weekly Baby Updates',
+              child: _buildBabyCard(),
+            ),
+            const SizedBox(height: 24),
             _buildNextBanner(
-              title: 'NEXT APPOINTMENT',
-              value: '12-Week Scan',
-              sub: 'In 12 days • June 15, 2024',
+              title: 'Next Appointment',
+              value: 'Mar 3 🩺',
+              sub: '28-week glucose screen',
               color: const Color(0xFF4A70B0),
-              icon: '🏥',
+              icon: '🗓️',
             ),
           ],
         );
       case 'ovul':
-        final lastCycle = homeData?['lastCycle'];
-        final cycleDay = lastCycle != null
-            ? DateTime.now().difference(lastCycle.startDate).inDays + 1
-            : 0;
-        final chance = homeData?['fertilityChance'] ?? 'Medium';
-
         return Column(
           children: [
-            Center(
+            const Center(
               child: CycleCircle(
-                day: cycleDay,
-                phase: 'Fertility Window',
-                isOvulation: true,
+                day: 14,
+                phase: '🎯 Peak Fertile',
+                color: Color(0xFF5A8E6A),
+                label: 'Cycle Day',
               ),
             ),
             const SizedBox(height: 16),
             _buildPillsRow(
               {
-                'value': chance,
-                'label': 'Conception Chance',
+                'value': 'Today',
+                'label': 'Ovulation',
                 'color': const Color(0xFF5A8E6A)
               },
               {
-                'value': '2',
-                'label': 'Days to Ovulation',
-                'color': const Color(0xFF8BBF9F)
+                'value': 'Mar 6',
+                'label': 'Next Period',
+                'color': AppColors.primaryRose
               },
             ),
-            const SizedBox(height: 30),
+            const SizedBox(height: 24),
+            PremiumGate(
+              message: 'Unlock Fertile Window Analysis',
+              child: _buildFertileBar(),
+            ),
+            const SizedBox(height: 24),
             _buildNextBanner(
-              title: 'FERTILITY STATUS',
-              value: 'High Chance',
-              sub: 'Best time for baby making! ✨',
+              title: 'Ovulation Prediction',
+              value: 'Today, Feb 21 🎯',
+              sub: '89% confidence · Log BBT to confirm',
               color: const Color(0xFF5A8E6A),
-              percentage: 85,
+              percentage: 89,
             ),
           ],
         );
       default:
-        return const Center(child: Text('Select a mode in profile'));
+        return const SizedBox();
     }
   }
 
-  Widget _buildPillsRow(Map<String, String> p1, Map<String, String> p2) {
+  Widget _buildPillsRow(
+      Map<String, dynamic> pill1, Map<String, dynamic> pill2) {
     return Row(
       children: [
-        Expanded(child: _buildStatPill(p1)),
-        const SizedBox(width: 12),
-        Expanded(child: _buildStatPill(p2)),
+        _buildStatPill(pill1['value'], pill1['label'], color: pill1['color']),
+        const SizedBox(width: 8),
+        _buildStatPill(pill2['value'], pill2['label'], color: pill2['color']),
       ],
     );
   }
 
-  Widget _buildStatPill(Map<String, dynamic> data) {
-    final Color color = data['color'] as Color;
+  Widget _buildStatPill(String value, String label, {Color? color}) {
+    return Expanded(
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 12),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(color: AppColors.border, width: 1.5),
+        ),
+        child: Column(
+          children: [
+            Text(
+              value,
+              style: GoogleFonts.nunito(
+                fontSize: 18,
+                fontWeight: FontWeight.w900,
+                color: color ?? AppColors.primaryRose,
+              ),
+            ),
+            const SizedBox(height: 2),
+            Text(
+              label,
+              style: GoogleFonts.nunito(
+                fontSize: 10,
+                fontWeight: FontWeight.w700,
+                color: AppColors.textMuted,
+                letterSpacing: 0.3,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBabyCard() {
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
+      padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.08),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: color.withOpacity(0.2), width: 1.5),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(color: AppColors.border, width: 1.5),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF4A70B0).withOpacity(0.08),
+            offset: const Offset(0, 4),
+            blurRadius: 16,
+          ),
+        ],
       ),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            data['value'] as String,
+            '👶 Baby Updates',
             style: GoogleFonts.nunito(
-              fontSize: 20,
+              fontSize: 14,
               fontWeight: FontWeight.w900,
               color: AppColors.textDark,
             ),
           ),
-          const SizedBox(height: 2),
+          const SizedBox(height: 12),
           Text(
-            data['label'] as String,
+            'Week 24: Baby is about the size of a papaya!',
+            style: GoogleFonts.nunito(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: AppColors.textMid,
+            ),
+          ),
+          const SizedBox(height: 12),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            decoration: BoxDecoration(
+              color: const Color(0xFF4A70B0).withOpacity(0.08),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Text(
+              'Baby weight: ~600g • Length: ~30cm',
+              style: GoogleFonts.nunito(
+                fontSize: 11,
+                fontWeight: FontWeight.w700,
+                color: const Color(0xFF4A70B0),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFertileBar() {
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(color: AppColors.border, width: 1.5),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            '🌱 Fertile Window',
+            style: GoogleFonts.nunito(
+              fontSize: 14,
+              fontWeight: FontWeight.w900,
+              color: AppColors.textDark,
+            ),
+          ),
+          const SizedBox(height: 12),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(8),
+            child: LinearProgressIndicator(
+              value: 0.5,
+              minHeight: 8,
+              backgroundColor: const Color(0xFF5A8E6A).withOpacity(0.1),
+              valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF5A8E6A)),
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Peak fertility: Today & Tomorrow',
             style: GoogleFonts.nunito(
               fontSize: 11,
-              fontWeight: FontWeight.w800,
-              color: AppColors.textMid,
-              letterSpacing: 0.3,
+              fontWeight: FontWeight.w600,
+              color: AppColors.textMuted,
             ),
           ),
         ],
