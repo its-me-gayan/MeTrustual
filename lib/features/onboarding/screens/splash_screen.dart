@@ -67,41 +67,24 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
           final auth = ref.read(firebaseAuthProvider);
           final user = auth.currentUser;
 
-          print('═══════════════════════════════════════════');
-          print('🔍 SPLASH SCREEN NAVIGATION LOGIC');
-          print('═══════════════════════════════════════════');
-          print('✓ user exists: ${user != null}');
-          print('✓ user UID: ${user?.uid}');
-
           if (user == null) {
-            print('➜ Route: /onboarding (no user)');
-            print('═══════════════════════════════════════════');
             context.go('/onboarding');
             return;
           }
 
           final biometricSetUp = await BiometricService.isBiometricSetUp();
-          print('✓ biometricSetUp flag: $biometricSetUp');
-
           if (biometricSetUp) {
-            print('➜ Route: /pin-verification (ASK PIN)');
-            print('═══════════════════════════════════════════');
             context.go('/pin-verification');
             return;
           }
 
-          // Sync with Firestore to check journey status
           await ref.read(modeProvider.notifier).syncFromFirestore();
           final hasCompleted =
               ref.read(modeProvider.notifier).hasCompletedJourney;
 
           if (hasCompleted) {
-            print('➜ Route: /home (journey completed)');
-            print('═══════════════════════════════════════════');
             context.go('/home');
           } else {
-            print('➜ Route: /onboarding (journey not completed)');
-            print('═══════════════════════════════════════════');
             context.go('/onboarding');
           }
         });
@@ -199,7 +182,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                             ),
                             child: Center(
                               child: Text(
-                                '🌸',
+                                '☀️',
                                 style: GoogleFonts.nunito(fontSize: 45),
                               ),
                             ),
@@ -226,15 +209,14 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                                     fontSize: 29,
                                     fontWeight: FontWeight.w900,
                                     color: Color(0xFF3D2828),
-                                    // fontFamily: 'Nunito',
                                     letterSpacing: -0.5,
                                   ),
                                   children: [
-                                    TextSpan(text: 'Me'),
+                                    TextSpan(text: 'Sol'),
                                     TextSpan(
-                                      text: 'Trustual',
+                                      text: 'ana',
                                       style: GoogleFonts.nunito(
-                                        color: Color(0xFFD97B8A),
+                                        color: Color(0xFFC97B3A),
                                         fontStyle: FontStyle.normal,
                                       ),
                                     ),
@@ -242,7 +224,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                                 ),
                               ),
                               Text(
-                                'Your health, your choice ✨',
+                                'your light. your rhythm. ✨',
                                 style: GoogleFonts.nunito(
                                   fontSize: 12,
                                   fontWeight: FontWeight.w700,
@@ -308,7 +290,7 @@ class PetalModel {
   final Duration duration =
       Duration(milliseconds: 4000 + math.Random().nextInt(3000));
   final Duration delay = Duration(milliseconds: math.Random().nextInt(3000));
-  final String emoji = ['🌸', '✨', '💕', '🌸'][math.Random().nextInt(4)];
+  final String emoji = ['✨', '⭐', '💫', '🌟'][math.Random().nextInt(4)];
 }
 
 class FloatingPetal extends StatefulWidget {
