@@ -73,11 +73,11 @@ class _InsightsScreenState extends ConsumerState<InsightsScreen> {
     switch (route) {
       case '/home':
         return 0;
-      case '/log':
-        return 1;
       case '/insights':
-        return 2;
+        return 1;
       case '/education':
+        return 2;
+      case '/care':
         return 3;
       default:
         return 0;

@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/providers/mode_provider.dart';
+import '../../../core/widgets/app_bottom_nav.dart';
+import 'package:go_router/go_router.dart';
 
 class SelfCareScreen extends ConsumerStatefulWidget {
   const SelfCareScreen({super.key});
@@ -51,6 +53,7 @@ class _SelfCareScreenState extends ConsumerState<SelfCareScreen> {
             : AppColors.primaryRose;
 
     return Scaffold(
+      extendBody: true,
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.fromLTRB(22, 20, 22, 120),
@@ -125,7 +128,32 @@ class _SelfCareScreenState extends ConsumerState<SelfCareScreen> {
           ),
         ),
       ),
+      bottomNavigationBar:
+          AppBottomNav(activeIndex: _getNavIndex(_currentRoute)),
+      floatingActionButton: const AppFAB(),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
     );
+  }
+
+  String get _currentRoute {
+    final String? location =
+        GoRouter.of(context).routerDelegate.currentConfiguration.uri.path;
+    return location ?? '/home';
+  }
+
+  int _getNavIndex(String route) {
+    switch (route) {
+      case '/home':
+        return 0;
+      case '/insights':
+        return 1;
+      case '/education':
+        return 2;
+      case '/care':
+        return 3;
+      default:
+        return 0;
+    }
   }
 
   Widget _buildPhaseStrip(String currentMode, Color color) {

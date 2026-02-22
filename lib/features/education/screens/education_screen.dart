@@ -83,7 +83,7 @@ class EducationScreen extends ConsumerWidget {
           ),
         ),
       ),
-      bottomNavigationBar: const AppBottomNav(activeIndex: 3),
+      bottomNavigationBar: const AppBottomNav(activeIndex: 2),
       floatingActionButton: const AppFAB(),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
     );
