@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Journey Screen Enhancement Report</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Nunito', sans-serif; background: #fff8f5; padding: 40px 20px; color: #2a2a2a; }
+    .container { max-width: 900px; margin: 0 auto; background: white; padding: 40px; border-radius: 24px; border: 1.5px solid #f0e0e0; box-shadow: 0 4px 20px rgba(0,0,0,0.05); }
+    h1 { font-size: 32px; font-weight: 900; margin-bottom: 10px; text-align: center; }
+    .subtitle { text-align: center; color: #888; font-weight: 700; margin-bottom: 40px; }
+    .card { background: #fdfdfd; padding: 24px; border-radius: 18px; border: 1.5px solid #f0e0e0; margin-bottom: 24px; }
+    .card-title { font-size: 18px; font-weight: 900; margin-bottom: 12px; display: flex; align-items: center; }
+    .card-title span { margin-right: 10px; font-size: 24px; }
+    .feature-list { list-style: none; }
+    .feature-list li { margin-bottom: 12px; display: flex; align-items: flex-start; font-size: 14px; font-weight: 600; color: #555; }
+    .feature-list li::before { content: '✅'; margin-right: 10px; flex-shrink: 0; }
+    .code { background: #f8f8f8; padding: 16px; border-radius: 12px; font-family: monospace; font-size: 12px; overflow-x: auto; border-left: 4px solid #d97b8a; margin-top: 12px; }
+    .benefit-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-top: 30px; }
+    .benefit-card { background: white; padding: 20px; border-radius: 16px; border: 1.5px solid #f0e0e0; text-align: center; }
+    .benefit-icon { font-size: 30px; margin-bottom: 10px; }
+    .benefit-text { font-size: 12px; font-weight: 800; color: #2a2a2a; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🌿 Journey Enhancement</h1>
+    <p class="subtitle">Dual Data Fetching: Static Structure + User Selections</p>
+    
+    <div class="card">
+      <div class="card-title"><span>🔄</span> Dynamic Data Loading</div>
+      <ul class="feature-list">
+        <li>Fetches static journey steps from the <strong>journeys</strong> collection in Firestore.</li>
+        <li>Fetches user-saved selections from <strong>users/{uid}/journey/{mode}</strong>.</li>
+        <li>Combines both into a single state for a seamless user experience.</li>
+      </ul>
+      <div class="code">
+// New Combined Provider
+final combinedJourneyDataProvider = FutureProvider.family((ref, mode) => {
+  // Fetches steps + userSelections in parallel
+});
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><span>✨</span> Visual Highlighting</div>
+      <ul class="feature-list">
+        <li>Existing user selections are automatically pre-populated on the journey screen.</li>
+        <li>Selected items are highlighted with mode-specific accent colors and checkmarks.</li>
+        <li>Supports all 3 modes: Period (🩸), Pregnancy (💙), and Ovulation (🌿).</li>
+      </ul>
+    </div>
+
+    <div class="benefit-grid">
+      <div class="benefit-card">
+        <div class="benefit-icon">👁️</div>
+        <div class="benefit-text">Explore data more intuitively</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-icon">📊</div>
+        <div class="benefit-text">Understand trends better</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-icon">🔗</div>
+        <div class="benefit-text">Easily save or share</div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
