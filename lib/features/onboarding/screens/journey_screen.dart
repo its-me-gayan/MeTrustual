@@ -89,11 +89,11 @@ class _JourneyScreenState extends ConsumerState<JourneyScreen> {
   Color _getModeColor(String mode) {
     switch (mode) {
       case 'preg':
-        return const Color(0xFF90B0E0); // Softer blue
+        return const Color(0xFF4A70B0); // Vibrant blue
       case 'ovul':
-        return const Color(0xFF90C0A0); // Softer green
+        return const Color(0xFF5A8E6A); // Vibrant green
       default:
-        return const Color(0xFFE0A0B0); // Softer rose
+        return AppColors.primaryRose; // Vibrant rose
     }
   }
 
@@ -101,13 +101,12 @@ class _JourneyScreenState extends ConsumerState<JourneyScreen> {
     switch (mode) {
       case 'preg':
         return const LinearGradient(
-            colors: [Color(0xFFA0C0F0), Color(0xFF90B0E0)]);
+            colors: [Color(0xFF7AA0E0), Color(0xFF4A70B0)]);
       case 'ovul':
         return const LinearGradient(
-            colors: [Color(0xFFA0D0B0), Color(0xFF90C0A0)]);
+            colors: [Color(0xFF78C890), Color(0xFF5A8E6A)]);
       default:
-        return const LinearGradient(
-            colors: [Color(0xFFF0B0C0), Color(0xFFE0A0B0)]);
+        return AppColors.primaryGradient; // Vibrant rose gradient
     }
   }
 
