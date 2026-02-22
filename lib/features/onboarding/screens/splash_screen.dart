@@ -128,7 +128,8 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
         ),
         child: Scaffold(
           body: Container(
-            decoration: BoxDecoration(gradient: LinearGradient(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
                 colors: [
@@ -191,7 +192,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                                   parent: _logoController,
                                   curve: Curves.easeInOut),
                             ),
-                            child: const Center(
+                            child: Center(
                               child: Text(
                                 '🌸',
                                 style: GoogleFonts.nunito(fontSize: 45),
@@ -220,7 +221,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                                     fontSize: 29,
                                     fontWeight: FontWeight.w900,
                                     color: AppColors.textDark,
-                                    fontFamily: 'Nunito',
+                                    // fontFamily: 'Nunito',
                                     letterSpacing: -0.5,
                                   ),
                                   children: [
@@ -235,7 +236,8 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                                   ],
                                 ),
                               ),
-                              Text('your cycle, your story 💕',
+                              Text(
+                                'your cycle, your story 💕',
                                 style: GoogleFonts.nunito(
                                   fontSize: 12,
                                   fontWeight: FontWeight.w700,

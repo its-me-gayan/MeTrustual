@@ -68,12 +68,12 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen> {
               const SizedBox(height: 24),
               RichText(
                 textAlign: TextAlign.center,
-                text: const TextSpan(
+                text:  TextSpan(
                   style: GoogleFonts.nunito(
                     fontSize: 24,
                     fontWeight: FontWeight.w900,
                     color: AppColors.textDark,
-                    fontFamily: 'Nunito',
+                    // fontFamily: 'Nunito',
                   ),
                   children: [
                     TextSpan(text: 'Create your '),
@@ -383,12 +383,13 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen> {
           const SizedBox(height: 20),
           RichText(
             textAlign: TextAlign.center,
-            text: const TextSpan(
+            text:  TextSpan(
               style: GoogleFonts.nunito(
                   fontSize: 28,
                   fontWeight: FontWeight.w900,
                   color: AppColors.textDark,
-                  fontFamily: 'Nunito'),
+                  // fontFamily: 'Nunito'
+                  ),
               children: [
                 TextSpan(text: 'MeTrustual '),
                 TextSpan(

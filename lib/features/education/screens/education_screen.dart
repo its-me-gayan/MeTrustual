@@ -35,7 +35,8 @@ class EducationScreen extends ConsumerWidget {
                 data: (articles) {
                   if (articles.isEmpty) {
                     return const Center(
-                      child: Text('No articles found. Admin panel coming soon! 🌸'),
+                      child: Text(
+                          'No articles found. Admin panel coming soon! 🌸'),
                     );
                   }
                   return Column(
@@ -66,12 +67,15 @@ class EducationScreen extends ConsumerWidget {
                 error: (err, stack) => Text('Error loading education: $err'),
               ),
               const SizedBox(height: 12),
-              const Center(
+              Center(
                 child: Padding(
                   padding: EdgeInsets.symmetric(vertical: 12),
                   child: Text(
                     '🌍 30+ languages supported',
-                    style: GoogleFonts.nunito(fontSize: 11, color: AppColors.textMuted, fontWeight: FontWeight.w700),
+                    style: GoogleFonts.nunito(
+                        fontSize: 11,
+                        color: AppColors.textMuted,
+                        fontWeight: FontWeight.w700),
                   ),
                 ),
               ),
@@ -97,7 +101,8 @@ class EducationScreen extends ConsumerWidget {
     return TextField(
       decoration: InputDecoration(
         hintText: 'Search...',
-        prefixIcon: const Icon(Icons.search, color: AppColors.textMuted, size: 20),
+        prefixIcon:
+            const Icon(Icons.search, color: AppColors.textMuted, size: 20),
         filled: true,
         fillColor: Colors.white,
         contentPadding: const EdgeInsets.symmetric(vertical: 12),
@@ -114,7 +119,14 @@ class EducationScreen extends ConsumerWidget {
   }
 
   Widget _buildCategoryScroll() {
-    final categories = ['All', '🌸 Puberty', '🧼 Hygiene', '❌ Myths', '💊 Pain', '🏥 Doctor'];
+    final categories = [
+      'All',
+      '🌸 Puberty',
+      '🧼 Hygiene',
+      '❌ Myths',
+      '💊 Pain',
+      '🏥 Doctor'
+    ];
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       child: Row(
@@ -126,7 +138,9 @@ class EducationScreen extends ConsumerWidget {
             decoration: BoxDecoration(
               color: isFirst ? AppColors.primaryRose : Colors.white,
               borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: isFirst ? AppColors.primaryRose : AppColors.border, width: 1.5),
+              border: Border.all(
+                  color: isFirst ? AppColors.primaryRose : AppColors.border,
+                  width: 1.5),
             ),
             child: Text(
               cat,
@@ -142,7 +156,8 @@ class EducationScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildArticleCard(String icon, String tag, String title, String meta, Color tagColor) {
+  Widget _buildArticleCard(
+      String icon, String tag, String title, String meta, Color tagColor) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(14),
@@ -156,7 +171,9 @@ class EducationScreen extends ConsumerWidget {
           Container(
             width: 48,
             height: 48,
-            decoration: BoxDecoration(color: AppColors.background, borderRadius: BorderRadius.circular(12)),
+            decoration: BoxDecoration(
+                color: AppColors.background,
+                borderRadius: BorderRadius.circular(12)),
             alignment: Alignment.center,
             child: Text(icon, style: GoogleFonts.nunito(fontSize: 24)),
           ),
@@ -166,22 +183,34 @@ class EducationScreen extends ConsumerWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                  decoration: BoxDecoration(color: tagColor.withOpacity(0.1), borderRadius: BorderRadius.circular(4)),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  decoration: BoxDecoration(
+                      color: tagColor.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(4)),
                   child: Text(
                     tag.toUpperCase(),
-                    style: GoogleFonts.nunito(fontSize: 9, fontWeight: FontWeight.w900, color: tagColor),
+                    style: GoogleFonts.nunito(
+                        fontSize: 9,
+                        fontWeight: FontWeight.w900,
+                        color: tagColor),
                   ),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   title,
-                  style: GoogleFonts.nunito(fontSize: 14, fontWeight: FontWeight.w900, color: AppColors.textDark),
+                  style: GoogleFonts.nunito(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w900,
+                      color: AppColors.textDark),
                 ),
                 const SizedBox(height: 2),
                 Text(
                   meta,
-                  style: GoogleFonts.nunito(fontSize: 11, fontWeight: FontWeight.w700, color: AppColors.textMuted),
+                  style: GoogleFonts.nunito(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.textMuted),
                 ),
               ],
             ),

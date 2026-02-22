@@ -36,7 +36,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 fontWeight: FontWeight.w900, color: AppColors.textDark)),
         content: TextField(
           controller: nameController,
-          decoration: InputDecoration(labelText: 'Display Name',
+          decoration: InputDecoration(
+            labelText: 'Display Name',
             labelStyle: GoogleFonts.nunito(color: AppColors.textMid),
             focusedBorder: UnderlineInputBorder(
                 borderSide: BorderSide(color: AppColors.primaryRose)),
@@ -91,7 +92,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
     await showModalBottomSheet(
       context: context,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
       builder: (context) => Padding(
         padding: const EdgeInsets.symmetric(vertical: 20),
         child: Column(
@@ -104,8 +106,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     color: AppColors.textDark)),
             const SizedBox(height: 10),
             ...languages.map((lang) => ListTile(
-                  leading:
-                      Text(lang['flag']!, style: GoogleFonts.nunito(fontSize: 24)),
+                  leading: Text(lang['flag']!,
+                      style: GoogleFonts.nunito(fontSize: 24)),
                   title: Text(lang['name']!,
                       style: GoogleFonts.nunito(fontWeight: FontWeight.w700)),
                   trailing: context.locale.languageCode == lang['code']
@@ -354,7 +356,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                 color: Colors.redAccent),
                           ]),
                           const SizedBox(height: 40),
-                          const Center(
+                          Center(
                             child: Text(
                               'MeTrustual v1.0.0\nMade with ❤️ for you',
                               textAlign: TextAlign.center,
@@ -480,7 +482,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             child: const Icon(Icons.star, color: Colors.white, size: 24),
           ),
           const SizedBox(width: 16),
-          const Expanded(
+          Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [

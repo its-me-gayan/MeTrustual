@@ -38,7 +38,8 @@ class _PinVerificationScreenState extends ConsumerState<PinVerificationScreen> {
   Widget build(BuildContext context) {
     final securityState = ref.watch(securityProvider);
     final auth = ref.watch(firebaseAuthProvider);
-    final isAuthenticated = auth.currentUser != null && !auth.currentUser!.isAnonymous;
+    final isAuthenticated =
+        auth.currentUser != null && !auth.currentUser!.isAnonymous;
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -64,7 +65,7 @@ class _PinVerificationScreenState extends ConsumerState<PinVerificationScreen> {
                     ),
                   ],
                 ),
-                child: const Center(
+                child: Center(
                   child: Text('🌸', style: GoogleFonts.nunito(fontSize: 48)),
                 ),
               ),
@@ -78,7 +79,8 @@ class _PinVerificationScreenState extends ConsumerState<PinVerificationScreen> {
                     ),
               ),
               const SizedBox(height: 12),
-              Text('Enter your 4-digit PIN to unlock',
+              Text(
+                'Enter your 4-digit PIN to unlock',
                 textAlign: TextAlign.center,
                 style: GoogleFonts.nunito(
                   fontSize: 15,
@@ -87,19 +89,23 @@ class _PinVerificationScreenState extends ConsumerState<PinVerificationScreen> {
                 ),
               ),
               const SizedBox(height: 48),
-              
+
               if (securityState.isLocked)
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
                     color: Colors.redAccent.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: Colors.redAccent.withOpacity(0.3)),
+                    border:
+                        Border.all(color: Colors.redAccent.withOpacity(0.3)),
                   ),
                   child: Column(
                     children: [
-                      Text('Too many failed attempts', 
-                        style: GoogleFonts.nunito(color: Colors.redAccent, fontWeight: FontWeight.w800, fontSize: 14)),
+                      Text('Too many failed attempts',
+                          style: GoogleFonts.nunito(
+                              color: Colors.redAccent,
+                              fontWeight: FontWeight.w800,
+                              fontSize: 14)),
                       const SizedBox(height: 4),
                       Text(
                         '⏱️ ${securityState.errorMessage}',
@@ -135,49 +141,54 @@ class _PinVerificationScreenState extends ConsumerState<PinVerificationScreen> {
                     ),
                   ),
                 const SizedBox(height: 40),
-                
+
                 // Unlock Button (Manual Trigger)
                 SizedBox(
                   width: double.infinity,
                   height: 58,
                   child: Container(
                     decoration: BoxDecoration(
-                      gradient: (_pin.length == 4 && !_isLoading) 
-                        ? AppColors.primaryGradient 
-                        : null,
-                      color: (_pin.length == 4 && !_isLoading) 
-                        ? null 
-                        : AppColors.border,
+                      gradient: (_pin.length == 4 && !_isLoading)
+                          ? AppColors.primaryGradient
+                          : null,
+                      color: (_pin.length == 4 && !_isLoading)
+                          ? null
+                          : AppColors.border,
                       borderRadius: BorderRadius.circular(20),
-                      boxShadow: (_pin.length == 4 && !_isLoading) 
-                        ? [
-                            BoxShadow(
-                              color: AppColors.primaryRose.withOpacity(0.4),
-                              offset: const Offset(0, 6),
-                              blurRadius: 18,
-                            ),
-                          ]
-                        : null,
+                      boxShadow: (_pin.length == 4 && !_isLoading)
+                          ? [
+                              BoxShadow(
+                                color: AppColors.primaryRose.withOpacity(0.4),
+                                offset: const Offset(0, 6),
+                                blurRadius: 18,
+                              ),
+                            ]
+                          : null,
                     ),
                     child: ElevatedButton(
-                      onPressed: (_pin.length == 4 && !_isLoading && !securityState.isLocked)
+                      onPressed: (_pin.length == 4 &&
+                              !_isLoading &&
+                              !securityState.isLocked)
                           ? () => _verifyPin()
                           : null,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.transparent,
                         shadowColor: Colors.transparent,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20)),
                       ),
                       child: _isLoading
                           ? const SizedBox(
                               height: 22,
                               width: 22,
                               child: CircularProgressIndicator(
-                                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                valueColor:
+                                    AlwaysStoppedAnimation<Color>(Colors.white),
                                 strokeWidth: 2.5,
                               ),
                             )
-                          : Text('Unlock Now',
+                          : Text(
+                              'Unlock Now',
                               style: GoogleFonts.nunito(
                                 color: Colors.white,
                                 fontWeight: FontWeight.w900,
@@ -188,13 +199,14 @@ class _PinVerificationScreenState extends ConsumerState<PinVerificationScreen> {
                     ),
                   ),
                 ),
-                
+
                 const SizedBox(height: 32),
-                
+
                 // Forgot PIN Link
                 TextButton(
                   onPressed: _handleForgotPin,
-                  child: Text('Can\'t remember your PIN?',
+                  child: Text(
+                    'Can\'t remember your PIN?',
                     style: GoogleFonts.nunito(
                       color: AppColors.primaryRose,
                       fontWeight: FontWeight.w800,
@@ -204,12 +216,13 @@ class _PinVerificationScreenState extends ConsumerState<PinVerificationScreen> {
                   ),
                 ),
               ],
-              
+
               const SizedBox(height: 24),
               if (widget.allowCancel)
                 TextButton(
                   onPressed: () => Navigator.pop(context),
-                  child: Text('Cancel',
+                  child: Text(
+                    'Cancel',
                     style: GoogleFonts.nunito(
                       color: AppColors.textMid,
                       fontWeight: FontWeight.w700,
@@ -225,7 +238,7 @@ class _PinVerificationScreenState extends ConsumerState<PinVerificationScreen> {
 
   Future<void> _verifyPin() async {
     if (_pin.length != 4) return;
-    
+
     setState(() => _isLoading = true);
     final security = ref.read(securityProvider.notifier);
 
@@ -274,20 +287,23 @@ class _PinVerificationScreenState extends ConsumerState<PinVerificationScreen> {
 
   Future<void> _handleForgotPin() async {
     final auth = ref.read(firebaseAuthProvider);
-    
+
     // For both anonymous and authenticated users, we use email to send a temporary PIN
     final emailController = TextEditingController();
-    
+
     if (mounted) {
       showDialog(
         context: context,
         builder: (context) => AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-          title: Text('Reset PIN', style: GoogleFonts.nunito(fontWeight: FontWeight.w900)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          title: Text('Reset PIN',
+              style: GoogleFonts.nunito(fontWeight: FontWeight.w900)),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text('Enter your email address to receive a temporary PIN.',
+              Text(
+                'Enter your email address to receive a temporary PIN.',
                 style: GoogleFonts.nunito(fontWeight: FontWeight.w500),
               ),
               SizedBox(height: 16),
@@ -296,7 +312,8 @@ class _PinVerificationScreenState extends ConsumerState<PinVerificationScreen> {
                 keyboardType: TextInputType.emailAddress,
                 decoration: InputDecoration(
                   hintText: 'your@email.com',
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                  border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12)),
                 ),
               ),
             ],
@@ -304,33 +321,37 @@ class _PinVerificationScreenState extends ConsumerState<PinVerificationScreen> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: Text('Cancel', style: GoogleFonts.nunito(color: AppColors.textMid, fontWeight: FontWeight.w700)),
+              child: Text('Cancel',
+                  style: GoogleFonts.nunito(
+                      color: AppColors.textMid, fontWeight: FontWeight.w700)),
             ),
             TextButton(
               onPressed: () async {
                 final email = emailController.text.trim();
                 if (email.isEmpty) return;
-                
+
                 Navigator.pop(context);
                 setState(() => _isLoading = true);
-                
+
                 try {
                   // In a real implementation, this would call a cloud function to generate and send a 4-digit temp PIN.
                   // For now, we simulate sending a reset email or a temporary PIN.
-                  
+
                   // If user is authenticated, we can use their registered email
-                  final targetEmail = (auth.currentUser != null && !auth.currentUser!.isAnonymous) 
-                      ? auth.currentUser!.email! 
+                  final targetEmail = (auth.currentUser != null &&
+                          !auth.currentUser!.isAnonymous)
+                      ? auth.currentUser!.email!
                       : email;
-                      
+
                   // Logic: Send a temporary PIN "1234" to the email (simulated)
                   // We'll update the local PIN to "1234" temporarily for this session
                   await BiometricService.setBiometricPin("1234");
-                  
+
                   if (mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
-                        content: Text('✅ Temporary PIN sent to $targetEmail! Check your inbox.'),
+                        content: Text(
+                            '✅ Temporary PIN sent to $targetEmail! Check your inbox.'),
                         backgroundColor: AppColors.sageGreen,
                       ),
                     );
@@ -348,7 +369,10 @@ class _PinVerificationScreenState extends ConsumerState<PinVerificationScreen> {
                   if (mounted) setState(() => _isLoading = false);
                 }
               },
-              child: Text('Send PIN', style: GoogleFonts.nunito(color: AppColors.primaryRose, fontWeight: FontWeight.w900)),
+              child: Text('Send PIN',
+                  style: GoogleFonts.nunito(
+                      color: AppColors.primaryRose,
+                      fontWeight: FontWeight.w900)),
             ),
           ],
         ),

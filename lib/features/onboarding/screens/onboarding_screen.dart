@@ -34,7 +34,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       body: Container(
         width: double.infinity,
         height: double.infinity,
-        decoration: BoxDecoration(gradient: AppColors.onboardingGradient,
+        decoration: BoxDecoration(
+          gradient: AppColors.onboardingGradient,
         ),
         child: SafeArea(
           child: Padding(
@@ -91,16 +92,19 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                 // ── Promise Card ──
                 Container(
                   width: double.infinity,
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                   decoration: BoxDecoration(
                     color: AppColors.sageGreen.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: AppColors.sageGreen.withOpacity(0.2)),
+                    border:
+                        Border.all(color: AppColors.sageGreen.withOpacity(0.2)),
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('🛡️ Our promise to you',
+                      Text(
+                        '🛡️ Our promise to you',
                         style: GoogleFonts.nunito(
                           color: AppColors.sageGreen,
                           fontWeight: FontWeight.w900,
@@ -175,13 +179,18 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                     TextButton(
                       onPressed: () => context.push('/login'),
                       child: RichText(
-                        text: const TextSpan(
-                          style: GoogleFonts.nunito(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textMid),
+                        text: TextSpan(
+                          style: GoogleFonts.nunito(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.textMid),
                           children: [
                             TextSpan(text: 'Already a premium user? '),
                             TextSpan(
                               text: 'Log In',
-                              style: GoogleFonts.nunito(color: AppColors.primaryRose, fontWeight: FontWeight.w900),
+                              style: GoogleFonts.nunito(
+                                  color: AppColors.primaryRose,
+                                  fontWeight: FontWeight.w900),
                             ),
                           ],
                         ),
@@ -223,7 +232,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       child: Container(
         height: 44,
         decoration: BoxDecoration(
-          color: isSelected ? AppColors.petalLight.withOpacity(0.3) : Colors.white,
+          color:
+              isSelected ? AppColors.petalLight.withOpacity(0.3) : Colors.white,
           borderRadius: BorderRadius.circular(14),
           border: Border.all(
             color: isSelected ? AppColors.primaryRose : AppColors.border,
@@ -264,11 +274,17 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
               children: [
                 Text(
                   title,
-                  style: GoogleFonts.nunito(fontWeight: FontWeight.w800, fontSize: 13, color: AppColors.textDark),
+                  style: GoogleFonts.nunito(
+                      fontWeight: FontWeight.w800,
+                      fontSize: 13,
+                      color: AppColors.textDark),
                 ),
                 Text(
                   subtitle,
-                  style: GoogleFonts.nunito(fontSize: 11, color: AppColors.textMuted, fontWeight: FontWeight.w600),
+                  style: GoogleFonts.nunito(
+                      fontSize: 11,
+                      color: AppColors.textMuted,
+                      fontWeight: FontWeight.w600),
                 ),
               ],
             ),
