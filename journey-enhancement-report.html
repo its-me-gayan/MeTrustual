@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Journey Screen Enhancement Report</title>
+  <title>Journey Screen Fix Report</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: 'Nunito', sans-serif; background: #fff8f5; padding: 40px 20px; color: #2a2a2a; }
@@ -25,31 +25,38 @@
 </head>
 <body>
   <div class="container">
-    <h1>🌿 Journey Enhancement</h1>
-    <p class="subtitle">Dual Data Fetching: Static Structure + User Selections</p>
+    <h1>🌿 Journey Screen Fixed</h1>
+    <p class="subtitle">Resolved Syntax Errors & Optimized Data Fetching</p>
     
     <div class="card">
-      <div class="card-title"><span>🔄</span> Dynamic Data Loading</div>
+      <div class="card-title"><span>🛠️</span> What Was Fixed</div>
       <ul class="feature-list">
-        <li>Fetches static journey steps from the <strong>journeys</strong> collection in Firestore.</li>
-        <li>Fetches user-saved selections from <strong>users/{uid}/journey/{mode}</strong>.</li>
-        <li>Combines both into a single state for a seamless user experience.</li>
+        <li>Removed duplicate and malformed code in <strong>journey_screen.dart</strong>.</li>
+        <li>Corrected syntax errors in the <strong>_loadJourneyStepsAndData</strong> method.</li>
+        <li>Cleaned up leftover regex replacement fragments.</li>
       </ul>
-      <div class="code">
-// New Combined Provider
-final combinedJourneyDataProvider = FutureProvider.family((ref, mode) => {
-  // Fetches steps + userSelections in parallel
-});
-      </div>
     </div>
 
     <div class="card">
-      <div class="card-title"><span>✨</span> Visual Highlighting</div>
+      <div class="card-title"><span>🔄</span> Optimized Data Loading</div>
       <ul class="feature-list">
-        <li>Existing user selections are automatically pre-populated on the journey screen.</li>
-        <li>Selected items are highlighted with mode-specific accent colors and checkmarks.</li>
-        <li>Supports all 3 modes: Period (🩸), Pregnancy (💙), and Ovulation (🌿).</li>
+        <li>Implemented a clean <strong>combinedJourneyDataProvider</strong> call.</li>
+        <li>Added multi-level fallback logic (Combined -> Static -> Hardcoded).</li>
+        <li>Ensured user selections are properly merged with static journey steps.</li>
       </ul>
+      <div class="code">
+// Fixed Combined Loading Logic
+try {
+  final combinedData = await ref.read(combinedJourneyDataProvider(mode).future);
+  setState(() {
+    steps = combinedData['steps'];
+    journeyData.addAll(combinedData['userSelections']);
+    _stepsLoaded = true;
+  });
+} catch (e) {
+  // Graceful fallbacks implemented...
+}
+      </div>
     </div>
 
     <div class="benefit-grid">
