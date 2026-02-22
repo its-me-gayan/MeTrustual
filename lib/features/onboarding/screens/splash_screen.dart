@@ -75,7 +75,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
           if (user != null) {
             final biometricSetUp = await BiometricService.isBiometricSetUp();
             print('✓ biometricSetUp flag: $biometricSetUp');
-            
+
             if (biometricSetUp) {
               print('➜ Route: /pin-verification (ASK PIN)');
               print('═══════════════════════════════════════════');
@@ -86,8 +86,9 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
 
           // Sync with Firestore to check journey status
           await ref.read(modeProvider.notifier).syncFromFirestore();
-          final hasCompleted = ref.read(modeProvider.notifier).hasCompletedJourney;
-          
+          final hasCompleted =
+              ref.read(modeProvider.notifier).hasCompletedJourney;
+
           if (hasCompleted) {
             print('➜ Route: /home (journey completed)');
             print('═══════════════════════════════════════════');

@@ -87,7 +87,7 @@ class _BiometricSetupScreenState extends ConsumerState<BiometricSetupScreen> {
       final success = await BiometricService.setBiometricPin(_pin);
 
       print('💾 Save result: $success');
-      
+
       if (success) {
         print('✅ PIN saved successfully!');
         if (mounted) {
