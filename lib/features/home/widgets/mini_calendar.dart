@@ -12,15 +12,14 @@ class MiniCalendar extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'February 2026 🗓️',
+        Text('February 2026 🗓️',
           style: GoogleFonts.nunito(
             fontSize: 14,
             fontWeight: FontWeight.w800,
             color: AppColors.textDark,
           ),
         ),
-        const SizedBox(height: 10),
+        SizedBox(height: 10),
         GridView.builder(
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
@@ -64,7 +63,7 @@ class MiniCalendar extends StatelessWidget {
                 boxShadow: isToday ? [
                   BoxShadow(
                     color: AppColors.primaryRose.withOpacity(0.3),
-                    offset: const Offset(0, 3),
+                    offset: Offset(0, 3),
                     blurRadius: 10,
                   )
                 ] : null,

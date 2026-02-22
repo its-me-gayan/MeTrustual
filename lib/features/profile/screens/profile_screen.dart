@@ -31,13 +31,12 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     final result = await showDialog<String>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Edit Profile',
+        title: Text('Edit Profile',
             style: GoogleFonts.nunito(
                 fontWeight: FontWeight.w900, color: AppColors.textDark)),
         content: TextField(
           controller: nameController,
-          decoration: const InputDecoration(
-            labelText: 'Display Name',
+          decoration: InputDecoration(labelText: 'Display Name',
             labelStyle: GoogleFonts.nunito(color: AppColors.textMid),
             focusedBorder: UnderlineInputBorder(
                 borderSide: BorderSide(color: AppColors.primaryRose)),
@@ -47,11 +46,11 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         actions: [
           TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text('Cancel',
+              child: Text('Cancel',
                   style: GoogleFonts.nunito(color: AppColors.textMid))),
           TextButton(
             onPressed: () => Navigator.pop(context, nameController.text),
-            child: const Text('Save',
+            child: Text('Save',
                 style: GoogleFonts.nunito(
                     color: AppColors.primaryRose, fontWeight: FontWeight.w800)),
           ),
@@ -92,14 +91,13 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
     await showModalBottomSheet(
       context: context,
-      shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
       builder: (context) => Padding(
         padding: const EdgeInsets.symmetric(vertical: 20),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text('Select Language',
+            Text('Select Language',
                 style: GoogleFonts.nunito(
                     fontSize: 18,
                     fontWeight: FontWeight.w900,
@@ -130,7 +128,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     final confirm = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Sign Out'),
+        title: Text('Sign Out'),
         content: const Text('Are you sure you want to sign out?'),
         actions: [
           TextButton(
@@ -138,7 +136,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               child: const Text('Cancel')),
           TextButton(
               onPressed: () => Navigator.pop(context, true),
-              child: const Text('Sign Out',
+              child: Text('Sign Out',
                   style: GoogleFonts.nunito(color: Colors.redAccent))),
         ],
       ),
@@ -165,7 +163,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     final confirm = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Delete All Data'),
+        title: Text('Delete All Data'),
         content: const Text(
             'This will permanently erase all your data from the cloud and this device. This action cannot be undone and the app will restart from the beginning.'),
         actions: [
@@ -174,7 +172,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               child: const Text('Cancel')),
           TextButton(
               onPressed: () => Navigator.pop(context, true),
-              child: const Text('Delete Everything',
+              child: Text('Delete Everything',
                   style: GoogleFonts.nunito(color: Colors.redAccent))),
         ],
       ),
@@ -344,7 +342,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                   'Light theme is currently the only option');
                             }),
                           ]),
-                          const SizedBox(height: 24),
+                          SizedBox(height: 24),
                           _buildSectionTitle('DANGER ZONE'),
                           _buildSettingsCard([
                             if (isPremium)
@@ -390,7 +388,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 BoxShadow(
                     color: AppColors.primaryRose.withOpacity(0.2),
                     blurRadius: 20,
-                    offset: const Offset(0, 10)),
+                    offset: Offset(0, 10)),
               ],
             ),
             child: const Icon(Icons.person, color: Colors.white, size: 40),
@@ -421,7 +419,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           BoxShadow(
               color: AppColors.primaryRose.withOpacity(0.3),
               blurRadius: 15,
-              offset: const Offset(0, 8)),
+              offset: Offset(0, 8)),
         ],
       ),
       child: Row(
@@ -430,7 +428,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('MeTrustual Premium',
+                Text('MeTrustual Premium',
                     style: GoogleFonts.nunito(
                         color: Colors.white,
                         fontSize: 18,
@@ -456,7 +454,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   borderRadius: BorderRadius.circular(12)),
               padding: const EdgeInsets.symmetric(horizontal: 16),
             ),
-            child: const Text('Upgrade',
+            child: Text('Upgrade',
                 style: GoogleFonts.nunito(fontWeight: FontWeight.w900)),
           ),
         ],
@@ -468,7 +466,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: const Color(0xFFFFF9F9),
+        color: Color(0xFFFFF9F9),
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
             color: AppColors.primaryRose.withOpacity(0.3), width: 1.5),

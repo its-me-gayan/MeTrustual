@@ -11,8 +11,7 @@ class ModeSelectionScreen extends StatelessWidget {
     return Scaffold(
       body: Container(
         width: double.infinity,
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
+        decoration: BoxDecoration(gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [Color(0xFFFFF8F5), Color(0xFFFEF0F5)],
@@ -48,8 +47,7 @@ class ModeSelectionScreen extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 6),
-                const Text(
-                  'Select a mode to personalise your experience.\nYou can switch anytime from your home screen.',
+                Text('Select a mode to personalise your experience.\nYou can switch anytime from your home screen.',
                   textAlign: TextAlign.center,
                   style: GoogleFonts.nunito(
                     fontSize: 12.5,
@@ -117,7 +115,7 @@ class ModeSelectionScreen extends StatelessWidget {
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(22),
-          border: Border.all(color: const Color(0xFFFCE8E4), width: 2),
+          border: Border.all(color: Color(0xFFFCE8E4), width: 2),
           boxShadow: [
             BoxShadow(
               color: color.withOpacity(0.05),

@@ -45,8 +45,7 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen> {
       backgroundColor: Colors.transparent,
       builder: (context) => StatefulBuilder(
         builder: (context, setSheetState) => Container(
-          decoration: const BoxDecoration(
-            color: Color(0xFFFFF8F5),
+          decoration: BoxDecoration(color: Color(0xFFFFF8F5),
             borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
           ),
           padding: EdgeInsets.only(
@@ -88,8 +87,7 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen> {
                 ),
               ),
               const SizedBox(height: 8),
-              const Text(
-                'Secure your data and unlock all features.',
+              Text('Secure your data and unlock all features.',
                 style: GoogleFonts.nunito(
                     color: AppColors.textMid,
                     fontWeight: FontWeight.w600,
@@ -150,12 +148,11 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen> {
                     elevation: 0,
                   ),
                   child: isSheetLoading
-                      ? const SizedBox(
-                          width: 24,
+                      ? SizedBox(width: 24,
                           height: 24,
                           child: CircularProgressIndicator(
                               color: Colors.white, strokeWidth: 2))
-                      : const Text('Create Account & Continue',
+                      : Text('Create Account & Continue',
                           style: GoogleFonts.nunito(
                               color: Colors.white,
                               fontWeight: FontWeight.w900,
@@ -224,7 +221,7 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen> {
       barrierDismissible: false,
       builder: (context) => Dialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(32)),
-        backgroundColor: const Color(0xFFFFF8F5),
+        backgroundColor: Color(0xFFFFF8F5),
         child: Padding(
           padding: const EdgeInsets.all(32.0),
           child: Column(
@@ -238,14 +235,13 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen> {
                     const Icon(Icons.star, color: Color(0xFF4CAF50), size: 40),
               ),
               const SizedBox(height: 24),
-              const Text('You\'re Premium!',
+              Text('You\'re Premium!',
                   style: GoogleFonts.nunito(
                       fontSize: 24,
                       fontWeight: FontWeight.w900,
                       color: AppColors.textDark)),
               const SizedBox(height: 8),
-              const Text(
-                'Welcome to the family. Your journey just got even better.',
+              Text('Welcome to the family. Your journey just got even better.',
                 textAlign: TextAlign.center,
                 style: GoogleFonts.nunito(
                     fontWeight: FontWeight.w600, color: AppColors.textMid),
@@ -265,7 +261,7 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen> {
                         borderRadius: BorderRadius.circular(20)),
                     elevation: 0,
                   ),
-                  child: const Text('Start Exploring',
+                  child: Text('Start Exploring',
                       style: GoogleFonts.nunito(
                           color: Colors.white, fontWeight: FontWeight.w900)),
                 ),
@@ -280,7 +276,7 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFFFF8F5),
+      backgroundColor: Color(0xFFFFF8F5),
       body: Stack(
         children: [
           SingleChildScrollView(
@@ -302,7 +298,7 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen> {
                       _buildFeatureItem('🔔', 'Smart Reminders',
                           'Personalized alerts tailored to your unique cycle.'),
                       const SizedBox(height: 40),
-                      const Text('Select a plan',
+                      Text('Select a plan',
                           style: GoogleFonts.nunito(
                               fontSize: 18,
                               fontWeight: FontWeight.w900,
@@ -341,7 +337,7 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen> {
                         height: 24,
                         child: CircularProgressIndicator(
                             color: Colors.white, strokeWidth: 2))
-                    : const Text('Unlock Premium Now',
+                    : Text('Unlock Premium Now',
                         style: GoogleFonts.nunito(
                             fontSize: 16,
                             fontWeight: FontWeight.w900,
@@ -368,8 +364,7 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen> {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.fromLTRB(22, 80, 22, 40),
-      decoration: const BoxDecoration(
-        color: Colors.white,
+      decoration: BoxDecoration(color: Colors.white,
         borderRadius: BorderRadius.vertical(bottom: Radius.circular(40)),
         boxShadow: [
           BoxShadow(
@@ -383,7 +378,7 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen> {
             decoration: BoxDecoration(
                 color: AppColors.primaryRose.withOpacity(0.1),
                 shape: BoxShape.circle),
-            child: const Text('✨', style: GoogleFonts.nunito(fontSize: 32)),
+            child: Text('✨', style: GoogleFonts.nunito(fontSize: 32)),
           ),
           const SizedBox(height: 20),
           RichText(
@@ -405,8 +400,7 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen> {
             ),
           ),
           const SizedBox(height: 8),
-          const Text(
-            'Experience the full power of personalized health.',
+          Text('Experience the full power of personalized health.',
             textAlign: TextAlign.center,
             style: GoogleFonts.nunito(
                 fontSize: 14,
@@ -433,7 +427,7 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen> {
             alignment: Alignment.center,
             child: Text(emoji, style: GoogleFonts.nunito(fontSize: 24)),
           ),
-          const SizedBox(width: 16),
+          SizedBox(width: 16),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -473,7 +467,7 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen> {
                   BoxShadow(
                       color: AppColors.primaryRose.withOpacity(0.1),
                       blurRadius: 10,
-                      offset: const Offset(0, 4))
+                      offset: Offset(0, 4))
                 ]
               : null,
         ),

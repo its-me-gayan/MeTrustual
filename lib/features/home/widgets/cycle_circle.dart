@@ -53,7 +53,7 @@ class CycleCircle extends StatelessWidget {
               boxShadow: [
                 BoxShadow(
                   color: accentColor.withOpacity(0.2),
-                  offset: const Offset(0, 8),
+                  offset: Offset(0, 8),
                   blurRadius: 30,
                 ),
                 BoxShadow(

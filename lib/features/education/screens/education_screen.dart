@@ -62,7 +62,7 @@ class EducationScreen extends ConsumerWidget {
                     }).toList(),
                   );
                 },
-                loading: () => const Center(child: CircularProgressIndicator()),
+                loading: () => Center(child: CircularProgressIndicator()),
                 error: (err, stack) => Text('Error loading education: $err'),
               ),
               const SizedBox(height: 12),
@@ -160,7 +160,7 @@ class EducationScreen extends ConsumerWidget {
             alignment: Alignment.center,
             child: Text(icon, style: GoogleFonts.nunito(fontSize: 24)),
           ),
-          const SizedBox(width: 14),
+          SizedBox(width: 14),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,

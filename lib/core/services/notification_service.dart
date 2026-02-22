@@ -12,7 +12,7 @@ class NotificationService {
         content: Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           decoration: BoxDecoration(
-            color: const Color(0xFFFFEAEA),
+            color: Color(0xFFFFEAEA),
             borderRadius: BorderRadius.circular(16),
             border: Border.all(color: const Color(0xFFFFC0C0), width: 1.5),
             boxShadow: [
@@ -74,7 +74,7 @@ class NotificationService {
         content: Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           decoration: BoxDecoration(
-            color: const Color(0xFFE8F5E9),
+            color: Color(0xFFE8F5E9),
             borderRadius: BorderRadius.circular(16),
             border: Border.all(color: const Color(0xFFC8E6C9), width: 1.5),
             boxShadow: [

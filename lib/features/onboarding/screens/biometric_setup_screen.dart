@@ -179,8 +179,7 @@ class _BiometricSetupScreenState extends ConsumerState<BiometricSetupScreen> {
             shape: BoxShape.circle,
             color: AppColors.primaryRose.withOpacity(0.1),
           ),
-          child: const Center(
-            child: Text('🔒', style: GoogleFonts.nunito(fontSize: 48)),
+          child: Center(child: Text('🔒', style: GoogleFonts.nunito(fontSize: 48)),
           ),
         ),
         const SizedBox(height: 24),
@@ -264,8 +263,7 @@ class _BiometricSetupScreenState extends ConsumerState<BiometricSetupScreen> {
               shape: BoxShape.circle,
               color: AppColors.primaryRose.withOpacity(0.1),
             ),
-            child: const Center(
-              child: Text('🔐', style: GoogleFonts.nunito(fontSize: 48)),
+            child: Center(child: Text('🔐', style: GoogleFonts.nunito(fontSize: 48)),
             ),
           ),
           const SizedBox(height: 24),
@@ -314,8 +312,7 @@ class _BiometricSetupScreenState extends ConsumerState<BiometricSetupScreen> {
                           strokeWidth: 2,
                         ),
                       )
-                    : const Text(
-                        'Continue',
+                    : Text('Continue',
                         style: GoogleFonts.nunito(
                           fontSize: 16,
                           fontWeight: FontWeight.w900,

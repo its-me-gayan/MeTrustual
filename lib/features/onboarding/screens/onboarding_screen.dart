@@ -34,8 +34,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       body: Container(
         width: double.infinity,
         height: double.infinity,
-        decoration: const BoxDecoration(
-          gradient: AppColors.onboardingGradient,
+        decoration: BoxDecoration(gradient: AppColors.onboardingGradient,
         ),
         child: SafeArea(
           child: Padding(
@@ -45,7 +44,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
               children: [
                 // ── Header ──
                 const Spacer(flex: 2),
-                const Text('🌸', style: GoogleFonts.nunito(fontSize: 52)),
+                Text('🌸', style: GoogleFonts.nunito(fontSize: 52)),
                 const SizedBox(height: 8),
                 Text(
                   'onboarding_title'.tr(),
@@ -101,8 +100,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
-                        '🛡️ Our promise to you',
+                      Text('🛡️ Our promise to you',
                         style: GoogleFonts.nunito(
                           color: AppColors.sageGreen,
                           fontWeight: FontWeight.w900,
@@ -173,7 +171,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                         ),
                       ),
                     ),
-                    const SizedBox(height: 16),
+                    SizedBox(height: 16),
                     TextButton(
                       onPressed: () => context.push('/login'),
                       child: RichText(

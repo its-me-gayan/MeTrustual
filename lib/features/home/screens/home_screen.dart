@@ -50,8 +50,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
-                        'Good morning ☀️',
+                      Text('Good morning ☀️',
                         style: GoogleFonts.nunito(
                           fontSize: 13,
                           fontWeight: FontWeight.w700,
@@ -331,7 +330,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           boxShadow: [
             BoxShadow(
               color: Colors.black.withOpacity(0.04),
-              offset: const Offset(0, 2),
+              offset: Offset(0, 2),
               blurRadius: 10,
             ),
           ],
@@ -371,7 +370,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         border: Border.all(color: AppColors.border, width: 1.5),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF4A70B0).withOpacity(0.08),
+            color: Color(0xFF4A70B0).withOpacity(0.08),
             offset: const Offset(0, 4),
             blurRadius: 16,
           ),
@@ -380,8 +379,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            '👶 Baby Updates',
+          Text('👶 Baby Updates',
             style: GoogleFonts.nunito(
               fontSize: 13,
               fontWeight: FontWeight.w900,
@@ -390,8 +388,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             ),
           ),
           const SizedBox(height: 10),
-          const Text(
-            'Week 24: Your baby is about the size of a mango 🥭',
+          Text('Week 24: Your baby is about the size of a mango 🥭',
             style: GoogleFonts.nunito(
               fontSize: 12,
               fontWeight: FontWeight.w700,
@@ -400,8 +397,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             ),
           ),
           const SizedBox(height: 12),
-          const Text(
-            'Developments: Hearing is fully developed. Baby can hear your voice and heartbeat.',
+          Text('Developments: Hearing is fully developed. Baby can hear your voice and heartbeat.',
             style: GoogleFonts.nunito(
               fontSize: 11,
               fontWeight: FontWeight.w600,
@@ -425,8 +421,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Fertile Window',
+          Text('Fertile Window',
             style: GoogleFonts.nunito(
               fontSize: 13,
               fontWeight: FontWeight.w900,
@@ -434,15 +429,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               letterSpacing: 0.2,
             ),
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: 12),
           Row(
             children: [
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      'Feb 19 - Feb 23',
+                    Text('Feb 19 - Feb 23',
                       style: GoogleFonts.nunito(
                         fontSize: 12,
                         fontWeight: FontWeight.w800,
@@ -471,8 +465,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 ),
               ),
               const SizedBox(width: 12),
-              const Text(
-                '50%',
+              Text('50%',
                 style: GoogleFonts.nunito(
                   fontSize: 16,
                   fontWeight: FontWeight.w900,
@@ -521,7 +514,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     letterSpacing: 0.2,
                   ),
                 ),
-                const SizedBox(height: 4),
+                SizedBox(height: 4),
                 Text(
                   value,
                   style: GoogleFonts.nunito(
@@ -582,8 +575,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Switch tracker',
+          Text('Switch tracker',
             style: GoogleFonts.nunito(
               fontSize: 14,
               fontWeight: FontWeight.w900,
@@ -627,7 +619,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         style: TextButton.styleFrom(
           padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
           backgroundColor:
-              urgent ? const Color(0xFFFFF5F5) : AppColors.background,
+              urgent ? Color(0xFFFFF5F5) : AppColors.background,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(14),
             side: BorderSide(

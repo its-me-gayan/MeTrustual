@@ -40,7 +40,7 @@ class AppBottomNav extends StatelessWidget {
             icon,
             style: GoogleFonts.nunito(fontSize: 20),
           ),
-          const SizedBox(height: 3),
+          SizedBox(height: 3),
           Text(
             label.toUpperCase(),
             style: GoogleFonts.nunito(

@@ -53,7 +53,7 @@ class _LogScreenState extends ConsumerState<LogScreen> {
               Row(
                 children: [
                   IconButton(
-                    icon: const Icon(Icons.arrow_back_ios,
+                    icon: Icon(Icons.arrow_back_ios,
                         color: AppColors.textDark, size: 20),
                     onPressed: () => context.go('/home'),
                   ),
@@ -324,7 +324,7 @@ class _LogScreenState extends ConsumerState<LogScreen> {
               border: Border.all(
                 color: isSelected
                     ? AppColors.primaryRose
-                    : const Color(0xFFFCE8E4),
+                    : Color(0xFFFCE8E4),
                 width: 1.5,
               ),
             ),
@@ -388,7 +388,7 @@ class _LogScreenState extends ConsumerState<LogScreen> {
               color: isSelected ? accentColor.withOpacity(0.1) : Colors.white,
               shape: BoxShape.circle,
               border: Border.all(
-                color: isSelected ? accentColor : const Color(0xFFFCE8E4),
+                color: isSelected ? accentColor : Color(0xFFFCE8E4),
                 width: 1.5,
               ),
             ),
@@ -404,14 +404,13 @@ class _LogScreenState extends ConsumerState<LogScreen> {
       width: double.infinity,
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: const Color(0xFFF0F4FF),
+        color: Color(0xFFF0F4FF),
         borderRadius: BorderRadius.circular(24),
         border: Border.all(color: const Color(0xFFE8EEFF), width: 1.5),
       ),
       child: Column(
         children: [
-          const Text(
-            '👶 Kick Counter — Today',
+          Text('👶 Kick Counter — Today',
             style: GoogleFonts.nunito(
                 fontSize: 12,
                 fontWeight: FontWeight.w800,
@@ -446,8 +445,7 @@ class _LogScreenState extends ConsumerState<LogScreen> {
             ),
           ),
           const SizedBox(height: 12),
-          const Text(
-            'Tap when you feel baby move — aim for 10 kicks in 2 hours',
+          Text('Tap when you feel baby move — aim for 10 kicks in 2 hours',
             textAlign: TextAlign.center,
             style: GoogleFonts.nunito(
                 fontSize: 10,
@@ -464,15 +462,14 @@ class _LogScreenState extends ConsumerState<LogScreen> {
       width: double.infinity,
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: const Color(0xFFF0FAF4),
+        color: Color(0xFFF0FAF4),
         borderRadius: BorderRadius.circular(24),
         border: Border.all(color: const Color(0xFFE8FAF0), width: 1.5),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            '🌡️ Basal Body Temperature',
+          Text('🌡️ Basal Body Temperature',
             style: GoogleFonts.nunito(
                 fontSize: 12,
                 fontWeight: FontWeight.w800,
@@ -499,8 +496,7 @@ class _LogScreenState extends ConsumerState<LogScreen> {
                 ),
               ),
               const SizedBox(width: 12),
-              const Text(
-                '°C',
+              Text('°C',
                 style: GoogleFonts.nunito(
                     fontSize: 18,
                     fontWeight: FontWeight.w900,
@@ -509,8 +505,7 @@ class _LogScreenState extends ConsumerState<LogScreen> {
             ],
           ),
           const SizedBox(height: 8),
-          const Text(
-            'taken immediately on waking, before getting up',
+          Text('taken immediately on waking, before getting up',
             style: GoogleFonts.nunito(
                 fontSize: 10,
                 fontWeight: FontWeight.w700,
@@ -536,7 +531,7 @@ class _LogScreenState extends ConsumerState<LogScreen> {
               color: isSelected ? color : Colors.white,
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
-                color: isSelected ? color : const Color(0xFFFCE8E4),
+                color: isSelected ? color : Color(0xFFFCE8E4),
                 width: 1.5,
               ),
             ),
@@ -569,7 +564,7 @@ class _LogScreenState extends ConsumerState<LogScreen> {
               color: isSelected ? color : Colors.white,
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
-                color: isSelected ? color : const Color(0xFFFCE8E4),
+                color: isSelected ? color : Color(0xFFFCE8E4),
                 width: 1.5,
               ),
             ),
@@ -615,7 +610,7 @@ class _LogScreenState extends ConsumerState<LogScreen> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFFCE8E4), width: 1.5),
+        border: Border.all(color: Color(0xFFFCE8E4), width: 1.5),
       ),
       child: Column(
         children: [

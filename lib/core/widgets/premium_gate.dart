@@ -36,7 +36,7 @@ class PremiumGate extends ConsumerWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(Icons.lock_outline, color: AppColors.primaryRose, size: 32),
+              Icon(Icons.lock_outline, color: AppColors.primaryRose, size: 32),
               const SizedBox(height: 8),
               Text(
                 message ?? 'Unlock with Premium',
@@ -61,7 +61,7 @@ class PremiumGate extends ConsumerWidget {
                   color: AppColors.primaryRose,
                   borderRadius: BorderRadius.circular(25),
                   boxShadow: [
-                    BoxShadow(color: AppColors.primaryRose.withOpacity(0.3), blurRadius: 10, offset: const Offset(0, 4)),
+                    BoxShadow(color: AppColors.primaryRose.withOpacity(0.3), blurRadius: 10, offset: Offset(0, 4)),
                   ],
                 ),
                 child: Row(

@@ -128,8 +128,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
         ),
         child: Scaffold(
           body: Container(
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
+            decoration: BoxDecoration(gradient: LinearGradient(
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
                 colors: [
@@ -216,7 +215,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                           child: Column(
                             children: [
                               RichText(
-                                text: const TextSpan(
+                                text: TextSpan(
                                   style: GoogleFonts.nunito(
                                     fontSize: 29,
                                     fontWeight: FontWeight.w900,
@@ -236,8 +235,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                                   ],
                                 ),
                               ),
-                              const Text(
-                                'your cycle, your story 💕',
+                              Text('your cycle, your story 💕',
                                 style: GoogleFonts.nunito(
                                   fontSize: 12,
                                   fontWeight: FontWeight.w700,

@@ -66,7 +66,7 @@ class _PrivacyScreenState extends State<PrivacyScreen> {
                       '📥 Download my data', AppColors.textMid, false, () {
                         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Preparing your data export...')));
                       }),
-                  const SizedBox(height: 12),
+                  SizedBox(height: 12),
                   _buildActionButton(
                       '🗑️ Delete everything', Colors.redAccent, true, () async {
                         final confirm = await showDialog<bool>(
@@ -76,7 +76,7 @@ class _PrivacyScreenState extends State<PrivacyScreen> {
                             content: const Text('This will permanently delete all your data. This action cannot be undone.'),
                             actions: [
                               TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
-                              TextButton(onPressed: () => Navigator.pop(context, true), child: const Text('Delete', style: GoogleFonts.nunito(color: Colors.redAccent))),
+                              TextButton(onPressed: () => Navigator.pop(context, true), child: Text('Delete', style: GoogleFonts.nunito(color: Colors.redAccent))),
                             ],
                           ),
                         );
@@ -98,13 +98,13 @@ class _PrivacyScreenState extends State<PrivacyScreen> {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: const Color(0xFFFFF8F5),
+        color: Color(0xFFFFF8F5),
         borderRadius: BorderRadius.circular(22),
         border: Border.all(color: AppColors.border, width: 1.5),
       ),
       child: Column(
         children: [
-          const Text('🔐', style: GoogleFonts.nunito(fontSize: 40)),
+          Text('🔐', style: GoogleFonts.nunito(fontSize: 40)),
           const SizedBox(height: 10),
           Text(
             'privacy_promise'.tr(),
@@ -114,8 +114,7 @@ class _PrivacyScreenState extends State<PrivacyScreen> {
                 color: AppColors.textDark),
           ),
           const SizedBox(height: 6),
-          const Text(
-            'We never sell your health data or show you ads. Everything is encrypted and you can delete it all anytime.',
+          Text('We never sell your health data or show you ads. Everything is encrypted and you can delete it all anytime.',
             textAlign: TextAlign.center,
             style: GoogleFonts.nunito(
                 fontSize: 12,

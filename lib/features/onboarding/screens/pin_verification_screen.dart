@@ -48,7 +48,7 @@ class _PinVerificationScreenState extends ConsumerState<PinVerificationScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              const SizedBox(height: 60),
+              SizedBox(height: 60),
               // App Logo / Icon
               Container(
                 width: 100,
@@ -78,8 +78,7 @@ class _PinVerificationScreenState extends ConsumerState<PinVerificationScreen> {
                     ),
               ),
               const SizedBox(height: 12),
-              const Text(
-                'Enter your 4-digit PIN to unlock',
+              Text('Enter your 4-digit PIN to unlock',
                 textAlign: TextAlign.center,
                 style: GoogleFonts.nunito(
                   fontSize: 15,
@@ -99,7 +98,7 @@ class _PinVerificationScreenState extends ConsumerState<PinVerificationScreen> {
                   ),
                   child: Column(
                     children: [
-                      const Text('Too many failed attempts', 
+                      Text('Too many failed attempts', 
                         style: GoogleFonts.nunito(color: Colors.redAccent, fontWeight: FontWeight.w800, fontSize: 14)),
                       const SizedBox(height: 4),
                       Text(
@@ -124,7 +123,7 @@ class _PinVerificationScreenState extends ConsumerState<PinVerificationScreen> {
                     setState(() => _pin = val);
                   },
                 ),
-                const SizedBox(height: 16),
+                SizedBox(height: 16),
                 if (securityState.errorMessage != null)
                   Text(
                     securityState.errorMessage!,
@@ -178,8 +177,7 @@ class _PinVerificationScreenState extends ConsumerState<PinVerificationScreen> {
                                 strokeWidth: 2.5,
                               ),
                             )
-                          : const Text(
-                              'Unlock Now',
+                          : Text('Unlock Now',
                               style: GoogleFonts.nunito(
                                 color: Colors.white,
                                 fontWeight: FontWeight.w900,
@@ -196,8 +194,7 @@ class _PinVerificationScreenState extends ConsumerState<PinVerificationScreen> {
                 // Forgot PIN Link
                 TextButton(
                   onPressed: _handleForgotPin,
-                  child: const Text(
-                    'Can\'t remember your PIN?',
+                  child: Text('Can\'t remember your PIN?',
                     style: GoogleFonts.nunito(
                       color: AppColors.primaryRose,
                       fontWeight: FontWeight.w800,
@@ -212,8 +209,7 @@ class _PinVerificationScreenState extends ConsumerState<PinVerificationScreen> {
               if (widget.allowCancel)
                 TextButton(
                   onPressed: () => Navigator.pop(context),
-                  child: const Text(
-                    'Cancel',
+                  child: Text('Cancel',
                     style: GoogleFonts.nunito(
                       color: AppColors.textMid,
                       fontWeight: FontWeight.w700,
@@ -287,15 +283,14 @@ class _PinVerificationScreenState extends ConsumerState<PinVerificationScreen> {
         context: context,
         builder: (context) => AlertDialog(
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-          title: const Text('Reset PIN', style: GoogleFonts.nunito(fontWeight: FontWeight.w900)),
+          title: Text('Reset PIN', style: GoogleFonts.nunito(fontWeight: FontWeight.w900)),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Text(
-                'Enter your email address to receive a temporary PIN.',
+              Text('Enter your email address to receive a temporary PIN.',
                 style: GoogleFonts.nunito(fontWeight: FontWeight.w500),
               ),
-              const SizedBox(height: 16),
+              SizedBox(height: 16),
               TextField(
                 controller: emailController,
                 keyboardType: TextInputType.emailAddress,
@@ -309,7 +304,7 @@ class _PinVerificationScreenState extends ConsumerState<PinVerificationScreen> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text('Cancel', style: GoogleFonts.nunito(color: AppColors.textMid, fontWeight: FontWeight.w700)),
+              child: Text('Cancel', style: GoogleFonts.nunito(color: AppColors.textMid, fontWeight: FontWeight.w700)),
             ),
             TextButton(
               onPressed: () async {
@@ -353,7 +348,7 @@ class _PinVerificationScreenState extends ConsumerState<PinVerificationScreen> {
                   if (mounted) setState(() => _isLoading = false);
                 }
               },
-              child: const Text('Send PIN', style: GoogleFonts.nunito(color: AppColors.primaryRose, fontWeight: FontWeight.w900)),
+              child: Text('Send PIN', style: GoogleFonts.nunito(color: AppColors.primaryRose, fontWeight: FontWeight.w900)),
             ),
           ],
         ),

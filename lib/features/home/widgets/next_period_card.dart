@@ -29,7 +29,7 @@ class NextPeriodCard extends ConsumerWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
-        color: const Color(0xFFFFF8F9),
+        color: Color(0xFFFFF8F9),
         borderRadius: BorderRadius.circular(20),
         border: Border.all(color: const Color(0xFFFFD1D9), width: 1.5),
         boxShadow: [
@@ -43,14 +43,13 @@ class NextPeriodCard extends ConsumerWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Text('🩸', style: GoogleFonts.nunito(fontSize: 18)),
+          Text('🩸', style: GoogleFonts.nunito(fontSize: 18)),
           const SizedBox(width: 10),
           Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                'NEXT PERIOD',
+              Text('NEXT PERIOD',
                 style: GoogleFonts.nunito(
                   fontSize: 8,
                   fontWeight: FontWeight.w900,
@@ -89,8 +88,7 @@ class NextPeriodCard extends ConsumerWidget {
                   color: const Color(0xFFFF4D6D),
                   borderRadius: BorderRadius.circular(6),
                 ),
-                child: const Text(
-                  '85%',
+                child: Text('85%',
                   style: GoogleFonts.nunito(
                     fontSize: 9,
                     fontWeight: FontWeight.w900,

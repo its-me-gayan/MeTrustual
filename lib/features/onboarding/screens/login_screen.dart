@@ -85,7 +85,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios, color: AppColors.textDark),
+          icon: Icon(Icons.arrow_back_ios, color: AppColors.textDark),
           onPressed: () => context.pop(),
         ),
       ),
@@ -96,7 +96,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: 20),
-              const Text('🌸', style: GoogleFonts.nunito(fontSize: 48)),
+              Text('🌸', style: GoogleFonts.nunito(fontSize: 48)),
               const SizedBox(height: 16),
               Text(
                 'Welcome Back',
@@ -106,8 +106,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     ),
               ),
               const SizedBox(height: 8),
-              const Text(
-                'Log in to sync your premium data across devices',
+              Text('Log in to sync your premium data across devices',
                 style: GoogleFonts.nunito(
                   fontSize: 14,
                   color: AppColors.textMid,
@@ -152,8 +151,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       _showError('Please enter your email first');
                     }
                   },
-                  child: const Text(
-                    'Forgot Password?',
+                  child: Text('Forgot Password?',
                     style: GoogleFonts.nunito(
                       color: AppColors.primaryRose,
                       fontWeight: FontWeight.w700,
@@ -161,7 +159,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   ),
                 ),
               ),
-              const SizedBox(height: 32),
+              SizedBox(height: 32),
               SizedBox(
                 width: double.infinity,
                 height: 56,
@@ -193,8 +191,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                               strokeWidth: 2,
                             ),
                           )
-                        : const Text(
-                            'Log In',
+                        : Text('Log In',
                             style: GoogleFonts.nunito(
                               fontSize: 16,
                               fontWeight: FontWeight.w900,
@@ -209,14 +206,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Text(
-                      'Don\'t have an account?',
+                    Text('Don\'t have an account?',
                       style: GoogleFonts.nunito(color: AppColors.textMid, fontWeight: FontWeight.w600),
                     ),
                     TextButton(
                       onPressed: () => context.pop(),
-                      child: const Text(
-                        'Sign Up',
+                      child: Text('Sign Up',
                         style: GoogleFonts.nunito(
                           color: AppColors.primaryRose,
                           fontWeight: FontWeight.w800,
@@ -252,7 +247,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             color: AppColors.textDark,
           ),
         ),
-        const SizedBox(height: 8),
+        SizedBox(height: 8),
         Container(
           decoration: BoxDecoration(
             color: Colors.white,

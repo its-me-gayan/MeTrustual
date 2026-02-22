@@ -73,7 +73,7 @@ class _CustomPinInputState extends State<CustomPinInput> {
                       BoxShadow(
                         color: AppColors.primaryRose.withOpacity(0.1),
                         blurRadius: 12,
-                        offset: const Offset(0, 4),
+                        offset: Offset(0, 4),
                       ),
                     ]
                   : null,
