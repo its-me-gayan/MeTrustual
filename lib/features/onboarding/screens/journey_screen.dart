@@ -116,7 +116,7 @@ class _JourneyScreenState extends ConsumerState<JourneyScreen> {
               'If yes, enter it. If not, enter your last period start date and we\'ll calculate.',
           'type': 'due-date',
           'key': 'dueDate',
-          'required': true,
+          'required': false,
         },
         {
           'icon': '👶',

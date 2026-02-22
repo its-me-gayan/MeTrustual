@@ -19,6 +19,49 @@ class HomeScreen extends ConsumerStatefulWidget {
 }
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
+  String? userNickname;
+  bool _isEditingNickname = false;
+  final TextEditingController _nicknameController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserNickname();
+  }
+
+  Future<void> _loadUserNickname() async {
+    // Load nickname from local storage or Firestore
+    // For now, we'll use a placeholder
+    setState(() {
+      userNickname = 'Aisha'; // Default or loaded from storage
+    });
+  }
+
+  Future<void> _saveNickname(String nickname) async {
+    if (nickname.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please enter a nickname')),
+      );
+      return;
+    }
+
+    // Save to Firestore or local storage
+    setState(() {
+      userNickname = nickname;
+      _isEditingNickname = false;
+    });
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('✅ Nickname saved!')),
+    );
+  }
+
+  @override
+  void dispose() {
+    _nicknameController.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     final homeData = ref.watch(homeDataProvider);
@@ -48,14 +91,59 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           color: AppColors.textMuted,
                         ),
                       ),
-                      Text(
-                        '${user?.displayName ?? 'Aisha'} 👋',
-                        style: const TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.w900,
-                          color: AppColors.textDark,
+                      GestureDetector(
+                        onLongPress: () {
+                          _nicknameController.text = userNickname ?? '';
+                          setState(() => _isEditingNickname = true);
+                        },
+                        child: Text(
+                          '${userNickname ?? user?.displayName ?? 'Aisha'} 👋',
+                          style: const TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.w900,
+                            color: AppColors.textDark,
+                          ),
                         ),
                       ),
+                      if (_isEditingNickname)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 8),
+                          child: SizedBox(
+                            width: 200,
+                            child: Row(
+                              children: [
+                                Expanded(
+                                  child: TextField(
+                                    controller: _nicknameController,
+                                    decoration: InputDecoration(
+                                      hintText: 'Enter nickname',
+                                      border: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      contentPadding:
+                                          const EdgeInsets.symmetric(
+                                              horizontal: 8, vertical: 4),
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                GestureDetector(
+                                  onTap: () =>
+                                      _saveNickname(_nicknameController.text),
+                                  child: Container(
+                                    padding: const EdgeInsets.all(8),
+                                    decoration: BoxDecoration(
+                                      color: AppColors.primaryRose,
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: const Icon(Icons.check,
+                                        color: Colors.white, size: 16),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
                     ],
                   ),
                   GestureDetector(
@@ -148,97 +236,80 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             const SizedBox(height: 24),
             const PremiumGate(
               message: 'Unlock Advanced Calendar',
-              child: MiniCalendar(),
+              child: SizedBox(),
             ),
             const SizedBox(height: 24),
-            const NextPeriodCard(),
+            NextPeriodCard(
+              nextDate: DateTime.now().add(const Duration(days: 7)),
+              daysUntil: 7,
+            ),
           ],
         );
       case 'preg':
         return Column(
           children: [
-            const Center(
-              child: CycleCircle(
-                day: 24,
-                phase: '2nd Trimester 💙',
-                color: Color(0xFF4A70B0),
-                label: 'Weeks',
+            Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: const Color(0xFF4A70B0).withOpacity(0.1),
+                borderRadius: BorderRadius.circular(20),
               ),
-            ),
-            const SizedBox(height: 16),
-            _buildPillsRow(
-              {
-                'value': '113',
-                'label': 'Days to Go',
-                'color': const Color(0xFF4A70B0)
-              },
-              {
-                'value': 'Jun 5',
-                'label': 'Due Date',
-                'color': const Color(0xFF9870C0)
-              },
-              {
-                'value': '28',
-                'label': 'Logs',
-                'color': const Color(0xFF8AB88A)
-              },
-            ),
-            const SizedBox(height: 24),
-            PremiumGate(
-              message: 'Unlock Weekly Baby Updates',
-              child: _buildBabyCard(),
-            ),
-            const SizedBox(height: 24),
-            _buildNextBanner(
-              title: 'Next Appointment',
-              value: 'Mar 3 🩺',
-              sub: '28-week glucose screen',
-              color: const Color(0xFF4A70B0),
-              icon: '🗓️',
+              child: Column(
+                children: [
+                  const Text(
+                    'Week 24',
+                    style: TextStyle(
+                      fontSize: 28,
+                      fontWeight: FontWeight.w900,
+                      color: Color(0xFF4A70B0),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  const Text(
+                    'Your baby is about the size of a mango 🥭',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF4A70B0),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ],
         );
       case 'ovul':
         return Column(
           children: [
-            const Center(
-              child: CycleCircle(
-                day: 14,
-                phase: '🎯 Peak Fertile',
-                color: Color(0xFF5A8E6A),
-                label: 'Cycle Day',
+            Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: const Color(0xFF5A8E6A).withOpacity(0.1),
+                borderRadius: BorderRadius.circular(20),
               ),
-            ),
-            const SizedBox(height: 16),
-            _buildPillsRow(
-              {
-                'value': 'Today',
-                'label': 'Ovulation',
-                'color': const Color(0xFF5A8E6A)
-              },
-              {
-                'value': 'Mar 6',
-                'label': 'Next Period',
-                'color': AppColors.primaryRose
-              },
-              {
-                'value': '28',
-                'label': 'Cycle Len',
-                'color': const Color(0xFF8AB88A)
-              },
-            ),
-            const SizedBox(height: 24),
-            PremiumGate(
-              message: 'Unlock Fertile Window Analysis',
-              child: _buildFertileBar(),
-            ),
-            const SizedBox(height: 24),
-            _buildNextBanner(
-              title: 'Ovulation Prediction',
-              value: 'Today, Feb 21 🎯',
-              sub: '89% confidence · Log BBT to confirm',
-              color: const Color(0xFF5A8E6A),
-              percentage: 89,
+              child: Column(
+                children: [
+                  const Text(
+                    'Cycle Day 14',
+                    style: TextStyle(
+                      fontSize: 28,
+                      fontWeight: FontWeight.w900,
+                      color: Color(0xFF5A8E6A),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  const Text(
+                    'You\'re in your fertile window 🌿',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF5A8E6A),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ],
         );
@@ -247,253 +318,46 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     }
   }
 
-  Widget _buildPillsRow(Map<String, dynamic> pill1, Map<String, dynamic> pill2,
+  Widget _buildPillsRow(
+      Map<String, dynamic> pill1,
+      Map<String, dynamic> pill2,
       Map<String, dynamic> pill3) {
     return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
-        _buildStatPill(pill1['value'], pill1['label'], color: pill1['color']),
-        const SizedBox(width: 8),
-        _buildStatPill(pill2['value'], pill2['label'], color: pill2['color']),
-        const SizedBox(width: 8),
-        _buildStatPill(pill3['value'], pill3['label'], color: pill3['color']),
+        _buildPill(pill1),
+        _buildPill(pill2),
+        _buildPill(pill3),
       ],
     );
   }
 
-  Widget _buildStatPill(String value, String label, {Color? color}) {
-    return Expanded(
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 12),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: AppColors.border, width: 1.5),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.04),
-              offset: const Offset(0, 2),
-              blurRadius: 10,
-            ),
-          ],
-        ),
-        child: Column(
-          children: [
-            Text(
-              value,
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.w900,
-                color: color ?? AppColors.primaryRose,
-              ),
-            ),
-            const SizedBox(height: 3),
-            Text(
-              label.toUpperCase(),
-              style: const TextStyle(
-                fontSize: 10,
-                fontWeight: FontWeight.w700,
-                color: AppColors.textMuted,
-                letterSpacing: 0.3,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildBabyCard() {
+  Widget _buildPill(Map<String, dynamic> pill) {
     return Container(
-      padding: const EdgeInsets.all(18),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(22),
-        border: Border.all(color: AppColors.border, width: 1.5),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF4A70B0).withOpacity(0.08),
-            offset: const Offset(0, 4),
-            blurRadius: 12,
-          ),
-        ],
+        color: (pill['color'] as Color).withOpacity(0.1),
+        borderRadius: BorderRadius.circular(12),
       ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Week 24 • What\'s happening',
+          Text(
+            pill['value'],
             style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w700,
-                color: AppColors.textMuted),
+              fontSize: 16,
+              fontWeight: FontWeight.w900,
+              color: pill['color'],
+            ),
           ),
-          const SizedBox(height: 10),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text('🌽', style: TextStyle(fontSize: 40)),
-              const SizedBox(width: 14),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'Baby is the size of a corn cob!',
-                      style: TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w900,
-                          color: AppColors.textDark),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      'About 30cm and 600g. Baby\'s face is fully formed and she\'s practising breathing movements this week. Her brain is growing rapidly 💙',
-                      style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                          color: AppColors.textMid.withOpacity(0.8),
-                          height: 1.5),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildFertileBar() {
-    return Container(
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(22),
-        border: Border.all(color: AppColors.border, width: 1.5),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            '🟢 Fertile Window — Day 10 to 16',
+          const SizedBox(height: 4),
+          Text(
+            pill['label'],
             style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w800,
-                color: Color(0xFF5A8E6A)),
-          ),
-          const SizedBox(height: 14),
-          Container(
-            height: 10,
-            width: double.infinity,
-            decoration: BoxDecoration(
-              color: const Color(0xFFF0FAF4),
-              borderRadius: BorderRadius.circular(5),
-            ),
-            child: FractionallySizedBox(
-              alignment: Alignment.centerLeft,
-              widthFactor: 0.72,
-              child: Container(
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                      colors: [Color(0xFF78C890), Color(0xFF5A8E6A)]),
-                  borderRadius: BorderRadius.circular(5),
-                ),
-              ),
+              fontSize: 10,
+              fontWeight: FontWeight.w700,
+              color: pill['color'],
             ),
           ),
-          const SizedBox(height: 8),
-          const Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text('Day 10',
-                  style: TextStyle(
-                      fontSize: 10,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.textMuted)),
-              Text('Peak (Day 14)',
-                  style: TextStyle(
-                      fontSize: 10,
-                      fontWeight: FontWeight.w700,
-                      color: Color(0xFF5A8E6A))),
-              Text('Day 16',
-                  style: TextStyle(
-                      fontSize: 10,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.textMuted)),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildNextBanner(
-      {required String title,
-      required String value,
-      required String sub,
-      required Color color,
-      String? icon,
-      int? percentage}) {
-    return Container(
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: color.withOpacity(0.08),
-        borderRadius: BorderRadius.circular(22),
-        border: Border.all(color: color.withOpacity(0.2), width: 1.5),
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: TextStyle(
-                      fontSize: 11, fontWeight: FontWeight.w800, color: color),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  value,
-                  style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w900,
-                      color: AppColors.textDark),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  sub,
-                  style: TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w700,
-                      color: color.withOpacity(0.7)),
-                ),
-              ],
-            ),
-          ),
-          if (icon != null)
-            Text(icon, style: const TextStyle(fontSize: 32))
-          else if (percentage != null)
-            Stack(
-              alignment: Alignment.center,
-              children: [
-                SizedBox(
-                  width: 50,
-                  height: 50,
-                  child: CircularProgressIndicator(
-                    value: percentage / 100,
-                    strokeWidth: 5,
-                    backgroundColor: color.withOpacity(0.1),
-                    valueColor: AlwaysStoppedAnimation<Color>(color),
-                  ),
-                ),
-                Text(
-                  '$percentage%',
-                  style: TextStyle(
-                      fontSize: 12, fontWeight: FontWeight.w900, color: color),
-                ),
-              ],
-            ),
         ],
       ),
     );
@@ -501,120 +365,35 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   Widget _buildSwitchModeCard(String currentMode) {
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: AppColors.border, width: 1.5),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.border),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text(
-            'Switch tracker',
+            'Want to switch trackers?',
             style: TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.w900,
               color: AppColors.textDark,
-              letterSpacing: 0.2,
             ),
           ),
-          const SizedBox(height: 14),
-          if (currentMode == 'period') ...[
-            _buildSwitchBtn(
-                '🤰 Expecting? → Track Pregnancy', () => _selectMode('preg')),
-            const SizedBox(height: 8),
-            _buildSwitchBtn('🌿 Trying to conceive? → Track Ovulation',
-                () => _selectMode('ovul')),
-          ] else if (currentMode == 'preg') ...[
-            _buildSwitchBtn(
-                '⚠️ Selected pregnancy by mistake? → Period Tracker',
-                () => _selectMode('period'),
-                urgent: true),
-            const SizedBox(height: 8),
-            _buildSwitchBtn('🌿 Not pregnant yet? → Ovulation Tracker',
-                () => _selectMode('ovul')),
-          ] else if (currentMode == 'ovul') ...[
-            _buildSwitchBtn('🎉 Got a positive test? → Pregnancy Tracker',
-                () => _selectMode('preg')),
-            const SizedBox(height: 8),
-            _buildSwitchBtn('🩸 Just track my period → Period Tracker',
-                () => _selectMode('period')),
-          ],
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSwitchBtn(String text, VoidCallback onTap,
-      {bool urgent = false}) {
-    return SizedBox(
-      width: double.infinity,
-      child: TextButton(
-        onPressed: onTap,
-        style: TextButton.styleFrom(
-          padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
-          backgroundColor:
-              urgent ? const Color(0xFFFFF5F5) : AppColors.background,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(14),
-            side: BorderSide(
-                color: urgent ? const Color(0xFFF0B0B8) : AppColors.border,
-                width: 1.5),
-          ),
-          alignment: Alignment.centerLeft,
-        ),
-        child: Text(
-          text,
-          style: TextStyle(
-            fontSize: 12,
-            fontWeight: FontWeight.w800,
-            color: urgent ? const Color(0xFFD97B8A) : AppColors.textMid,
-          ),
-        ),
-      ),
-    );
-  }
-
-  Future<void> _selectMode(String mode) async {
-    // Reset journey completion so user can go through the new mode's journey
-    await ref.read(modeProvider.notifier).resetJourney();
-    if (mounted) {
-      context.go('/journey/$mode');
-    }
-  }
-}
-
-class AppFAB extends StatelessWidget {
-  const AppFAB({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 60,
-      height: 60,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        gradient: const LinearGradient(
-          colors: [Color(0xFFF09090), Color(0xFFD97B8A)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFFD97B8A).withOpacity(0.35),
-            offset: const Offset(0, 6),
-            blurRadius: 18,
+          const SizedBox(height: 12),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: () => context.go('/mode-selection'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primaryRose,
+              ),
+              child: const Text('Switch Mode'),
+            ),
           ),
         ],
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: () => context.go('/log'),
-          customBorder: const CircleBorder(),
-          child: const Icon(Icons.add, color: Colors.white, size: 32),
-        ),
       ),
     );
   }

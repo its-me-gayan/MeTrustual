@@ -21,12 +21,14 @@ class _BiometricSetupScreenState extends ConsumerState<BiometricSetupScreen> {
   String _pin = '';
   String _confirmPin = '';
   bool _showPinInput = false;
+  bool _pinAlreadyExists = false;
 
   @override
   void initState() {
     super.initState();
     print('🔐 BiometricSetupScreen initialized with UID: ${widget.uid}');
     _checkBiometricAvailability();
+    _checkIfPinExists();
     _persistUUID();
   }
 
@@ -39,6 +41,19 @@ class _BiometricSetupScreenState extends ConsumerState<BiometricSetupScreen> {
   Future<void> _checkBiometricAvailability() async {
     final available = await BiometricService.isBiometricAvailable();
     setState(() => _isBiometricAvailable = available);
+  }
+
+  Future<void> _checkIfPinExists() async {
+    final pinExists = await BiometricService.isBiometricSetUp();
+    if (pinExists) {
+      setState(() => _pinAlreadyExists = true);
+      // If PIN already exists, navigate directly to home
+      Future.delayed(const Duration(milliseconds: 500), () {
+        if (mounted) {
+          context.go("/home");
+        }
+      });
+    }
   }
 
   Future<void> _setupBiometric() async {
@@ -116,6 +131,25 @@ class _BiometricSetupScreenState extends ConsumerState<BiometricSetupScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // If PIN already exists, show a loading screen
+    if (_pinAlreadyExists) {
+      return Scaffold(
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const CircularProgressIndicator(),
+              const SizedBox(height: 16),
+              Text(
+                'Redirecting...',
+                style: Theme.of(context).textTheme.bodyMedium,
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
     return Scaffold(
       body: SafeArea(
         child: Padding(
