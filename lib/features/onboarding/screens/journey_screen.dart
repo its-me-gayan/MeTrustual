@@ -244,7 +244,7 @@ class _JourneyScreenState extends ConsumerState<JourneyScreen> {
               'This helps us predict your next period and fertile window accurately.',
           'type': 'date',
           'key': 'lastPeriod',
-          'required': true,
+          'required': false,
           'skip': 'Not sure / this is my first time tracking'
         },
         {

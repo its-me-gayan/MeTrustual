@@ -87,7 +87,7 @@ class _BiometricSetupScreenState extends ConsumerState<BiometricSetupScreen> {
 
       if (success) {
         if (mounted) {
-          context.go('/mode-selection');
+          context.go("/home");
         }
       } else {
         _showError('Failed to save PIN');
