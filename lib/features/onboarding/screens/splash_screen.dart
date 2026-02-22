@@ -68,23 +68,24 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
 
           if (user != null) {
             final biometricSetUp = await BiometricService.isBiometricSetUp();
-            if (!biometricSetUp) {
-              context.go('/biometric-setup/${user.uid}');
+            if (biometricSetUp) {
+              // Only go to PIN verification if it's already set up
+              context.go('/pin-verification');
               return;
             }
-
-            // Route to PIN verification screen
-            context.go('/pin-verification');
-            return;
           }
 
-          // Not logged in - check if onboarding was completed
+          // Sync with Firestore to check journey status
           await ref.read(modeProvider.notifier).syncFromFirestore();
           final hasCompleted = ref.read(modeProvider.notifier).hasCompletedJourney;
           
           if (hasCompleted) {
+            // If journey completed but biometric not set up (due to new flow),
+            // we should technically be at home or prompt for it.
+            // For now, go to home.
             context.go('/home');
           } else {
+            // If not completed, start from onboarding
             context.go('/onboarding');
           }
         });

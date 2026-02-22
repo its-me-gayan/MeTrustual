@@ -143,7 +143,6 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                         child: ElevatedButton(
                           onPressed: () async {
                             try {
-                              final auth = ref.read(firebaseAuthProvider);
                               await ref
                                   .read(onboardingProvider.notifier)
                                   .completeOnboarding(
@@ -152,11 +151,9 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                                     cloudSync: backupData,
                                   );
 
-                              await Future.delayed(const Duration(milliseconds: 500));
-                              final uid = auth.currentUser?.uid;
-
-                              if (mounted && uid != null && uid.isNotEmpty) {
-                                context.push('/biometric-setup/$uid');
+                              if (mounted) {
+                                // Navigate to mode selection instead of biometric setup
+                                context.go('/mode-selection');
                               }
                             } catch (e) {
                               if (mounted) {

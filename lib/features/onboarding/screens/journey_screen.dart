@@ -302,8 +302,7 @@ class _JourneyScreenState extends ConsumerState<JourneyScreen> {
             {'e': '💆', 'l': 'Back Pain'},
             {'e': '🍫', 'l': 'Cravings'},
             {'e': '😤', 'l': 'Mood Swings'},
-            {'e': '🌡️', 'l': 'Breast Tenderness'},
-            {'e': '✨', 'l': 'None usually'}
+            {'e': '✨', 'l': 'None of these'}
           ]
         }
       ];
@@ -342,8 +341,13 @@ class _JourneyScreenState extends ConsumerState<JourneyScreen> {
     } else {
       await ref.read(modeProvider.notifier).setMode(widget.mode);
       await ref.read(modeProvider.notifier).completeJourney();
+      
+      final auth = ref.read(firebaseAuthProvider);
+      final uid = auth.currentUser?.uid;
+      
       if (mounted) {
-        context.go('/home');
+        // Move biometric setup to the end of the journey
+        context.go('/biometric-setup/$uid');
       }
     }
   }
@@ -650,24 +654,17 @@ class _JourneyScreenState extends ConsumerState<JourneyScreen> {
                   color: isSelected ? accentColor.withOpacity(0.12) : Colors.white,
                   borderRadius: BorderRadius.circular(14),
                   border: Border.all(
-                    color: isSelected ? accentColor.withOpacity(0.4) : const Color(0xFFFCE8E4),
+                    color: isSelected ? accentColor.withOpacity(0.5) : const Color(0xFFFCE8E4),
                     width: 2,
                   ),
                 ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(opt['e'], style: const TextStyle(fontSize: 18)),
-                    const SizedBox(width: 8),
-                    Text(
-                      label,
-                      style: TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w800,
-                        color: isSelected ? accentColor : AppColors.textDark,
-                      ),
-                    ),
-                  ],
+                child: Text(
+                  '${opt['e']} $label',
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w800,
+                    color: isSelected ? accentColor : AppColors.textDark,
+                  ),
                 ),
               ),
             );
@@ -675,26 +672,14 @@ class _JourneyScreenState extends ConsumerState<JourneyScreen> {
         );
       case 'date':
       case 'due-date':
-        final DateTime? date = currentValue != null ? (currentValue is Timestamp ? (currentValue as Timestamp).toDate() : currentValue as DateTime) : null;
+        final DateTime? date = currentValue != null ? (currentValue as Timestamp).toDate() : null;
         return GestureDetector(
           onTap: () async {
-            final picked = await showDatePicker(
+            final DateTime? picked = await showDatePicker(
               context: context,
               initialDate: date ?? DateTime.now(),
-              firstDate: DateTime.now().subtract(const Duration(days: 365)),
-              lastDate: DateTime.now().add(const Duration(days: 365)),
-              builder: (context, child) {
-                return Theme(
-                  data: Theme.of(context).copyWith(
-                    colorScheme: ColorScheme.light(
-                      primary: accentColor,
-                      onPrimary: Colors.white,
-                      onSurface: AppColors.textDark,
-                    ),
-                  ),
-                  child: child!,
-                );
-              },
+              firstDate: DateTime(2020),
+              lastDate: DateTime(2030),
             );
             if (picked != null) {
               setState(() {
