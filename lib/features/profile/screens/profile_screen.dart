@@ -149,13 +149,20 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         
         // 1. Delete Firestore data if user exists
         if (uid != null) {
-          // Delete profile subcollection
-          final profileDocs = await firestore.collection('users').doc(uid).collection('profile').get();
-          for (var doc in profileDocs.docs) {
-            await doc.reference.delete();
+          final userDocRef = firestore.collection('users').doc(uid);
+          
+          // List of all subcollections to delete
+          final subcollections = ['profile', 'cycles', 'settings', 'journey'];
+          
+          for (final sub in subcollections) {
+            final snapshot = await userDocRef.collection(sub).get();
+            for (var doc in snapshot.docs) {
+              await doc.reference.delete();
+            }
           }
-          // Delete user document
-          await firestore.collection('users').doc(uid).delete();
+          
+          // Finally delete the main user document
+          await userDocRef.delete();
         }
 
         // 2. Clear Local Storage
