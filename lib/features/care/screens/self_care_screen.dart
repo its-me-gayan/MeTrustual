@@ -13,10 +13,8 @@ class SelfCareScreen extends ConsumerStatefulWidget {
   ConsumerState<SelfCareScreen> createState() => _SelfCareScreenState();
 }
 
-class _SelfCareScreenState extends ConsumerState<SelfCareScreen>
-    with SingleTickerProviderStateMixin {
+class _SelfCareScreenState extends ConsumerState<SelfCareScreen> {
   int _affIdx = 0;
-  late TabController _tabController;
 
   final Map<String, List<String>> _allAffirmations = {
     'period': [
@@ -46,18 +44,6 @@ class _SelfCareScreenState extends ConsumerState<SelfCareScreen>
   };
 
   @override
-  void initState() {
-    super.initState();
-    _tabController = TabController(length: 3, vsync: this);
-  }
-
-  @override
-  void dispose() {
-    _tabController.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
     final currentMode = ref.watch(modeProvider);
     final color = currentMode == 'preg'
@@ -69,78 +55,77 @@ class _SelfCareScreenState extends ConsumerState<SelfCareScreen>
     return Scaffold(
       extendBody: true,
       body: SafeArea(
-        child: Column(
-          children: [
-            // Header
-            Padding(
-              padding: const EdgeInsets.fromLTRB(22, 20, 22, 0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Self-Care 🌿',
-                    style: GoogleFonts.nunito(
-                      fontSize: 24,
-                      fontWeight: FontWeight.w900,
-                      color: AppColors.textDark,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    currentMode == 'period'
-                        ? 'Your cycle wellness hub'
-                        : currentMode == 'preg'
-                            ? 'Nurture you & baby 💙'
-                            : 'Fertility wellness rituals',
-                    style: GoogleFonts.nunito(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.textMuted,
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  _buildPhaseStrip(currentMode, color),
-                  const SizedBox(height: 20),
-                ],
-              ),
-            ),
-            // Tab Bar
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 22),
-              child: TabBar(
-                controller: _tabController,
-                labelColor: color,
-                unselectedLabelColor: AppColors.textMuted,
-                indicatorColor: color,
-                indicatorWeight: 3,
-                labelStyle: GoogleFonts.nunito(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w800,
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(22, 20, 22, 120),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Self-Care 🌿',
+                style: GoogleFonts.nunito(
+                  fontSize: 24,
+                  fontWeight: FontWeight.w900,
+                  color: AppColors.textDark,
                 ),
-                unselectedLabelStyle: GoogleFonts.nunito(
+              ),
+              const SizedBox(height: 4),
+              Text(
+                currentMode == 'period'
+                    ? 'Your cycle wellness hub'
+                    : currentMode == 'preg'
+                        ? 'Nurture you & baby 💙'
+                        : 'Fertility wellness rituals',
+                style: GoogleFonts.nunito(
                   fontSize: 14,
-                  fontWeight: FontWeight.w600,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.textMuted,
                 ),
-                tabs: const [
-                  Tab(text: 'Rituals'),
-                  Tab(text: 'Affirmations'),
-                  Tab(text: 'Habits'),
-                ],
               ),
-            ),
-            const SizedBox(height: 16),
-            // Tab Views
-            Expanded(
-              child: TabBarView(
-                controller: _tabController,
-                children: [
-                  _buildRitualsTab(currentMode, color),
-                  _buildAffirmationsTab(currentMode),
-                  _buildHabitsTab(currentMode, color),
-                ],
+              const SizedBox(height: 24),
+              _buildPhaseStrip(currentMode, color),
+              const SizedBox(height: 24),
+              _buildCareHero(currentMode, color),
+              const SizedBox(height: 24),
+              _buildAffirmationCard(currentMode),
+              const SizedBox(height: 24),
+              _buildBreatheCard(color),
+              const SizedBox(height: 24),
+              Text(
+                "Today's habits",
+                style: GoogleFonts.nunito(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w900,
+                  color: AppColors.textMuted,
+                  letterSpacing: 0.6,
+                ),
               ),
-            ),
-          ],
+              const SizedBox(height: 12),
+              _buildHabitRow(color),
+              const SizedBox(height: 24),
+              Text(
+                "Phase rituals for you",
+                style: GoogleFonts.nunito(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w900,
+                  color: AppColors.textMuted,
+                  letterSpacing: 0.6,
+                ),
+              ),
+              const SizedBox(height: 12),
+              ..._buildRituals(currentMode, color),
+              const SizedBox(height: 32),
+              Center(
+                child: Text(
+                  "💕 Self-care is not selfish — it's essential",
+                  style: GoogleFonts.nunito(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.textMuted,
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
       bottomNavigationBar:
@@ -150,129 +135,26 @@ class _SelfCareScreenState extends ConsumerState<SelfCareScreen>
     );
   }
 
-  // ─── RITUALS TAB ───
-  Widget _buildRitualsTab(String currentMode, Color color) {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.fromLTRB(22, 0, 22, 120),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _buildCareHero(currentMode, color),
-          const SizedBox(height: 24),
-          _buildBreatheCard(color),
-          const SizedBox(height: 24),
-          Text(
-            "Phase rituals for you",
-            style: GoogleFonts.nunito(
-              fontSize: 14,
-              fontWeight: FontWeight.w900,
-              color: AppColors.textMuted,
-              letterSpacing: 0.6,
-            ),
-          ),
-          const SizedBox(height: 12),
-          ..._buildRituals(currentMode, color),
-          const SizedBox(height: 32),
-          Center(
-            child: Text(
-              "💕 Self-care is not selfish — it's essential",
-              style: GoogleFonts.nunito(
-                fontSize: 12,
-                fontWeight: FontWeight.w700,
-                color: AppColors.textMuted,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
+  String get _currentRoute {
+    final String? location =
+        GoRouter.of(context).routerDelegate.currentConfiguration.uri.path;
+    return location ?? '/home';
   }
 
-  // ─── AFFIRMATIONS TAB ───
-  Widget _buildAffirmationsTab(String currentMode) {
-    final pool = _allAffirmations[currentMode] ?? _allAffirmations['period']!;
-
-    return SingleChildScrollView(
-      padding: const EdgeInsets.fromLTRB(22, 0, 22, 120),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _buildAffirmationCard(currentMode),
-          const SizedBox(height: 24),
-          Text(
-            "All affirmations",
-            style: GoogleFonts.nunito(
-              fontSize: 14,
-              fontWeight: FontWeight.w900,
-              color: AppColors.textMuted,
-              letterSpacing: 0.6,
-            ),
-          ),
-          const SizedBox(height: 12),
-          ...pool.map((aff) {
-            return Container(
-              margin: const EdgeInsets.only(bottom: 12),
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(18),
-                border: Border.all(color: AppColors.border, width: 1.5),
-              ),
-              child: Text(
-                '"$aff"',
-                style: GoogleFonts.nunito(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.textDark,
-                  fontStyle: FontStyle.italic,
-                  height: 1.5,
-                ),
-              ),
-            );
-          }).toList(),
-          const SizedBox(height: 32),
-        ],
-      ),
-    );
+  int _getNavIndex(String route) {
+    switch (route) {
+      case '/home':
+        return 0;
+      case '/insights':
+        return 1;
+      case '/education':
+        return 2;
+      case '/care':
+        return 3;
+      default:
+        return 0;
+    }
   }
-
-  // ─── HABITS TAB ───
-  Widget _buildHabitsTab(String currentMode, Color color) {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.fromLTRB(22, 0, 22, 120),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            "Today's habits",
-            style: GoogleFonts.nunito(
-              fontSize: 14,
-              fontWeight: FontWeight.w900,
-              color: AppColors.textMuted,
-              letterSpacing: 0.6,
-            ),
-          ),
-          const SizedBox(height: 16),
-          _buildHabitRow(color),
-          const SizedBox(height: 32),
-          Text(
-            "Wellness tips",
-            style: GoogleFonts.nunito(
-              fontSize: 14,
-              fontWeight: FontWeight.w900,
-              color: AppColors.textMuted,
-              letterSpacing: 0.6,
-            ),
-          ),
-          const SizedBox(height: 12),
-          ..._buildWellnessTips(currentMode, color),
-          const SizedBox(height: 32),
-        ],
-      ),
-    );
-  }
-
-  // ─── COMPONENTS ───
 
   Widget _buildPhaseStrip(String currentMode, Color color) {
     final List<Map<String, dynamic>> phases = currentMode == 'period'
@@ -635,54 +517,6 @@ class _SelfCareScreenState extends ConsumerState<SelfCareScreen>
     }).toList();
   }
 
-  List<Widget> _buildWellnessTips(String currentMode, Color color) {
-    final tips = _getWellnessTips(currentMode);
-    return tips.map((tip) {
-      return Container(
-        margin: const EdgeInsets.only(bottom: 12),
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(18),
-          border: Border.all(color: AppColors.border, width: 1.5),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Text(tip['icon']!, style: const TextStyle(fontSize: 20)),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Text(
-                    tip['title']!,
-                    style: GoogleFonts.nunito(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w800,
-                      color: AppColors.textDark,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            Text(
-              tip['desc']!,
-              style: GoogleFonts.nunito(
-                fontSize: 11,
-                fontWeight: FontWeight.w600,
-                color: AppColors.textMid,
-                height: 1.5,
-              ),
-            ),
-          ],
-        ),
-      );
-    }).toList();
-  }
-
-  // ─── DATA ───
-
   Map<String, String> _getTodayRitual(String currentMode) {
     if (currentMode == 'period') {
       return {
@@ -729,49 +563,4 @@ class _SelfCareScreenState extends ConsumerState<SelfCareScreen>
       ];
     }
   }
-
-  List<Map<String, String>> _getWellnessTips(String currentMode) {
-    if (currentMode == 'period') {
-      return [
-        {'icon': '🥗', 'title': 'Iron-Rich Foods', 'desc': 'Replenish iron levels with spinach, lentils, and red meat.'},
-        {'icon': '💧', 'title': 'Stay Hydrated', 'desc': 'Drink plenty of water to ease bloating and support energy.'},
-        {'icon': '😴', 'title': 'Prioritize Rest', 'desc': 'Give yourself permission to rest and recover during this phase.'},
-      ];
-    } else if (currentMode == 'preg') {
-      return [
-        {'icon': '🥛', 'title': 'Calcium & Protein', 'desc': 'Support baby\'s development with dairy, nuts, and lean proteins.'},
-        {'icon': '🚶', 'title': 'Gentle Movement', 'desc': 'Walking and prenatal yoga are safe and beneficial for you both.'},
-        {'icon': '🌙', 'title': 'Sleep Support', 'desc': 'Use pillows for comfort and maintain a consistent sleep schedule.'},
-      ];
-    } else {
-      return [
-        {'icon': '🌱', 'title': 'Seed Cycling', 'desc': 'Support hormones with flax, pumpkin, sesame, and sunflower seeds.'},
-        {'icon': '🏃', 'title': 'Boost Activity', 'desc': 'Increase exercise intensity as energy rises during this phase.'},
-        {'icon': '🥗', 'title': 'Nutrient Dense', 'desc': 'Focus on vegetables, whole grains, and healthy fats.'},
-      ];
-    }
-  }
-
-  String get _currentRoute {
-    final String? location =
-        GoRouter.of(context).routerDelegate.currentConfiguration.uri.path;
-    return location ?? '/home';
-  }
-
-  int _getNavIndex(String route) {
-    switch (route) {
-      case '/home':
-        return 0;
-      case '/insights':
-        return 1;
-      case '/education':
-        return 2;
-      case '/care':
-        return 3;
-      default:
-        return 0;
-    }
-  }
 }
-
-
