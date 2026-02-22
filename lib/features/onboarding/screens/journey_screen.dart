@@ -38,12 +38,38 @@ class _JourneyScreenState extends ConsumerState<JourneyScreen> {
   Future<void> _loadJourneyStepsAndData() async {
     setState(() => _isLoading = true);
     try {
-      final stepsAsyncValue =
-          await ref.read(journeyStepsProvider(widget.mode).future);
+      // Load combined journey data (static steps + user selections)
+      final combinedData = await ref.read(combinedJourneyDataProvider(widget.mode).future);
+      final stepsAsyncValue = combinedData['steps'] as List<Map<String, dynamic>>;
+      final userSelections = combinedData['userSelections'] as Map<String, dynamic>;
+      
       setState(() {
         steps = stepsAsyncValue;
+        journeyData.addAll(userSelections);
         _stepsLoaded = true;
       });
+    } catch (e) {
+      debugPrint('Error loading combined journey data: $e');
+      try {
+        // Fallback to just loading steps if combined provider fails
+        final stepsAsyncValue = await ref.read(journeyStepsProvider(widget.mode).future);
+        setState(() {
+          steps = stepsAsyncValue;
+          _stepsLoaded = true;
+        });
+        await _loadExistingData();
+      } catch (e2) {
+        debugPrint('Error loading journey steps fallback: $e2');
+        setState(() {
+          steps = _getHardcodedJourneySteps(widget.mode);
+          _stepsLoaded = true;
+        });
+        await _loadExistingData();
+      }
+    } finally {
+      setState(() => _isLoading = false);
+    }
+  });
       await _loadExistingData();
     } catch (e) {
       debugPrint('Error loading journey steps: $e');
