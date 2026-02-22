@@ -38,7 +38,8 @@ class _JourneyScreenState extends ConsumerState<JourneyScreen> {
   Future<void> _loadJourneyStepsAndData() async {
     setState(() => _isLoading = true);
     try {
-      final stepsAsyncValue = await ref.read(journeyStepsProvider(widget.mode).future);
+      final stepsAsyncValue =
+          await ref.read(journeyStepsProvider(widget.mode).future);
       setState(() {
         steps = stepsAsyncValue;
         _stepsLoaded = true;
@@ -46,10 +47,10 @@ class _JourneyScreenState extends ConsumerState<JourneyScreen> {
       await _loadExistingData();
     } catch (e) {
       debugPrint('Error loading journey steps: $e');
-      setState(() {
-        steps = _getHardcodedJourneySteps(widget.mode);
-        _stepsLoaded = true;
-      });
+      // setState(() {
+      //   steps = _getHardcodedJourneySteps(widget.mode);
+      //   _stepsLoaded = true;
+      // });
       await _loadExistingData();
     } finally {
       setState(() => _isLoading = false);
@@ -71,9 +72,15 @@ class _JourneyScreenState extends ConsumerState<JourneyScreen> {
             .doc(widget.mode)
             .get();
         if (doc.exists) {
+          debugPrint(doc.data().toString());
+          debugPrint(
+              'Existing journey data found for user $uid and mode ${widget.mode}');
           setState(() {
             journeyData.addAll(doc.data()!);
           });
+        } else {
+          debugPrint(
+              'No existing journey data found for user $uid and mode ${widget.mode}');
         }
       }
     } catch (e) {
@@ -117,213 +124,6 @@ class _JourneyScreenState extends ConsumerState<JourneyScreen> {
     }
   }
 
-  List<Map<String, dynamic>> _getHardcodedJourneySteps(String mode) {
-    if (mode == 'preg') {
-      return [
-        {
-          'icon': '🤰',
-          'q': 'Are you currently pregnant?',
-          'sub': 'This helps us set up the right tracker for you. No judgement either way.',
-          'type': 'chips-big-single',
-          'key': 'isPreg',
-          'required': true,
-          'opts': [
-            {'e': '✅', 'l': "Yes, I'm pregnant!", 'v': 'yes'},
-            {'e': '🤔', 'l': 'I think I might be', 'v': 'maybe'},
-            {'e': '🔄', 'l': "Actually, I'm not — switch tracker", 'v': 'switch', 'special': true}
-          ],
-          'warn': 'You can switch back to Period or Onboarding tracker anytime from your home screen.'
-        },
-        {
-          'icon': '📅',
-          'q': 'Do you know your due date?',
-          'sub': 'If yes, enter it. If not, enter your last period start date and we\'ll calculate.',
-          'type': 'due-date',
-          'key': 'dueDate',
-          'required': false,
-        },
-        {
-          'icon': '👶',
-          'q': 'Is this your first pregnancy?',
-          'sub': 'This personalises your week-by-week tips and what to expect.',
-          'type': 'chips-big-single',
-          'key': 'firstPreg',
-          'required': true,
-          'opts': [
-            {'e': '🌱', 'l': 'Yes — my first!', 'v': 'first'},
-            {'e': '👧', 'l': 'I have one child', 'v': 'second'},
-            {'e': '👨‍👩‍👧‍👦', 'l': 'Two or more children', 'v': 'multiple'}
-          ]
-        },
-        {
-          'icon': '🩺',
-          'q': 'Any conditions to track together?',
-          'sub': 'Optional — select any for extra personalised support and reminders.',
-          'type': 'chips-multi',
-          'key': 'conditions',
-          'opts': [
-            {'e': '🩺', 'l': 'Gestational Diabetes'},
-            {'e': '💓', 'l': 'High Blood Pressure'},
-            {'e': '🤢', 'l': 'Severe Morning Sickness'},
-            {'e': '🩸', 'l': 'Anaemia'},
-            {'e': '🧠', 'l': 'Prenatal Anxiety'},
-            {'e': '😴', 'l': 'Sleep Issues'},
-            {'e': '✨', 'l': 'All good — none'}
-          ]
-        },
-        {
-          'icon': '💙',
-          'q': 'What support do you want from us?',
-          'sub': 'We\'ll send you the content that matters most. Adjust anytime.',
-          'type': 'chips-multi',
-          'key': 'support',
-          'opts': [
-            {'e': '📋', 'l': 'Weekly baby updates'},
-            {'e': '🩺', 'l': 'Appointment reminders'},
-            {'e': '👶', 'l': 'Kick counter alerts'},
-            {'e': '🌿', 'l': 'Nutrition & wellness tips'},
-            {'e': '🧘', 'l': 'Mental health & mindfulness'},
-            {'e': '📖', 'l': 'Birth & newborn prep'}
-          ]
-        }
-      ];
-    } else if (mode == 'ovul') {
-      return [
-        {
-          'icon': '🌿',
-          'q': 'What\'s your main goal?',
-          'sub': 'This shapes your insights, alerts, and what tools we highlight for you.',
-          'type': 'chips-big-single',
-          'key': 'goal',
-          'required': true,
-          'opts': [
-            {'e': '👶', 'l': 'Trying to conceive (TTC)', 'v': 'ttc'},
-            {'e': '🌿', 'l': 'Natural family planning', 'v': 'nfp'},
-            {'e': '🔬', 'l': 'Understanding my body & cycle', 'v': 'understand'}
-          ]
-        },
-        {
-          'icon': '📅',
-          'q': 'When did your last period start?',
-          'sub': 'We calculate your fertile window from this. Ovulation is usually ~14 days before your next period.',
-          'type': 'date',
-          'key': 'lastPeriod',
-          'required': true,
-          'skip': 'Skip for now'
-        },
-        {
-          'icon': '🔁',
-          'q': 'How long is your cycle usually?',
-          'sub': 'Knowing this makes ovulation predictions much more accurate.',
-          'type': 'stepper',
-          'key': 'cycleLen',
-          'min': 18,
-          'max': 45,
-          'def': 28,
-          'unit': 'days',
-          'skip': 'Not sure yet'
-        },
-        {
-          'icon': '🌡️',
-          'q': 'What do you currently track?',
-          'sub': 'Select all that apply — we\'ll guide you on using each method together.',
-          'type': 'chips-multi',
-          'key': 'methods',
-          'opts': [
-            {'e': '🌡️', 'l': 'BBT (Basal Body Temp)'},
-            {'e': '💊', 'l': 'OPK / LH Test Strips'},
-            {'e': '💧', 'l': 'Cervical Mucus'},
-            {'e': '📅', 'l': 'Period dates only'},
-            {'e': '🩸', 'l': 'Mid-cycle spotting'},
-            {'e': '🆕', 'l': 'Nothing yet — just starting!'}
-          ]
-        },
-        {
-          'icon': '🔔',
-          'q': 'How should we alert you?',
-          'sub': 'We only send what you choose. You can change this anytime.',
-          'type': 'chips-multi',
-          'key': 'alerts',
-          'opts': [
-            {'e': '🟢', 'l': 'Fertile window opens'},
-            {'e': '🎯', 'l': 'Peak ovulation day'},
-            {'e': '📉', 'l': 'Fertile window closing'},
-            {'e': '📅', 'l': 'Period due reminder'},
-            {'e': '🌡️', 'l': 'BBT reminder each morning'},
-            {'e': '💊', 'l': 'OPK test reminder'}
-          ]
-        }
-      ];
-    } else {
-      return [
-        {
-          'icon': '🩸',
-          'q': 'When did your last period start?',
-          'sub': 'This helps us predict your next period and fertile window accurately.',
-          'type': 'date',
-          'key': 'lastPeriod',
-          'required': false,
-          'skip': 'Not sure / this is my first time tracking'
-        },
-        {
-          'icon': '📅',
-          'q': 'How long is your cycle usually?',
-          'sub': 'Day 1 of one period to Day 1 of the next. Most cycles are 21–35 days.',
-          'type': 'stepper',
-          'key': 'cycleLen',
-          'min': 18,
-          'max': 45,
-          'def': 28,
-          'unit': 'days',
-          'skip': 'Not sure yet — we\'ll learn!'
-        },
-        {
-          'icon': '🗓️',
-          'q': 'How many days does your period last?',
-          'sub': 'Include light spotting days. Most periods last 3–7 days.',
-          'type': 'stepper',
-          'key': 'periodLen',
-          'min': 1,
-          'max': 10,
-          'def': 5,
-          'unit': 'days'
-        },
-        {
-          'icon': '💧',
-          'q': 'How would you describe your usual flow?',
-          'sub': 'Helps us give you better predictions and product recommendations.',
-          'type': 'chips-single',
-          'key': 'flow',
-          'required': true,
-          'opts': [
-            {'e': '💧', 'l': 'Light', 'v': 'light'},
-            {'e': '🟠', 'l': 'Medium', 'v': 'medium'},
-            {'e': '🔴', 'l': 'Heavy', 'v': 'heavy'},
-            {'e': '🔀', 'l': 'Varies', 'v': 'varies'}
-          ]
-        },
-        {
-          'icon': '🌀',
-          'q': 'Symptoms you often get?',
-          'sub': 'Select all that apply — we\'ll personalise your care tips each phase.',
-          'type': 'chips-multi',
-          'key': 'symptoms',
-          'opts': [
-            {'e': '🌀', 'l': 'Cramps'},
-            {'e': '🤕', 'l': 'Headache'},
-            {'e': '😴', 'l': 'Fatigue'},
-            {'e': '🤢', 'l': 'Nausea'},
-            {'e': '🌊', 'l': 'Bloating'},
-            {'e': '💆', 'l': 'Back Pain'},
-            {'e': '🍫', 'l': 'Cravings'},
-            {'e': '😤', 'l': 'Mood Swings'},
-            {'e': '✨', 'l': 'None of these'}
-          ]
-        }
-      ];
-    }
-  }
-
   Future<void> _saveData() async {
     final auth = ref.read(firebaseAuthProvider);
     final firestore = ref.read(firestoreProvider);
@@ -341,14 +141,15 @@ class _JourneyScreenState extends ConsumerState<JourneyScreen> {
 
   Future<void> _nextStep() async {
     if (!_stepsLoaded) return;
-    
+
     final step = steps[currentStep];
     final key = step['key'];
     final isRequired = step['required'] == true;
     final value = journeyData[key];
 
     if (isRequired && (value == null || (value is List && value.isEmpty))) {
-      NotificationService.showError(context, 'Please make a selection to continue');
+      NotificationService.showError(
+          context, 'Please make a selection to continue');
       return;
     }
 
@@ -358,10 +159,10 @@ class _JourneyScreenState extends ConsumerState<JourneyScreen> {
     } else {
       await ref.read(modeProvider.notifier).setMode(widget.mode);
       await ref.read(modeProvider.notifier).completeJourney();
-      
+
       final auth = ref.read(firebaseAuthProvider);
       final uid = auth.currentUser?.uid;
-      
+
       if (mounted) {
         context.go('/biometric-setup/$uid');
       }
@@ -383,7 +184,8 @@ class _JourneyScreenState extends ConsumerState<JourneyScreen> {
     }
     final step = steps[currentStep];
     final progress = (currentStep + 1) / steps.length;
-    final isSingleChoice = step['type'] == 'chips-big-single' || step['type'] == 'chips-single';
+    final isSingleChoice =
+        step['type'] == 'chips-big-single' || step['type'] == 'chips-single';
 
     return Scaffold(
       body: Container(
@@ -410,9 +212,11 @@ class _JourneyScreenState extends ConsumerState<JourneyScreen> {
                         decoration: BoxDecoration(
                           color: Colors.white,
                           shape: BoxShape.circle,
-                          border: Border.all(color: const Color(0xFFFCE8E4), width: 1.5),
+                          border: Border.all(
+                              color: const Color(0xFFFCE8E4), width: 1.5),
                         ),
-                        child: const Icon(Icons.arrow_back_ios_new, size: 16, color: AppColors.textDark),
+                        child: const Icon(Icons.arrow_back_ios_new,
+                            size: 16, color: AppColors.textDark),
                       ),
                     ),
                     const SizedBox(width: 12),
@@ -459,7 +263,8 @@ class _JourneyScreenState extends ConsumerState<JourneyScreen> {
                   child: Column(
                     children: [
                       const SizedBox(height: 10),
-                      Text(step['icon'], style: GoogleFonts.nunito(fontSize: 48)),
+                      Text(step['icon'],
+                          style: GoogleFonts.nunito(fontSize: 48)),
                       const SizedBox(height: 16),
                       Text(
                         step['q'],
@@ -491,11 +296,14 @@ class _JourneyScreenState extends ConsumerState<JourneyScreen> {
                           decoration: BoxDecoration(
                             color: const Color(0xFFFFF5F5),
                             borderRadius: BorderRadius.circular(16),
-                            border: Border.all(color: const Color(0xFFF0B0B8).withOpacity(0.5)),
+                            border: Border.all(
+                                color:
+                                    const Color(0xFFF0B0B8).withOpacity(0.5)),
                           ),
                           child: Row(
                             children: [
-                              const Icon(Icons.info_outline, color: Color(0xFFD97B8A), size: 20),
+                              const Icon(Icons.info_outline,
+                                  color: Color(0xFFD97B8A), size: 20),
                               const SizedBox(width: 12),
                               Expanded(
                                 child: Text(
@@ -549,8 +357,11 @@ class _JourneyScreenState extends ConsumerState<JourneyScreen> {
                             ),
                           ),
                           child: Text(
-                            currentStep == steps.length - 1 ? "Done! Let's go →" : 'Continue →',
-                            style: GoogleFonts.nunito(fontSize: 16, fontWeight: FontWeight.w900),
+                            currentStep == steps.length - 1
+                                ? "Done! Let's go →"
+                                : 'Continue →',
+                            style: GoogleFonts.nunito(
+                                fontSize: 16, fontWeight: FontWeight.w900),
                           ),
                         ),
                       ),
@@ -592,12 +403,16 @@ class _JourneyScreenState extends ConsumerState<JourneyScreen> {
                 child: Container(
                   padding: const EdgeInsets.all(18),
                   decoration: BoxDecoration(
-                    color: isSelected ? accentColor.withOpacity(0.08) : Colors.white,
+                    color: isSelected
+                        ? accentColor.withOpacity(0.08)
+                        : Colors.white,
                     borderRadius: BorderRadius.circular(20),
                     border: Border.all(
                       color: isSelected
                           ? accentColor.withOpacity(0.5)
-                          : (isSpecial ? const Color(0xFFF0B0B8).withOpacity(0.5) : const Color(0xFFFCE8E4)),
+                          : (isSpecial
+                              ? const Color(0xFFF0B0B8).withOpacity(0.5)
+                              : const Color(0xFFFCE8E4)),
                       width: 2,
                     ),
                   ),
@@ -611,7 +426,9 @@ class _JourneyScreenState extends ConsumerState<JourneyScreen> {
                           style: GoogleFonts.nunito(
                             fontSize: 14,
                             fontWeight: FontWeight.w800,
-                            color: isSpecial ? const Color(0xFFD97B8A) : AppColors.textDark,
+                            color: isSpecial
+                                ? const Color(0xFFD97B8A)
+                                : AppColors.textDark,
                           ),
                         ),
                       ),
@@ -619,7 +436,9 @@ class _JourneyScreenState extends ConsumerState<JourneyScreen> {
                         isSelected ? Icons.check_circle : Icons.chevron_right,
                         color: isSelected
                             ? accentColor.withOpacity(0.5)
-                            : (isSpecial ? const Color(0xFFD97B8A).withOpacity(0.5) : const Color(0xFFD0B0B8)),
+                            : (isSpecial
+                                ? const Color(0xFFD97B8A).withOpacity(0.5)
+                                : const Color(0xFFD0B0B8)),
                         size: 20,
                       ),
                     ],
@@ -651,12 +470,16 @@ class _JourneyScreenState extends ConsumerState<JourneyScreen> {
                 });
               },
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 decoration: BoxDecoration(
-                  color: isSelected ? accentColor.withOpacity(0.12) : Colors.white,
+                  color:
+                      isSelected ? accentColor.withOpacity(0.12) : Colors.white,
                   borderRadius: BorderRadius.circular(14),
                   border: Border.all(
-                    color: isSelected ? accentColor.withOpacity(0.5) : const Color(0xFFFCE8E4),
+                    color: isSelected
+                        ? accentColor.withOpacity(0.5)
+                        : const Color(0xFFFCE8E4),
                     width: 2,
                   ),
                 ),
@@ -674,7 +497,8 @@ class _JourneyScreenState extends ConsumerState<JourneyScreen> {
         );
       case 'date':
       case 'due-date':
-        final DateTime? date = currentValue != null ? (currentValue as Timestamp).toDate() : null;
+        final DateTime? date =
+            currentValue != null ? (currentValue as Timestamp).toDate() : null;
         return GestureDetector(
           onTap: () async {
             final DateTime? picked = await showDatePicker(
@@ -701,7 +525,9 @@ class _JourneyScreenState extends ConsumerState<JourneyScreen> {
                 Icon(Icons.calendar_today, color: accentColor, size: 22),
                 const SizedBox(width: 14),
                 Text(
-                  date != null ? "${date.day}/${date.month}/${date.year}" : 'Select Date',
+                  date != null
+                      ? "${date.day}/${date.month}/${date.year}"
+                      : 'Select Date',
                   style: GoogleFonts.nunito(
                     fontSize: 15,
                     fontWeight: FontWeight.w800,
