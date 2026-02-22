@@ -6,6 +6,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/services/notification_service.dart';
 import '../../../core/providers/mode_provider.dart';
 import '../../../core/providers/firebase_providers.dart';
+import '../providers/journey_provider.dart';
 
 class JourneyScreen extends ConsumerStatefulWidget {
   final String mode;
@@ -19,18 +20,43 @@ class _JourneyScreenState extends ConsumerState<JourneyScreen> {
   int currentStep = 0;
   final Map<String, dynamic> journeyData = {};
   bool _isLoading = false;
+  bool _stepsLoaded = false;
 
-  late final List<Map<String, dynamic>> steps;
+  late List<Map<String, dynamic>> steps;
   late final Color accentColor;
   late final LinearGradient progressGradient;
 
   @override
   void initState() {
     super.initState();
-    steps = _getJourneySteps(widget.mode);
     accentColor = _getModeColor(widget.mode);
     progressGradient = _getModeGradient(widget.mode);
-    _loadExistingData();
+    _loadJourneyStepsAndData();
+  }
+
+  Future<void> _loadJourneyStepsAndData() async {
+    setState(() => _isLoading = true);
+    try {
+      // Load journey steps from Firebase
+      final stepsAsyncValue = await ref.read(journeyStepsWithFallbackProvider(widget.mode).future);
+      setState(() {
+        steps = stepsAsyncValue;
+        _stepsLoaded = true;
+      });
+      
+      // Load existing user journey data
+      await _loadExistingData();
+    } catch (e) {
+      debugPrint('Error loading journey steps: $e');
+      // Fallback to hardcoded steps
+      setState(() {
+        steps = _getHardcodedJourneySteps(widget.mode);
+        _stepsLoaded = true;
+      });
+      await _loadExistingData();
+    } finally {
+      setState(() => _isLoading = false);
+    }
   }
 
   Future<void> _loadExistingData() async {
@@ -85,7 +111,7 @@ class _JourneyScreenState extends ConsumerState<JourneyScreen> {
     }
   }
 
-  List<Map<String, dynamic>> _getJourneySteps(String mode) {
+  List<Map<String, dynamic>> _getHardcodedJourneySteps(String mode) {
     if (mode == 'preg') {
       return [
         {
