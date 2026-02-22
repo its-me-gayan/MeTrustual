@@ -72,16 +72,21 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
           print('✓ user exists: ${user != null}');
           print('✓ user UID: ${user?.uid}');
 
-          if (user != null) {
-            final biometricSetUp = await BiometricService.isBiometricSetUp();
-            print('✓ biometricSetUp flag: $biometricSetUp');
+          if (user == null) {
+            print('➜ Route: /onboarding (no user)');
+            print('═══════════════════════════════════════════');
+            context.go('/onboarding');
+            return;
+          }
 
-            if (biometricSetUp) {
-              print('➜ Route: /pin-verification (ASK PIN)');
-              print('═══════════════════════════════════════════');
-              context.go('/pin-verification');
-              return;
-            }
+          final biometricSetUp = await BiometricService.isBiometricSetUp();
+          print('✓ biometricSetUp flag: $biometricSetUp');
+
+          if (biometricSetUp) {
+            print('➜ Route: /pin-verification (ASK PIN)');
+            print('═══════════════════════════════════════════');
+            context.go('/pin-verification');
+            return;
           }
 
           // Sync with Firestore to check journey status

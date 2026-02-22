@@ -163,6 +163,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         await BiometricService.resetBiometric();
         await BackupService.clearLocalBackup();
         
+        // Reset journey status in provider
+        await ref.read(modeProvider.notifier).resetJourney();
+        
         final prefs = await SharedPreferences.getInstance();
         await prefs.clear();
 
