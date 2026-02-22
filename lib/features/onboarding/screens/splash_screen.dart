@@ -133,11 +133,12 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
                 colors: [
-                  Color(0xFFF5F0FF),
-                  Color(0xFFE8E0FF),
-                  Color(0xFFE0F0FF),
+                  Color(0xFFFFF4F0),
+                  Color(0xFFFDE8F0),
+                  Color(0xFFEDE8FC),
+                  Color(0xFFE8EEFF),
                 ],
-                stops: [0.0, 0.4, 1.0],
+                stops: [0.0, 0.35, 0.7, 1.0],
               ),
             ),
             child: Stack(
@@ -172,18 +173,18 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
                             gradient: LinearGradient(
-                              colors: [Color(0xFFE8F0FF), Color(0xFFD5E8FF)],
+                              colors: [Color(0xFFFDE8C8), Color(0xFFF0D8F4)],
                               begin: Alignment.topLeft,
                               end: Alignment.bottomRight,
                             ),
                             boxShadow: [
                               BoxShadow(
-                                color: const Color(0xFF9945FF).withOpacity(0.15),
+                                color: const Color(0xFFFDE8C8).withOpacity(0.4),
                                 blurRadius: 0,
                                 spreadRadius: 10,
                               ),
                               BoxShadow(
-                                color: const Color(0xFF9945FF).withOpacity(0.2),
+                                color: const Color(0xFFC97B3A).withOpacity(0.25),
                                 blurRadius: 36,
                                 offset: const Offset(0, 12),
                               ),
@@ -224,7 +225,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                                   style: GoogleFonts.nunito(
                                     fontSize: 29,
                                     fontWeight: FontWeight.w900,
-                                    color: Color(0xFF1A1A2E),
+                                    color: Color(0xFF3D2828),
                                     // fontFamily: 'Nunito',
                                     letterSpacing: -0.5,
                                   ),
@@ -233,8 +234,8 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                                     TextSpan(
                                       text: 'ana',
                                       style: GoogleFonts.nunito(
-                                        color: Color(0xFF9945FF),
-                                        fontStyle: FontStyle.italic,
+                                        color: Color(0xFFC97B3A),
+                                        fontStyle: FontStyle.normal,
                                       ),
                                     ),
                                   ],
@@ -245,7 +246,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                                 style: GoogleFonts.nunito(
                                   fontSize: 12,
                                   fontWeight: FontWeight.w700,
-                                  color: Color(0xFF6B5B95),
+                                  color: Color(0xFFB0909A),
                                 ),
                               ),
                             ],
@@ -263,7 +264,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                             width: 100,
                             height: 4,
                             decoration: BoxDecoration(
-                              color: Color(0xFF9945FF).withOpacity(0.12),
+                              color: Color(0xFFD97B8A).withOpacity(0.12),
                               borderRadius: BorderRadius.circular(2),
                             ),
                           child: AnimatedBuilder(
@@ -276,10 +277,10 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                                   decoration: BoxDecoration(
                                     borderRadius: BorderRadius.circular(2),
                                   gradient: const LinearGradient(
-                                    colors: [
-                                      Color(0xFFBB86FC),
-                                      Color(0xFF9945FF),
-                                      Color(0xFF7C3AED)
+                                      colors: [
+                                      Color(0xFFF0C080),
+                                      Color(0xFFD97B8A),
+                                      Color(0xFF9070C0),
                                       ],
                                     ),
                                   ),
@@ -408,7 +409,7 @@ class _RippleRingState extends State<RippleRing>
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 border: Border.all(
-                    color: Color(0xFF9945FF).withOpacity(0.15), width: 1.5),
+                    color: Color(0xFFD97B8A).withOpacity(0.15), width: 1.5),
               ),
             ),
           ),
