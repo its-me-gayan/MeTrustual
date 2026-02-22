@@ -6,15 +6,12 @@ import json
 print("Starting Firestore population script for MeTrustual...")
 
 # Initialize Firebase Admin SDK
-# The credentials should be set via GOOGLE_APPLICATION_CREDENTIALS environment variable
-# or you can pass the path directly
 try:
-    # Try to initialize with default credentials
-    if not firebase_admin.get_app():
-        firebase_admin.initialize_app()
+    firebase_admin.get_app()
 except ValueError:
-    # App already initialized
-    pass
+    # App not initialized, initialize it
+    cred = credentials.Certificate(os.environ.get('GOOGLE_APPLICATION_CREDENTIALS'))
+    firebase_admin.initialize_app(cred)
 
 db = firestore.client()
 

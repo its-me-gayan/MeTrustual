@@ -1,14 +1,17 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../../core/providers/firebase_providers.dart';
 
 // Provider to load journey steps from Firestore
-final journeyStepsProvider = FutureProvider.family<List<Map<String, dynamic>>, String>((ref, mode) async {
+final journeyStepsProvider =
+    FutureProvider.family<List<Map<String, dynamic>>, String>(
+        (ref, mode) async {
   final firestore = ref.read(firestoreProvider);
-  
+
   try {
     final doc = await firestore.collection('journeys').doc(mode).get();
-    
+
     if (doc.exists) {
       final data = doc.data();
       if (data != null && data['steps'] != null) {
@@ -16,7 +19,7 @@ final journeyStepsProvider = FutureProvider.family<List<Map<String, dynamic>>, S
         return steps;
       }
     }
-    
+
     // Fallback to empty list if document doesn't exist
     return [];
   } catch (e) {
@@ -26,12 +29,14 @@ final journeyStepsProvider = FutureProvider.family<List<Map<String, dynamic>>, S
 });
 
 // Provider to get journey steps with fallback to hardcoded values
-final journeyStepsWithFallbackProvider = FutureProvider.family<List<Map<String, dynamic>>, String>((ref, mode) async {
+final journeyStepsWithFallbackProvider =
+    FutureProvider.family<List<Map<String, dynamic>>, String>(
+        (ref, mode) async {
   final firestore = ref.read(firestoreProvider);
-  
+
   try {
     final doc = await firestore.collection('journeys').doc(mode).get();
-    
+
     if (doc.exists) {
       final data = doc.data();
       if (data != null && data['steps'] != null) {
@@ -42,7 +47,7 @@ final journeyStepsWithFallbackProvider = FutureProvider.family<List<Map<String, 
   } catch (e) {
     debugPrint('Error loading journey steps from Firestore: $e');
   }
-  
+
   // Fallback to hardcoded values if Firestore fails
   return _getHardcodedJourneySteps(mode);
 });
@@ -54,21 +59,29 @@ List<Map<String, dynamic>> _getHardcodedJourneySteps(String mode) {
       {
         'icon': '🤰',
         'q': 'Are you currently pregnant?',
-        'sub': 'This helps us set up the right tracker for you. No judgement either way.',
+        'sub':
+            'This helps us set up the right tracker for you. No judgement either way.',
         'type': 'chips-big-single',
         'key': 'isPreg',
         'required': true,
         'opts': [
           {'e': '✅', 'l': "Yes, I'm pregnant!", 'v': 'yes'},
           {'e': '🤔', 'l': 'I think I might be', 'v': 'maybe'},
-          {'e': '🔄', 'l': "Actually, I'm not — switch tracker", 'v': 'switch', 'special': true}
+          {
+            'e': '🔄',
+            'l': "Actually, I'm not — switch tracker",
+            'v': 'switch',
+            'special': true
+          }
         ],
-        'warn': 'You can switch back to Period or Ovulation tracker anytime from your home screen.'
+        'warn':
+            'You can switch back to Period or Ovulation tracker anytime from your home screen.'
       },
       {
         'icon': '📅',
         'q': 'Do you know your due date?',
-        'sub': 'If yes, enter it. If not, enter your last period start date and we\'ll calculate.',
+        'sub':
+            'If yes, enter it. If not, enter your last period start date and we\'ll calculate.',
         'type': 'due-date',
         'key': 'dueDate',
         'required': false,
@@ -89,7 +102,8 @@ List<Map<String, dynamic>> _getHardcodedJourneySteps(String mode) {
       {
         'icon': '🩺',
         'q': 'Any conditions to track together?',
-        'sub': 'Optional — select any for extra personalised support and reminders.',
+        'sub':
+            'Optional — select any for extra personalised support and reminders.',
         'type': 'chips-multi',
         'key': 'conditions',
         'opts': [
@@ -123,7 +137,8 @@ List<Map<String, dynamic>> _getHardcodedJourneySteps(String mode) {
       {
         'icon': '🌿',
         'q': 'What\'s your main goal?',
-        'sub': 'This shapes your insights, alerts, and what tools we highlight for you.',
+        'sub':
+            'This shapes your insights, alerts, and what tools we highlight for you.',
         'type': 'chips-big-single',
         'key': 'goal',
         'required': true,
@@ -136,7 +151,8 @@ List<Map<String, dynamic>> _getHardcodedJourneySteps(String mode) {
       {
         'icon': '📅',
         'q': 'When did your last period start?',
-        'sub': 'We calculate your fertile window from this. Ovulation is usually ~14 days before your next period.',
+        'sub':
+            'We calculate your fertile window from this. Ovulation is usually ~14 days before your next period.',
         'type': 'date',
         'key': 'lastPeriod',
         'required': true,
@@ -157,7 +173,8 @@ List<Map<String, dynamic>> _getHardcodedJourneySteps(String mode) {
       {
         'icon': '🌡️',
         'q': 'What do you currently track?',
-        'sub': 'Select all that apply — we\'ll guide you on using each method together.',
+        'sub':
+            'Select all that apply — we\'ll guide you on using each method together.',
         'type': 'chips-multi',
         'key': 'methods',
         'opts': [
@@ -191,7 +208,8 @@ List<Map<String, dynamic>> _getHardcodedJourneySteps(String mode) {
       {
         'icon': '🩸',
         'q': 'When did your last period start?',
-        'sub': 'This helps us predict your next period and fertile window accurately.',
+        'sub':
+            'This helps us predict your next period and fertile window accurately.',
         'type': 'date',
         'key': 'lastPeriod',
         'required': false,
@@ -200,7 +218,8 @@ List<Map<String, dynamic>> _getHardcodedJourneySteps(String mode) {
       {
         'icon': '📅',
         'q': 'How long is your cycle usually?',
-        'sub': 'Day 1 of one period to Day 1 of the next. Most cycles are 21–35 days.',
+        'sub':
+            'Day 1 of one period to Day 1 of the next. Most cycles are 21–35 days.',
         'type': 'stepper',
         'key': 'cycleLen',
         'min': 18,
@@ -223,7 +242,8 @@ List<Map<String, dynamic>> _getHardcodedJourneySteps(String mode) {
       {
         'icon': '💧',
         'q': 'How would you describe your usual flow?',
-        'sub': 'Helps us give you better predictions and product recommendations.',
+        'sub':
+            'Helps us give you better predictions and product recommendations.',
         'type': 'chips-single',
         'key': 'flow',
         'required': true,
@@ -237,7 +257,8 @@ List<Map<String, dynamic>> _getHardcodedJourneySteps(String mode) {
       {
         'icon': '🌀',
         'q': 'Symptoms you often get?',
-        'sub': 'Select all that apply — we\'ll personalise your care tips each phase.',
+        'sub':
+            'Select all that apply — we\'ll personalise your care tips each phase.',
         'type': 'chips-multi',
         'key': 'symptoms',
         'opts': [
