@@ -37,18 +37,14 @@ class _JourneyScreenState extends ConsumerState<JourneyScreen> {
   Future<void> _loadJourneyStepsAndData() async {
     setState(() => _isLoading = true);
     try {
-      // Load journey steps from Firebase using the correct provider
       final stepsAsyncValue = await ref.read(journeyStepsProvider(widget.mode).future);
       setState(() {
         steps = stepsAsyncValue;
         _stepsLoaded = true;
       });
-      
-      // Load existing user journey data
       await _loadExistingData();
     } catch (e) {
       debugPrint('Error loading journey steps: $e');
-      // Fallback to hardcoded steps
       setState(() {
         steps = _getHardcodedJourneySteps(widget.mode);
         _stepsLoaded = true;
@@ -89,11 +85,11 @@ class _JourneyScreenState extends ConsumerState<JourneyScreen> {
   Color _getModeColor(String mode) {
     switch (mode) {
       case 'preg':
-        return const Color(0xFF4A70B0); // Vibrant blue
+        return const Color(0xFF4A70B0);
       case 'ovul':
-        return const Color(0xFF5A8E6A); // Vibrant green
+        return const Color(0xFF5A8E6A);
       default:
-        return AppColors.primaryRose; // Vibrant rose
+        return const Color(0xFFD97B8A);
     }
   }
 
@@ -101,12 +97,22 @@ class _JourneyScreenState extends ConsumerState<JourneyScreen> {
     switch (mode) {
       case 'preg':
         return const LinearGradient(
-            colors: [Color(0xFF7AA0E0), Color(0xFF4A70B0)]);
+          colors: [Color(0xFF7AA0E0), Color(0xFF4A70B0)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        );
       case 'ovul':
         return const LinearGradient(
-            colors: [Color(0xFF78C890), Color(0xFF5A8E6A)]);
+          colors: [Color(0xFF78C890), Color(0xFF5A8E6A)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        );
       default:
-        return AppColors.primaryGradient; // Vibrant rose gradient
+        return const LinearGradient(
+          colors: [Color(0xFFF09090), Color(0xFFD97B8A)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        );
     }
   }
 
@@ -116,29 +122,21 @@ class _JourneyScreenState extends ConsumerState<JourneyScreen> {
         {
           'icon': '🤰',
           'q': 'Are you currently pregnant?',
-          'sub':
-              'This helps us set up the right tracker for you. No judgement either way.',
+          'sub': 'This helps us set up the right tracker for you. No judgement either way.',
           'type': 'chips-big-single',
           'key': 'isPreg',
           'required': true,
           'opts': [
             {'e': '✅', 'l': "Yes, I'm pregnant!", 'v': 'yes'},
             {'e': '🤔', 'l': 'I think I might be', 'v': 'maybe'},
-            {
-              'e': '🔄',
-              'l': "Actually, I'm not — switch tracker",
-              'v': 'switch',
-              'special': true
-            }
+            {'e': '🔄', 'l': "Actually, I'm not — switch tracker", 'v': 'switch', 'special': true}
           ],
-          'warn':
-              'You can switch back to Period or Onboarding tracker anytime from your home screen.'
+          'warn': 'You can switch back to Period or Onboarding tracker anytime from your home screen.'
         },
         {
           'icon': '📅',
           'q': 'Do you know your due date?',
-          'sub':
-              'If yes, enter it. If not, enter your last period start date and we\'ll calculate.',
+          'sub': 'If yes, enter it. If not, enter your last period start date and we\'ll calculate.',
           'type': 'due-date',
           'key': 'dueDate',
           'required': false,
@@ -159,8 +157,7 @@ class _JourneyScreenState extends ConsumerState<JourneyScreen> {
         {
           'icon': '🩺',
           'q': 'Any conditions to track together?',
-          'sub':
-              'Optional — select any for extra personalised support and reminders.',
+          'sub': 'Optional — select any for extra personalised support and reminders.',
           'type': 'chips-multi',
           'key': 'conditions',
           'opts': [
@@ -176,8 +173,7 @@ class _JourneyScreenState extends ConsumerState<JourneyScreen> {
         {
           'icon': '💙',
           'q': 'What support do you want from us?',
-          'sub':
-              'We\'ll send you the content that matters most. Adjust anytime.',
+          'sub': 'We\'ll send you the content that matters most. Adjust anytime.',
           'type': 'chips-multi',
           'key': 'support',
           'opts': [
@@ -195,8 +191,7 @@ class _JourneyScreenState extends ConsumerState<JourneyScreen> {
         {
           'icon': '🌿',
           'q': 'What\'s your main goal?',
-          'sub':
-              'This shapes your insights, alerts, and what tools we highlight for you.',
+          'sub': 'This shapes your insights, alerts, and what tools we highlight for you.',
           'type': 'chips-big-single',
           'key': 'goal',
           'required': true,
@@ -209,8 +204,7 @@ class _JourneyScreenState extends ConsumerState<JourneyScreen> {
         {
           'icon': '📅',
           'q': 'When did your last period start?',
-          'sub':
-              'We calculate your fertile window from this. Ovulation is usually ~14 days before your next period.',
+          'sub': 'We calculate your fertile window from this. Ovulation is usually ~14 days before your next period.',
           'type': 'date',
           'key': 'lastPeriod',
           'required': true,
@@ -231,8 +225,7 @@ class _JourneyScreenState extends ConsumerState<JourneyScreen> {
         {
           'icon': '🌡️',
           'q': 'What do you currently track?',
-          'sub':
-              'Select all that apply — we\'ll guide you on using each method together.',
+          'sub': 'Select all that apply — we\'ll guide you on using each method together.',
           'type': 'chips-multi',
           'key': 'methods',
           'opts': [
@@ -265,8 +258,7 @@ class _JourneyScreenState extends ConsumerState<JourneyScreen> {
         {
           'icon': '🩸',
           'q': 'When did your last period start?',
-          'sub':
-              'This helps us predict your next period and fertile window accurately.',
+          'sub': 'This helps us predict your next period and fertile window accurately.',
           'type': 'date',
           'key': 'lastPeriod',
           'required': false,
@@ -275,8 +267,7 @@ class _JourneyScreenState extends ConsumerState<JourneyScreen> {
         {
           'icon': '📅',
           'q': 'How long is your cycle usually?',
-          'sub':
-              'Day 1 of one period to Day 1 of the next. Most cycles are 21–35 days.',
+          'sub': 'Day 1 of one period to Day 1 of the next. Most cycles are 21–35 days.',
           'type': 'stepper',
           'key': 'cycleLen',
           'min': 18,
@@ -299,8 +290,7 @@ class _JourneyScreenState extends ConsumerState<JourneyScreen> {
         {
           'icon': '💧',
           'q': 'How would you describe your usual flow?',
-          'sub':
-              'Helps us give you better predictions and product recommendations.',
+          'sub': 'Helps us give you better predictions and product recommendations.',
           'type': 'chips-single',
           'key': 'flow',
           'required': true,
@@ -314,8 +304,7 @@ class _JourneyScreenState extends ConsumerState<JourneyScreen> {
         {
           'icon': '🌀',
           'q': 'Symptoms you often get?',
-          'sub':
-              'Select all that apply — we\'ll personalise your care tips each phase.',
+          'sub': 'Select all that apply — we\'ll personalise your care tips each phase.',
           'type': 'chips-multi',
           'key': 'symptoms',
           'opts': [
@@ -373,7 +362,6 @@ class _JourneyScreenState extends ConsumerState<JourneyScreen> {
       final uid = auth.currentUser?.uid;
       
       if (mounted) {
-        // Move biometric setup to the end of the journey
         context.go('/biometric-setup/$uid');
       }
     }
@@ -399,15 +387,11 @@ class _JourneyScreenState extends ConsumerState<JourneyScreen> {
     return Scaffold(
       body: Container(
         width: double.infinity,
-        decoration: BoxDecoration(
+        decoration: const BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: widget.mode == 'preg'
-                ? [const Color(0xFFF0F5FF), const Color(0xFFE8F0FE)]
-                : widget.mode == 'ovul'
-                    ? [const Color(0xFFF0FFF5), const Color(0xFFE8FEF0)]
-                    : [const Color(0xFFFFF8F5), const Color(0xFFFEF0F5)],
+            colors: [Color(0xFFFFF8F5), Color(0xFFFEF0F5)],
           ),
         ),
         child: SafeArea(
@@ -425,11 +409,9 @@ class _JourneyScreenState extends ConsumerState<JourneyScreen> {
                         decoration: BoxDecoration(
                           color: Colors.white,
                           shape: BoxShape.circle,
-                          border:
-                              Border.all(color: const Color(0xFFFCE8E4), width: 1.5),
+                          border: Border.all(color: const Color(0xFFFCE8E4), width: 1.5),
                         ),
-                        child: const Icon(Icons.arrow_back_ios_new,
-                            size: 16, color: AppColors.textDark),
+                        child: const Icon(Icons.arrow_back_ios_new, size: 16, color: AppColors.textDark),
                       ),
                     ),
                     const SizedBox(width: 12),
@@ -476,10 +458,7 @@ class _JourneyScreenState extends ConsumerState<JourneyScreen> {
                   child: Column(
                     children: [
                       const SizedBox(height: 10),
-                      Text(
-                        step['icon'],
-                        style: const TextStyle(fontSize: 48),
-                      ),
+                      Text(step['icon'], style: const TextStyle(fontSize: 48)),
                       const SizedBox(height: 16),
                       Text(
                         step['q'],
@@ -511,13 +490,11 @@ class _JourneyScreenState extends ConsumerState<JourneyScreen> {
                           decoration: BoxDecoration(
                             color: const Color(0xFFFFF5F5),
                             borderRadius: BorderRadius.circular(16),
-                            border: Border.all(
-                                color: const Color(0xFFF0B0B8).withOpacity(0.5)),
+                            border: Border.all(color: const Color(0xFFF0B0B8).withOpacity(0.5)),
                           ),
                           child: Row(
                             children: [
-                              const Icon(Icons.info_outline,
-                                  color: Color(0xFFD97B8A), size: 20),
+                              const Icon(Icons.info_outline, color: Color(0xFFD97B8A), size: 20),
                               const SizedBox(width: 12),
                               Expanded(
                                 child: Text(
@@ -572,8 +549,7 @@ class _JourneyScreenState extends ConsumerState<JourneyScreen> {
                           ),
                           child: const Text(
                             'Continue',
-                            style: TextStyle(
-                                fontSize: 16, fontWeight: FontWeight.w900),
+                            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w900),
                           ),
                         ),
                       ),
@@ -620,9 +596,7 @@ class _JourneyScreenState extends ConsumerState<JourneyScreen> {
                     border: Border.all(
                       color: isSelected
                           ? accentColor.withOpacity(0.5)
-                          : (isSpecial
-                              ? const Color(0xFFF0B0B8).withOpacity(0.5)
-                              : const Color(0xFFFCE8E4)),
+                          : (isSpecial ? const Color(0xFFF0B0B8).withOpacity(0.5) : const Color(0xFFFCE8E4)),
                       width: 2,
                     ),
                   ),
@@ -636,9 +610,7 @@ class _JourneyScreenState extends ConsumerState<JourneyScreen> {
                           style: TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w800,
-                            color: isSpecial
-                                ? const Color(0xFFD97B8A)
-                                : AppColors.textDark,
+                            color: isSpecial ? const Color(0xFFD97B8A) : AppColors.textDark,
                           ),
                         ),
                       ),
@@ -646,9 +618,7 @@ class _JourneyScreenState extends ConsumerState<JourneyScreen> {
                         isSelected ? Icons.check_circle : Icons.chevron_right,
                         color: isSelected
                             ? accentColor.withOpacity(0.5)
-                            : (isSpecial
-                                ? const Color(0xFFD97B8A).withOpacity(0.5)
-                                : const Color(0xFFD0B0B8)),
+                            : (isSpecial ? const Color(0xFFD97B8A).withOpacity(0.5) : const Color(0xFFD0B0B8)),
                         size: 20,
                       ),
                     ],
@@ -746,48 +716,51 @@ class _JourneyScreenState extends ConsumerState<JourneyScreen> {
       case 'stepper':
         final int val = currentValue ?? step['def'];
         return Container(
-          padding: const EdgeInsets.symmetric(vertical: 30, horizontal: 20),
+          padding: const EdgeInsets.all(18),
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.circular(24),
+            borderRadius: BorderRadius.circular(18),
             border: Border.all(color: const Color(0xFFFCE8E4), width: 2),
           ),
           child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              _buildStepBtn(Icons.remove, () {
-                if (val > step['min']) {
-                  setState(() => journeyData[key] = val - 1);
-                }
-              }),
-              const SizedBox(width: 30),
               Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  Text(
+                    step['unit'],
+                    style: const TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w700,
+                      color: Color(0xFFB09090),
+                    ),
+                  ),
                   Text(
                     '$val',
                     style: TextStyle(
-                      fontSize: 44,
+                      fontSize: 28,
                       fontWeight: FontWeight.w900,
                       color: accentColor,
                     ),
                   ),
-                  Text(
-                    step['unit'].toString().toUpperCase(),
-                    style: const TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w800,
-                      color: Color(0xFFD0B0B8),
-                      letterSpacing: 1,
-                    ),
-                  ),
                 ],
               ),
-              const SizedBox(width: 30),
-              _buildStepBtn(Icons.add, () {
-                if (val < step['max']) {
-                  setState(() => journeyData[key] = val + 1);
-                }
-              }),
+              Row(
+                children: [
+                  _buildStepBtn(Icons.remove, () {
+                    if (val > step['min']) {
+                      setState(() => journeyData[key] = val - 1);
+                    }
+                  }),
+                  const SizedBox(width: 10),
+                  _buildStepBtn(Icons.add, () {
+                    if (val < step['max']) {
+                      setState(() => journeyData[key] = val + 1);
+                    }
+                  }),
+                ],
+              ),
             ],
           ),
         );
@@ -800,13 +773,17 @@ class _JourneyScreenState extends ConsumerState<JourneyScreen> {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        width: 48,
-        height: 48,
+        width: 38,
+        height: 38,
         decoration: BoxDecoration(
-          color: accentColor.withOpacity(0.1),
-          shape: BoxShape.circle,
+          color: widget.mode == 'preg'
+              ? const Color(0xFFDDE8F8)
+              : widget.mode == 'ovul'
+                  ? const Color(0xFFD0E8D8)
+                  : const Color(0xFFFCE8E4),
+          borderRadius: BorderRadius.circular(12),
         ),
-        child: Icon(icon, color: accentColor, size: 24),
+        child: Icon(icon, color: accentColor, size: 20),
       ),
     );
   }
