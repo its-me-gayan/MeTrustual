@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/services/notification_service.dart';
 import '../../../core/providers/mode_provider.dart';
@@ -439,10 +440,10 @@ class _JourneyScreenState extends ConsumerState<JourneyScreen> {
                           const SizedBox(height: 4),
                           Text(
                             'STEP ${currentStep + 1} OF ${steps.length}',
-                            style: const TextStyle(
+                            style: GoogleFonts.nunito(
                               fontSize: 9,
                               fontWeight: FontWeight.w900,
-                              color: Color(0xFFD0B0B8),
+                              color: const Color(0xFFD0B0B8),
                               letterSpacing: 0.5,
                             ),
                           ),
@@ -463,7 +464,7 @@ class _JourneyScreenState extends ConsumerState<JourneyScreen> {
                       Text(
                         step['q'],
                         textAlign: TextAlign.center,
-                        style: const TextStyle(
+                        style: GoogleFonts.nunito(
                           fontSize: 22,
                           fontWeight: FontWeight.w900,
                           color: AppColors.textDark,
@@ -474,10 +475,10 @@ class _JourneyScreenState extends ConsumerState<JourneyScreen> {
                       Text(
                         step['sub'],
                         textAlign: TextAlign.center,
-                        style: const TextStyle(
+                        style: GoogleFonts.nunito(
                           fontSize: 12.5,
                           fontWeight: FontWeight.w600,
-                          color: Color(0xFFB09090),
+                          color: const Color(0xFFB09090),
                           height: 1.6,
                         ),
                       ),
@@ -499,10 +500,10 @@ class _JourneyScreenState extends ConsumerState<JourneyScreen> {
                               Expanded(
                                 child: Text(
                                   step['warn'],
-                                  style: const TextStyle(
+                                  style: GoogleFonts.nunito(
                                     fontSize: 11,
                                     fontWeight: FontWeight.w700,
-                                    color: Color(0xFFD97B8A),
+                                    color: const Color(0xFFD97B8A),
                                     height: 1.4,
                                   ),
                                 ),
@@ -524,10 +525,10 @@ class _JourneyScreenState extends ConsumerState<JourneyScreen> {
                         onPressed: _nextStep,
                         child: Text(
                           step['skip'],
-                          style: const TextStyle(
+                          style: GoogleFonts.nunito(
                             fontSize: 13,
                             fontWeight: FontWeight.w800,
-                            color: Color(0xFFD0B0B8),
+                            color: const Color(0xFFD0B0B8),
                           ),
                         ),
                       ),
@@ -547,9 +548,9 @@ class _JourneyScreenState extends ConsumerState<JourneyScreen> {
                               borderRadius: BorderRadius.circular(18),
                             ),
                           ),
-                          child: const Text(
-                            'Continue',
-                            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w900),
+                          child: Text(
+                            currentStep == steps.length - 1 ? "Done! Let's go →" : 'Continue →',
+                            style: GoogleFonts.nunito(fontSize: 16, fontWeight: FontWeight.w900),
                           ),
                         ),
                       ),
@@ -607,7 +608,7 @@ class _JourneyScreenState extends ConsumerState<JourneyScreen> {
                       Expanded(
                         child: Text(
                           opt['l'],
-                          style: TextStyle(
+                          style: GoogleFonts.nunito(
                             fontSize: 14,
                             fontWeight: FontWeight.w800,
                             color: isSpecial ? const Color(0xFFD97B8A) : AppColors.textDark,
@@ -661,7 +662,7 @@ class _JourneyScreenState extends ConsumerState<JourneyScreen> {
                 ),
                 child: Text(
                   '${opt['e']} $label',
-                  style: TextStyle(
+                  style: GoogleFonts.nunito(
                     fontSize: 13,
                     fontWeight: FontWeight.w800,
                     color: isSelected ? accentColor : AppColors.textDark,
@@ -701,7 +702,7 @@ class _JourneyScreenState extends ConsumerState<JourneyScreen> {
                 const SizedBox(width: 14),
                 Text(
                   date != null ? "${date.day}/${date.month}/${date.year}" : 'Select Date',
-                  style: const TextStyle(
+                  style: GoogleFonts.nunito(
                     fontSize: 15,
                     fontWeight: FontWeight.w800,
                     color: AppColors.textMid,
@@ -730,15 +731,15 @@ class _JourneyScreenState extends ConsumerState<JourneyScreen> {
                 children: [
                   Text(
                     step['unit'],
-                    style: const TextStyle(
+                    style: GoogleFonts.nunito(
                       fontSize: 11,
                       fontWeight: FontWeight.w700,
-                      color: Color(0xFFB09090),
+                      color: const Color(0xFFB09090),
                     ),
                   ),
                   Text(
                     '$val',
-                    style: TextStyle(
+                    style: GoogleFonts.nunito(
                       fontSize: 28,
                       fontWeight: FontWeight.w900,
                       color: accentColor,
