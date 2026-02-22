@@ -225,9 +225,9 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                                     letterSpacing: -0.5,
                                   ),
                                   children: [
-                                    TextSpan(text: 'Me'),
+                                    TextSpan(text: 'Sol'),
                                     TextSpan(
-                                      text: 'Trustual',
+                                      text: 'una',
                                       style: GoogleFonts.nunito(
                                         color: AppColors.primaryRose,
                                         fontStyle: FontStyle.italic,
@@ -237,7 +237,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                                 ),
                               ),
                               Text(
-                                'your cycle, your story 💕',
+                                'your light. your rhythm. 🌕',
                                 style: GoogleFonts.nunito(
                                   fontSize: 12,
                                   fontWeight: FontWeight.w700,
