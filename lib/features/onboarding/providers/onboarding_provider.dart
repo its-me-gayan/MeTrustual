@@ -18,7 +18,7 @@ class OnboardingNotifier extends StateNotifier<bool> {
     required String language,
     required bool anonymousMode,
     required bool cloudSync,
-    String nickname = 'Sweetie',
+    required String nickname,
   }) async {
     final auth = _ref.read(firebaseAuthProvider);
     final firestore = _ref.read(firestoreProvider);
@@ -30,6 +30,7 @@ class OnboardingNotifier extends StateNotifier<bool> {
 
     // Update display name in Firebase Auth
     await user.updateDisplayName(nickname);
+    print('✓ Firebase Auth displayName set to: $nickname');
 
     // 2. Save settings to Firestore
     await firestore
@@ -48,7 +49,9 @@ class OnboardingNotifier extends StateNotifier<bool> {
       'reminderDaily': true,
       'theme': 'light',
       'language': language,
+      'nickname': nickname,
     });
+    print('✓ Settings saved to Firestore with nickname: $nickname');
 
     // 3. Create initial profile
     final profile = UserProfile(
@@ -97,7 +100,12 @@ class OnboardingNotifier extends StateNotifier<bool> {
     await prefs.setBool('anonymousMode', anonymousMode);
     await prefs.setBool('cloudSync', cloudSync);
     await prefs.setString('nickname', nickname);
+    print('✓ Nickname saved to SharedPreferences: $nickname');
 
     state = true;
+    print('═══════════════════════════════════════════');
+    print('✓ ONBOARDING COMPLETED SUCCESSFULLY');
+    print('✓ Nickname: $nickname');
+    print('═══════════════════════════════════════════');
   }
 }

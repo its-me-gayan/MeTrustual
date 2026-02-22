@@ -53,7 +53,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
               children: [
                 // ── Header ──
                 const SizedBox(height: 40),
-                Text('🌸', style: GoogleFonts.nunito(fontSize: 52)),
+                Text('☀️', style: GoogleFonts.nunito(fontSize: 52)),
                 const SizedBox(height: 8),
                 Text(
                   'onboarding_title'.tr(),
@@ -140,7 +140,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                   children: [
                     Row(
                       children: [
-                        Text('🌸', style: const TextStyle(fontSize: 14)),
+                        Text('✨', style: const TextStyle(fontSize: 14)),
                         const SizedBox(width: 6),
                         Text(
                           'What shall we call you?',
@@ -212,17 +212,21 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                             ),
                           ],
                         ),
-                        child: ElevatedButton(
+                            child: ElevatedButton(
                           onPressed: () async {
                             try {
                               final nickname = _nicknameController.text.trim();
+                              if (nickname.isEmpty) {
+                                NotificationService.showError(context, 'Please enter a nickname');
+                                return;
+                              }
                               await ref
                                   .read(onboardingProvider.notifier)
                                   .completeOnboarding(
                                     language: selectedLang,
                                     anonymousMode: keepPrivate,
                                     cloudSync: backupData,
-                                    nickname: nickname.isEmpty ? 'Sweetie' : nickname,
+                                    nickname: nickname,
                                   );
 
                               if (mounted) {
@@ -240,7 +244,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                             padding: const EdgeInsets.symmetric(vertical: 14),
                           ),
                           child: Text(
-                            'Begin your journey 🌸',
+                            'Begin your journey ✨',
                             style: GoogleFonts.nunito(
                               fontWeight: FontWeight.w900,
                               fontSize: 16,

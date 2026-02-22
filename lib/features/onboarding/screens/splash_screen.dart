@@ -133,9 +133,9 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
                 colors: [
-                  Color(0xFFFFF0F0),
-                  Color(0xFFFDE8F0),
-                  Color(0xFFF0E8FC),
+                  Color(0xFFF5F0FF),
+                  Color(0xFFE8E0FF),
+                  Color(0xFFE0F0FF),
                 ],
                 stops: [0.0, 0.4, 1.0],
               ),
@@ -171,15 +171,19 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                           height: 100,
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            gradient: AppColors.cycleCircleGradient,
+                            gradient: LinearGradient(
+                              colors: [Color(0xFFE8F0FF), Color(0xFFD5E8FF)],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            ),
                             boxShadow: [
                               BoxShadow(
-                                color: const Color(0xFFFCE8E8).withOpacity(0.5),
+                                color: const Color(0xFF9945FF).withOpacity(0.15),
                                 blurRadius: 0,
                                 spreadRadius: 10,
                               ),
                               BoxShadow(
-                                color: AppColors.primaryRose.withOpacity(0.3),
+                                color: const Color(0xFF9945FF).withOpacity(0.2),
                                 blurRadius: 36,
                                 offset: const Offset(0, 12),
                               ),
@@ -194,7 +198,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                             ),
                             child: Center(
                               child: Text(
-                                '🌸',
+                                '☀️',
                                 style: GoogleFonts.nunito(fontSize: 45),
                               ),
                             ),
@@ -220,16 +224,16 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                                   style: GoogleFonts.nunito(
                                     fontSize: 29,
                                     fontWeight: FontWeight.w900,
-                                    color: AppColors.textDark,
+                                    color: Color(0xFF1A1A2E),
                                     // fontFamily: 'Nunito',
                                     letterSpacing: -0.5,
                                   ),
                                   children: [
                                     TextSpan(text: 'Sol'),
                                     TextSpan(
-                                      text: 'una',
+                                      text: 'ana',
                                       style: GoogleFonts.nunito(
-                                        color: AppColors.primaryRose,
+                                        color: Color(0xFF9945FF),
                                         fontStyle: FontStyle.italic,
                                       ),
                                     ),
@@ -237,11 +241,11 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                                 ),
                               ),
                               Text(
-                                'your light. your rhythm. 🌕',
+                                'your light. your rhythm. ✨',
                                 style: GoogleFonts.nunito(
                                   fontSize: 12,
                                   fontWeight: FontWeight.w700,
-                                  color: AppColors.textMuted,
+                                  color: Color(0xFF6B5B95),
                                 ),
                               ),
                             ],
@@ -255,13 +259,13 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                           parent: _slideController,
                           curve: const Interval(0.5, 1.0),
                         ),
-                        child: Container(
-                          width: 100,
-                          height: 4,
-                          decoration: BoxDecoration(
-                            color: AppColors.primaryRose.withOpacity(0.12),
-                            borderRadius: BorderRadius.circular(2),
-                          ),
+                          child: Container(
+                            width: 100,
+                            height: 4,
+                            decoration: BoxDecoration(
+                              color: Color(0xFF9945FF).withOpacity(0.12),
+                              borderRadius: BorderRadius.circular(2),
+                            ),
                           child: AnimatedBuilder(
                             animation: _barController,
                             builder: (context, child) {
@@ -271,11 +275,11 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                                 child: Container(
                                   decoration: BoxDecoration(
                                     borderRadius: BorderRadius.circular(2),
-                                    gradient: const LinearGradient(
-                                      colors: [
-                                        Color(0xFFF0C0C8),
-                                        AppColors.primaryRose,
-                                        Color(0xFFC060A0)
+                                  gradient: const LinearGradient(
+                                    colors: [
+                                      Color(0xFFBB86FC),
+                                      Color(0xFF9945FF),
+                                      Color(0xFF7C3AED)
                                       ],
                                     ),
                                   ),
@@ -303,7 +307,7 @@ class PetalModel {
   final Duration duration =
       Duration(milliseconds: 4000 + math.Random().nextInt(3000));
   final Duration delay = Duration(milliseconds: math.Random().nextInt(3000));
-  final String emoji = ['🌸', '✿', '🌺', '✾'][math.Random().nextInt(4)];
+  final String emoji = ['✨', '⭐', '💫', '🌟'][math.Random().nextInt(4)];
 }
 
 class FloatingPetal extends StatefulWidget {
@@ -404,7 +408,7 @@ class _RippleRingState extends State<RippleRing>
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 border: Border.all(
-                    color: AppColors.primaryRose.withOpacity(0.15), width: 1.5),
+                    color: Color(0xFF9945FF).withOpacity(0.15), width: 1.5),
               ),
             ),
           ),
