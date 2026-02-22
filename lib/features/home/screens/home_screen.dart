@@ -268,236 +268,133 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 'color': const Color(0xFFC9A0D0)
               },
             ),
-            const SizedBox(height: 24),
-            const PremiumGate(
-              message: 'Unlock Advanced Calendar',
-              child: MiniCalendar(),
-            ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 30),
+            const MiniCalendar(),
+            const SizedBox(height: 20),
             const NextPeriodCard(),
           ],
         );
       case 'preg':
+        final lastCycle = homeData?['lastCycle'];
+        final conceptionDate = lastCycle?.startDate ?? DateTime.now();
+        final daysPregnant = DateTime.now().difference(conceptionDate).inDays;
+        final weeks = daysPregnant ~/ 7;
+        final days = daysPregnant % 7;
+
         return Column(
           children: [
-            const Center(
+            Center(
               child: CycleCircle(
-                day: 24,
-                phase: '2nd Trimester 💙',
-                color: Color(0xFF4A70B0),
-                label: 'Weeks',
+                day: weeks,
+                phase: 'Week $weeks, Day $days',
+                isPregnancy: true,
               ),
             ),
             const SizedBox(height: 16),
             _buildPillsRow(
               {
-                'value': '113',
-                'label': 'Days to Go',
+                'value': '280',
+                'label': 'Total Days',
                 'color': const Color(0xFF4A70B0)
               },
               {
-                'value': 'Jun 5',
-                'label': 'Due Date',
-                'color': const Color(0xFF9870C0)
+                'value': (280 - daysPregnant).toString(),
+                'label': 'Days to Go',
+                'color': const Color(0xFF7BA8D9)
               },
             ),
-            const SizedBox(height: 24),
-            PremiumGate(
-              message: 'Unlock Weekly Baby Updates',
-              child: _buildBabyCard(),
-            ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 30),
             _buildNextBanner(
-              title: 'Next Appointment',
-              value: 'Mar 3 🩺',
-              sub: '28-week glucose screen',
+              title: 'NEXT APPOINTMENT',
+              value: '12-Week Scan',
+              sub: 'In 12 days • June 15, 2024',
               color: const Color(0xFF4A70B0),
-              icon: '🗓️',
+              icon: '🏥',
             ),
           ],
         );
       case 'ovul':
+        final lastCycle = homeData?['lastCycle'];
+        final cycleDay = lastCycle != null
+            ? DateTime.now().difference(lastCycle.startDate).inDays + 1
+            : 0;
+        final chance = homeData?['fertilityChance'] ?? 'Medium';
+
         return Column(
           children: [
-            const Center(
+            Center(
               child: CycleCircle(
-                day: 14,
-                phase: '🎯 Peak Fertile',
-                color: Color(0xFF5A8E6A),
-                label: 'Cycle Day',
+                day: cycleDay,
+                phase: 'Fertility Window',
+                isOvulation: true,
               ),
             ),
             const SizedBox(height: 16),
             _buildPillsRow(
               {
-                'value': 'Today',
-                'label': 'Ovulation',
+                'value': chance,
+                'label': 'Conception Chance',
                 'color': const Color(0xFF5A8E6A)
               },
               {
-                'value': 'Mar 6',
-                'label': 'Next Period',
-                'color': AppColors.primaryRose
+                'value': '2',
+                'label': 'Days to Ovulation',
+                'color': const Color(0xFF8BBF9F)
               },
             ),
-            const SizedBox(height: 24),
-            PremiumGate(
-              message: 'Unlock Fertile Window Analysis',
-              child: _buildFertileBar(),
-            ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 30),
             _buildNextBanner(
-              title: 'Ovulation Prediction',
-              value: 'Today, Feb 21 🎯',
-              sub: '89% confidence · Log BBT to confirm',
+              title: 'FERTILITY STATUS',
+              value: 'High Chance',
+              sub: 'Best time for baby making! ✨',
               color: const Color(0xFF5A8E6A),
-              percentage: 89,
+              percentage: 85,
             ),
           ],
         );
       default:
-        return const SizedBox.shrink();
+        return const Center(child: Text('Select a mode in profile'));
     }
   }
 
-  Widget _buildPillsRow(Map<String, dynamic> left, Map<String, dynamic> right) {
+  Widget _buildPillsRow(Map<String, String> p1, Map<String, String> p2) {
     return Row(
       children: [
-        Expanded(child: _buildPill(left)),
+        Expanded(child: _buildStatPill(p1)),
         const SizedBox(width: 12),
-        Expanded(child: _buildPill(right)),
+        Expanded(child: _buildStatPill(p2)),
       ],
     );
   }
 
-  Widget _buildPill(Map<String, dynamic> data) {
+  Widget _buildStatPill(Map<String, dynamic> data) {
+    final Color color = data['color'] as Color;
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 14),
+      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: color.withOpacity(0.08),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppColors.border, width: 1.5),
+        border: Border.all(color: color.withOpacity(0.2), width: 1.5),
       ),
       child: Column(
         children: [
           Text(
-            data['value'],
+            data['value'] as String,
             style: GoogleFonts.nunito(
-              fontSize: 18,
+              fontSize: 20,
               fontWeight: FontWeight.w900,
-              color: data['color'],
-            ),
-          ),
-          Text(
-            data['label'],
-            style: GoogleFonts.nunito(
-              fontSize: 11,
-              fontWeight: FontWeight.w700,
-              color: AppColors.textMuted,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildBabyCard() {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: AppColors.border, width: 1.5),
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 60,
-            height: 60,
-            decoration: BoxDecoration(
-              color: const Color(0xFFF0F4FF),
-              borderRadius: BorderRadius.circular(18),
-            ),
-            alignment: Alignment.center,
-            child: const Text('👶', style: TextStyle(fontSize: 32)),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Baby is the size of a...',
-                  style: GoogleFonts.nunito(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.textMuted,
-                  ),
-                ),
-                Text(
-                  'Large Eggplant 🍆',
-                  style: GoogleFonts.nunito(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w900,
-                    color: const Color(0xFF4A70B0),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const Icon(Icons.chevron_right, color: AppColors.textMuted),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildFertileBar() {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: AppColors.border, width: 1.5),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Fertile Window Probability',
-            style: GoogleFonts.nunito(
-              fontSize: 13,
-              fontWeight: FontWeight.w800,
               color: AppColors.textDark,
             ),
           ),
-          const SizedBox(height: 12),
-          Row(
-            children: List.generate(7, (index) {
-              final isPeak = index == 3;
-              return Expanded(
-                child: Container(
-                  height: 30,
-                  margin: const EdgeInsets.symmetric(horizontal: 2),
-                  decoration: BoxDecoration(
-                    color: isPeak
-                        ? const Color(0xFF5A8E6A)
-                        : const Color(0xFF5A8E6A).withOpacity(0.2 + (index * 0.1)),
-                    borderRadius: BorderRadius.circular(6),
-                  ),
-                ),
-              );
-            }),
-          ),
-          const SizedBox(height: 8),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text('Low', style: GoogleFonts.nunito(fontSize: 10, color: AppColors.textMuted)),
-              Text('Peak', style: GoogleFonts.nunito(fontSize: 10, color: const Color(0xFF5A8E6A), fontWeight: FontWeight.w900)),
-              Text('Low', style: GoogleFonts.nunito(fontSize: 10, color: AppColors.textMuted)),
-            ],
+          const SizedBox(height: 2),
+          Text(
+            data['label'] as String,
+            style: GoogleFonts.nunito(
+              fontSize: 11,
+              fontWeight: FontWeight.w800,
+              color: AppColors.textMid,
+              letterSpacing: 0.3,
+            ),
           ),
         ],
       ),
@@ -579,7 +476,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   Widget _buildSwitchModeCard(String currentMode) {
     return Container(
-      width: double.infinity,
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: Colors.white,
@@ -587,75 +483,107 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         border: Border.all(color: AppColors.border, width: 1.5),
       ),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Life stage changed?',
+            'Switch tracker',
             style: GoogleFonts.nunito(
               fontSize: 14,
-              fontWeight: FontWeight.w800,
+              fontWeight: FontWeight.w900,
               color: AppColors.textDark,
+              letterSpacing: 0.2,
             ),
           ),
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              Expanded(
-                child: _buildModeButton(
-                  'period',
-                  '🩸 Period',
-                  currentMode == 'period',
-                  AppColors.primaryRose,
-                ),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: _buildModeButton(
-                  'preg',
-                  '🤰 Preg',
-                  currentMode == 'preg',
-                  const Color(0xFF4A70B0),
-                ),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: _buildModeButton(
-                  'ovul',
-                  '🌿 Ovul',
-                  currentMode == 'ovul',
-                  const Color(0xFF5A8E6A),
-                ),
-              ),
-            ],
-          ),
+          const SizedBox(height: 14),
+          if (currentMode == 'period') ...[
+            _buildSwitchBtn(
+                '🤰 Expecting? → Track Pregnancy', () => _selectMode('preg')),
+            const SizedBox(height: 8),
+            _buildSwitchBtn('🌿 Trying to conceive? → Track Ovulation',
+                () => _selectMode('ovul')),
+          ] else if (currentMode == 'preg') ...[
+            _buildSwitchBtn(
+                '⚠️ Selected pregnancy by mistake? → Period Tracker',
+                () => _selectMode('period'),
+                urgent: true),
+            const SizedBox(height: 8),
+            _buildSwitchBtn('🌿 Not pregnant yet? → Ovulation Tracker',
+                () => _selectMode('ovul')),
+          ] else if (currentMode == 'ovul') ...[
+            _buildSwitchBtn('🎉 Got a positive test? → Pregnancy Tracker',
+                () => _selectMode('preg')),
+            const SizedBox(height: 8),
+            _buildSwitchBtn('🩸 Just track my period → Period Tracker',
+                () => _selectMode('period')),
+          ],
         ],
       ),
     );
   }
 
-  Widget _buildModeButton(String mode, String label, bool isActive, Color color) {
-    return GestureDetector(
-      onTap: () {
-        ref.read(modeProvider.notifier).setMode(mode);
-        NotificationService.showSuccess(context, 'Switched to $label mode!');
-      },
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 10),
-        decoration: BoxDecoration(
-          color: isActive ? color.withOpacity(0.1) : Colors.white,
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(
-            color: isActive ? color : AppColors.border,
-            width: 1.5,
+  Widget _buildSwitchBtn(String text, VoidCallback onTap,
+      {bool urgent = false}) {
+    return SizedBox(
+      width: double.infinity,
+      child: TextButton(
+        onPressed: onTap,
+        style: TextButton.styleFrom(
+          padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
+          backgroundColor: urgent ? const Color(0xFFFFF5F5) : AppColors.background,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(14),
+            side: BorderSide(
+                color: urgent ? const Color(0xFFF0B0B8) : AppColors.border,
+                width: 1.5),
           ),
+          alignment: Alignment.centerLeft,
         ),
-        alignment: Alignment.center,
         child: Text(
-          label,
+          text,
           style: GoogleFonts.nunito(
             fontSize: 12,
             fontWeight: FontWeight.w800,
-            color: isActive ? color : AppColors.textMid,
+            color: urgent ? const Color(0xFFD97B8A) : AppColors.textMid,
           ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _selectMode(String mode) async {
+    await ref.read(modeProvider.notifier).resetJourney();
+    if (mounted) {
+      context.go('/journey/$mode');
+    }
+  }
+}
+
+class AppFAB extends StatelessWidget {
+  const AppFAB({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 60,
+      height: 60,
+      margin: const EdgeInsets.only(bottom: 10),
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: AppColors.primaryRose,
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.primaryRose.withOpacity(0.3),
+            blurRadius: 15,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () => context.go('/log'),
+          customBorder: const CircleBorder(),
+          child: const Icon(Icons.add, color: Colors.white, size: 32),
         ),
       ),
     );
