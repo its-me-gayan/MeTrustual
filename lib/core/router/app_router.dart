@@ -1,6 +1,7 @@
 import 'package:go_router/go_router.dart';
 import '../../features/onboarding/screens/splash_screen.dart';
 import '../../features/onboarding/screens/onboarding_screen.dart';
+import '../../features/onboarding/screens/biometric_setup_screen.dart';
 import '../../features/onboarding/screens/mode_selection_screen.dart';
 import '../../features/onboarding/screens/journey_screen.dart';
 import '../../features/home/screens/home_screen.dart';
@@ -21,6 +22,13 @@ final GoRouter appRouter = GoRouter(
     GoRoute(
       path: '/onboarding',
       builder: (context, state) => const OnboardingScreen(),
+    ),
+    GoRoute(
+      path: '/biometric-setup/:uid',
+      builder: (context, state) {
+        final uid = state.pathParameters['uid'] ?? '';
+        return BiometricSetupScreen(uid: uid);
+      },
     ),
     GoRoute(
       path: '/mode-selection',

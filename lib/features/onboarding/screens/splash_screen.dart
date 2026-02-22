@@ -5,6 +5,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/providers/mode_provider.dart';
+import '../../../core/services/biometric_service.dart';
+import '../../../core/providers/firebase_providers.dart';
 
 class SplashScreen extends ConsumerStatefulWidget {
   const SplashScreen({super.key});
@@ -13,19 +15,20 @@ class SplashScreen extends ConsumerStatefulWidget {
   ConsumerState<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends ConsumerState<SplashScreen> with TickerProviderStateMixin {
+class _SplashScreenState extends ConsumerState<SplashScreen>
+    with TickerProviderStateMixin {
   late AnimationController _logoController;
   late AnimationController _barController;
   late AnimationController _fadeController;
   late AnimationController _slideController;
-  
+
   final List<PetalModel> _petals = List.generate(15, (index) => PetalModel());
   final List<double> _ringDelays = [0.0, 0.7, 1.4];
 
   @override
   void initState() {
     super.initState();
-    
+
     _logoController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 2500),
@@ -60,10 +63,34 @@ class _SplashScreenState extends ConsumerState<SplashScreen> with TickerProvider
     Future.delayed(const Duration(milliseconds: 3200), () {
       if (mounted) {
         _fadeController.forward().then((_) async {
+          final auth = ref.read(firebaseAuthProvider);
+          final uid = auth.currentUser?.uid;
+
+          // Check if user just signed up (hasn't completed biometric setup yet)
+          if (uid != null) {
+            final biometricSetUp = await BiometricService.isBiometricSetUp();
+            if (!biometricSetUp) {
+              // New user - route to biometric setup
+              context.go('/biometric-setup/$uid');
+              return;
+            }
+
+            // Biometric/PIN is set up - REQUIRE VERIFICATION before proceeding
+            print('🔐 Biometric is set up. Requiring verification...');
+            final verified = await _verifyPINOrBiometric();
+            if (!verified) {
+              print('❌ Verification failed. Returning to onboarding.');
+              if (mounted) context.go('/onboarding');
+              return;
+            }
+            print('✅ User verified. Proceeding...');
+          }
+
           // Sync with Firestore before deciding navigation
           await ref.read(modeProvider.notifier).syncFromFirestore();
-          
-          final hasCompleted = ref.read(modeProvider.notifier).hasCompletedJourney;
+
+          final hasCompleted =
+              ref.read(modeProvider.notifier).hasCompletedJourney;
           if (hasCompleted) {
             context.go('/home');
           } else {
@@ -72,6 +99,84 @@ class _SplashScreenState extends ConsumerState<SplashScreen> with TickerProvider
         });
       }
     });
+  }
+
+  /// Verify PIN or biometric. Returns true if verified successfully.
+  Future<bool> _verifyPINOrBiometric() async {
+    try {
+      // Try biometric first
+      print('🔐 Attempting biometric verification...');
+      final bioOk = await BiometricService.verifyWithBiometric();
+      if (bioOk) {
+        print('✅ Biometric verified!');
+        return true;
+      }
+
+      // Biometric failed or not available - prompt for PIN (up to 3 attempts)
+      print('⚠️ Biometric unavailable/failed. Prompting for PIN...');
+      for (int attempt = 0; attempt < 3; attempt++) {
+        final pin = await showDialog<String?>(
+          context: context,
+          barrierDismissible: false,
+          builder: (ctx) => _buildPINDialog(attempt + 1),
+        );
+
+        if (pin == null) {
+          print('❌ PIN entry cancelled by user');
+          return false; // User cancelled
+        }
+
+        final ok = await BiometricService.verifyWithPin(pin);
+        if (ok) {
+          print('✅ PIN verified!');
+          return true;
+        }
+
+        print('❌ Wrong PIN. Attempt ${attempt + 1}/3');
+        if (mounted && attempt < 2) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('❌ Incorrect PIN. Try again.'),
+              duration: Duration(seconds: 2),
+            ),
+          );
+        }
+      }
+
+      print('❌ Max PIN attempts exceeded');
+      return false;
+    } catch (e) {
+      print('❌ Verification error: $e');
+      return false;
+    }
+  }
+
+  /// Build PIN entry dialog
+  Widget _buildPINDialog(int attempt) {
+    final controller = TextEditingController();
+    return AlertDialog(
+      title: const Text('🔐 Enter PIN to unlock'),
+      content: TextField(
+        controller: controller,
+        obscureText: true,
+        keyboardType: TextInputType.number,
+        maxLength: 4,
+        decoration: const InputDecoration(
+          hintText: '4-digit PIN',
+          counterText: '',
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context, null),
+          child: const Text('Cancel'),
+        ),
+        ElevatedButton(
+          onPressed: () => Navigator.pop(context, controller.text.trim()),
+          child: const Text('Unlock'),
+        ),
+      ],
+    );
   }
 
   @override
@@ -109,12 +214,14 @@ class _SplashScreenState extends ConsumerState<SplashScreen> with TickerProvider
               children: [
                 // Floating Petals
                 ..._petals.map((petal) => FloatingPetal(petal: petal)),
-                
+
                 // Ripple Rings
                 Center(
                   child: Stack(
                     alignment: Alignment.center,
-                    children: _ringDelays.map((delay) => RippleRing(delay: delay)).toList(),
+                    children: _ringDelays
+                        .map((delay) => RippleRing(delay: delay))
+                        .toList(),
                   ),
                 ),
 
@@ -126,7 +233,8 @@ class _SplashScreenState extends ConsumerState<SplashScreen> with TickerProvider
                       // Logo Circle
                       ScaleTransition(
                         scale: Tween<double>(begin: 1.0, end: 1.07).animate(
-                          CurvedAnimation(parent: _logoController, curve: Curves.easeInOut),
+                          CurvedAnimation(
+                              parent: _logoController, curve: Curves.easeInOut),
                         ),
                         child: Container(
                           width: 100,
@@ -148,8 +256,11 @@ class _SplashScreenState extends ConsumerState<SplashScreen> with TickerProvider
                             ],
                           ),
                           child: RotationTransition(
-                            turns: Tween<double>(begin: -0.014, end: 0.014).animate(
-                              CurvedAnimation(parent: _logoController, curve: Curves.easeInOut),
+                            turns: Tween<double>(begin: -0.014, end: 0.014)
+                                .animate(
+                              CurvedAnimation(
+                                  parent: _logoController,
+                                  curve: Curves.easeInOut),
                             ),
                             child: const Center(
                               child: Text(
@@ -163,8 +274,12 @@ class _SplashScreenState extends ConsumerState<SplashScreen> with TickerProvider
                       const SizedBox(height: 14),
                       // App Name
                       SlideTransition(
-                        position: Tween<Offset>(begin: const Offset(0, 0.5), end: Offset.zero).animate(
-                          CurvedAnimation(parent: _slideController, curve: const Cubic(0.2, 0.8, 0.4, 1.0)),
+                        position: Tween<Offset>(
+                                begin: const Offset(0, 0.5), end: Offset.zero)
+                            .animate(
+                          CurvedAnimation(
+                              parent: _slideController,
+                              curve: const Cubic(0.2, 0.8, 0.4, 1.0)),
                         ),
                         child: FadeTransition(
                           opacity: _slideController,
@@ -227,7 +342,11 @@ class _SplashScreenState extends ConsumerState<SplashScreen> with TickerProvider
                                   decoration: BoxDecoration(
                                     borderRadius: BorderRadius.circular(2),
                                     gradient: const LinearGradient(
-                                      colors: [Color(0xFFF0C0C8), AppColors.primaryRose, Color(0xFFC060A0)],
+                                      colors: [
+                                        Color(0xFFF0C0C8),
+                                        AppColors.primaryRose,
+                                        Color(0xFFC060A0)
+                                      ],
                                     ),
                                   ),
                                 ),
@@ -251,7 +370,8 @@ class _SplashScreenState extends ConsumerState<SplashScreen> with TickerProvider
 class PetalModel {
   final double left = math.Random().nextDouble() * 100;
   final double size = 12 + math.Random().nextDouble() * 14;
-  final Duration duration = Duration(milliseconds: 4000 + math.Random().nextInt(3000));
+  final Duration duration =
+      Duration(milliseconds: 4000 + math.Random().nextInt(3000));
   final Duration delay = Duration(milliseconds: math.Random().nextInt(3000));
   final String emoji = ['🌸', '✿', '🌺', '✾'][math.Random().nextInt(4)];
 }
@@ -264,13 +384,15 @@ class FloatingPetal extends StatefulWidget {
   State<FloatingPetal> createState() => _FloatingPetalState();
 }
 
-class _FloatingPetalState extends State<FloatingPetal> with SingleTickerProviderStateMixin {
+class _FloatingPetalState extends State<FloatingPetal>
+    with SingleTickerProviderStateMixin {
   late AnimationController _controller;
 
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(vsync: this, duration: widget.petal.duration);
+    _controller =
+        AnimationController(vsync: this, duration: widget.petal.duration);
     Future.delayed(widget.petal.delay, () {
       if (mounted) _controller.repeat();
     });
@@ -288,7 +410,9 @@ class _FloatingPetalState extends State<FloatingPetal> with SingleTickerProvider
       animation: _controller,
       builder: (context, child) {
         final progress = _controller.value;
-        final opacity = progress < 0.08 ? progress * 8.75 : (progress > 0.85 ? (1 - progress) * 2 : 0.7);
+        final opacity = progress < 0.08
+            ? progress * 8.75
+            : (progress > 0.85 ? (1 - progress) * 2 : 0.7);
         return Positioned(
           left: MediaQuery.of(context).size.width * (widget.petal.left / 100),
           bottom: MediaQuery.of(context).size.height * (progress * 1.1) - 50,
@@ -296,7 +420,8 @@ class _FloatingPetalState extends State<FloatingPetal> with SingleTickerProvider
             opacity: opacity.clamp(0.0, 1.0),
             child: Transform.rotate(
               angle: progress * math.pi * 2.2,
-              child: Text(widget.petal.emoji, style: TextStyle(fontSize: widget.petal.size)),
+              child: Text(widget.petal.emoji,
+                  style: TextStyle(fontSize: widget.petal.size)),
             ),
           ),
         );
@@ -313,13 +438,15 @@ class RippleRing extends StatefulWidget {
   State<RippleRing> createState() => _RippleRingState();
 }
 
-class _RippleRingState extends State<RippleRing> with SingleTickerProviderStateMixin {
+class _RippleRingState extends State<RippleRing>
+    with SingleTickerProviderStateMixin {
   late AnimationController _controller;
 
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(vsync: this, duration: const Duration(milliseconds: 2800));
+    _controller = AnimationController(
+        vsync: this, duration: const Duration(milliseconds: 2800));
     Future.delayed(Duration(milliseconds: (widget.delay * 1000).toInt()), () {
       if (mounted) _controller.repeat();
     });
@@ -346,7 +473,8 @@ class _RippleRingState extends State<RippleRing> with SingleTickerProviderStateM
               height: 250,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                border: Border.all(color: AppColors.primaryRose.withOpacity(0.15), width: 1.5),
+                border: Border.all(
+                    color: AppColors.primaryRose.withOpacity(0.15), width: 1.5),
               ),
             ),
           ),

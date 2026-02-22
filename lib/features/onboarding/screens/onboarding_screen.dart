@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/providers/firebase_providers.dart';
 import '../providers/onboarding_provider.dart';
 
 class OnboardingScreen extends ConsumerStatefulWidget {
@@ -141,14 +142,52 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                     ),
                     child: ElevatedButton(
                       onPressed: () async {
-                        await ref
-                            .read(onboardingProvider.notifier)
-                            .completeOnboarding(
-                              language: selectedLang,
-                              anonymousMode: keepPrivate,
-                              cloudSync: backupData,
+                        try {
+                          print('📝 Starting onboarding...');
+                          final auth = ref.read(firebaseAuthProvider);
+
+                          // Complete onboarding and create user
+                          await ref
+                              .read(onboardingProvider.notifier)
+                              .completeOnboarding(
+                                language: selectedLang,
+                                anonymousMode: keepPrivate,
+                                cloudSync: backupData,
+                              );
+
+                          print('✅ Onboarding completed');
+
+                          // Give a moment for auth state to update
+                          await Future.delayed(
+                              const Duration(milliseconds: 500));
+
+                          // Get the newly created user ID
+                          final uid = auth.currentUser?.uid;
+                          print('🆔 Got UID: $uid');
+
+                          if (mounted && uid != null && uid.isNotEmpty) {
+                            // Navigate to mandatory biometric setup
+                            final route = '/biometric-setup/$uid';
+                            print('🔀 Navigating to: $route');
+                            // Use push instead of go to ensure proper stack
+                            context.push(route);
+                          } else if (mounted) {
+                            print(
+                                '❌ UID is null or empty or widget not mounted');
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                  content: Text(
+                                      'Failed to create account. Please try again.')),
                             );
-                        if (mounted) context.go('/mode-selection');
+                          }
+                        } catch (e) {
+                          print('❌ Error during onboarding: $e');
+                          if (mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text('Error: $e')),
+                            );
+                          }
+                        }
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.transparent,
