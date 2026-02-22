@@ -390,6 +390,55 @@ class _JourneyScreenState extends ConsumerState<JourneyScreen> {
 
   @override
   Widget build(BuildContext context) {
+    return Scaffold(
+      body: ref.watch(journeyStepsProvider(widget.mode)).when(
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (error, stackTrace) {
+          debugPrint('Error loading journey steps: $error\n$stackTrace');
+          return Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.error_outline, size: 64, color: Colors.red),
+                const SizedBox(height: 16),
+                const Text('Failed to load journey steps'),
+                const SizedBox(height: 8),
+                Text(
+                  error.toString(),
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(fontSize: 12, color: Colors.grey),
+                ),
+                const SizedBox(height: 24),
+                ElevatedButton(
+                  onPressed: () => context.go('/mode-selection'),
+                  child: const Text('Go Back'),
+                ),
+              ],
+            ),
+          );
+        },
+        data: (steps) {
+          if (steps.isEmpty) {
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.warning, size: 64, color: Colors.orange),
+                  const SizedBox(height: 16),
+                  const Text('No journey steps found'),
+                  const SizedBox(height: 24),
+                  ElevatedButton(
+                    onPressed: () => context.go('/mode-selection'),
+                    child: const Text('Go Back'),
+                  ),
+                ],
+              ),
+            );
+          }
+
+          final step = steps[currentStep];
+          final progress = (currentStep + 1) / steps.length;
+          final isSingleChoice = step['type'] == 'chips-big-single' || step['type'] == 'chips-single';
     if (_isLoading || !_stepsLoaded) {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
@@ -606,7 +655,18 @@ class _JourneyScreenState extends ConsumerState<JourneyScreen> {
                     setState(() {
                       journeyData[key] = opt['v'];
                     });
-                    _nextStep();
+                    // Auto-advance for single choice
+                    if (step['type'] == 'chips-big-single') {
+                      Future.delayed(const Duration(milliseconds: 300), () {
+                        final steps = ref.read(journeyStepsProvider(widget.mode)).maybeWhen(
+                          data: (data) => data,
+                          orElse: () => [],
+                        );
+                        if (steps.isNotEmpty) {
+                          _nextStep(List<Map<String, dynamic>>.from(steps));
+                        }
+                      });
+                    }
                   }
                 },
                 child: Container(
