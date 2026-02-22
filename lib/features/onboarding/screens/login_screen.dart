@@ -51,7 +51,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         
         if (mounted) {
           if (isPinSet) {
-            context.go('/pin-verification');
+            // Bypass PIN verification specifically for the login flow
+            // as the user just authenticated with their email/password.
+            // We go directly to home, but the PIN remains active for future app restarts.
+            context.go('/home');
           } else {
             context.go('/biometric-setup/${user.uid}');
           }
