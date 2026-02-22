@@ -2,9 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:go_router/go_router.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/providers/firebase_providers.dart';
 import '../../../core/services/notification_service.dart';
+import '../../../core/services/uuid_persistence_service.dart';
+import '../../../core/services/biometric_service.dart';
+import '../../../core/services/backup_service.dart';
 import '../../../models/user_profile_model.dart';
 
 class ProfileScreen extends ConsumerStatefulWidget {
@@ -95,6 +99,97 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     );
   }
 
+  Future<void> _handleSignOut() async {
+    final auth = ref.read(firebaseAuthProvider);
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Sign Out'),
+        content: const Text('Are you sure you want to sign out?'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
+          TextButton(onPressed: () => Navigator.pop(context, true), child: const Text('Sign Out', style: TextStyle(color: Colors.redAccent))),
+        ],
+      ),
+    );
+    if (confirm == true) {
+      setState(() => _isLoading = true);
+      try {
+        await auth.signOut();
+        if (mounted) context.go('/splash');
+      } catch (e) {
+        if (mounted) NotificationService.showError(context, 'Failed to sign out: $e');
+      } finally {
+        if (mounted) setState(() => _isLoading = false);
+      }
+    }
+  }
+
+  Future<void> _handleDeleteData() async {
+    final auth = ref.read(firebaseAuthProvider);
+    final user = auth.currentUser;
+    final firestore = ref.read(firestoreProvider);
+    
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Delete All Data'),
+        content: const Text('This will permanently erase all your data from the cloud and this device. This action cannot be undone and the app will restart from the beginning.'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
+          TextButton(onPressed: () => Navigator.pop(context, true), child: const Text('Delete Everything', style: TextStyle(color: Colors.redAccent))),
+        ],
+      ),
+    );
+
+    if (confirm == true) {
+      setState(() => _isLoading = true);
+      try {
+        final uid = user?.uid;
+        
+        // 1. Delete Firestore data if user exists
+        if (uid != null) {
+          // Delete profile subcollection
+          final profileDocs = await firestore.collection('users').doc(uid).collection('profile').get();
+          for (var doc in profileDocs.docs) {
+            await doc.reference.delete();
+          }
+          // Delete user document
+          await firestore.collection('users').doc(uid).delete();
+        }
+
+        // 2. Clear Local Storage
+        await UUIDPersistenceService.clearUUID();
+        await BiometricService.resetBiometric();
+        await BackupService.clearLocalBackup();
+        
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.clear();
+
+        // 3. Delete Firebase Auth User (if possible)
+        if (user != null) {
+          try {
+            await user.delete();
+          } catch (e) {
+            // User might need to re-authenticate to delete, 
+            // but we've already cleared their data and local state.
+            // Just sign out as fallback.
+            await auth.signOut();
+          }
+        }
+
+        if (mounted) {
+          NotificationService.showSuccess(context, 'All data erased successfully');
+          context.go('/splash');
+        }
+      } catch (e) {
+        if (mounted) NotificationService.showError(context, 'Error deleting data: $e');
+      } finally {
+        if (mounted) setState(() => _isLoading = false);
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final auth = ref.watch(firebaseAuthProvider);
@@ -173,41 +268,19 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   const SizedBox(height: 24),
                   _buildSectionTitle('DANGER ZONE'),
                   _buildSettingsCard([
-                    _buildSettingsTile(Icons.logout, 'Sign Out', () async {
-                      final confirm = await showDialog<bool>(
-                        context: context,
-                        builder: (context) => AlertDialog(
-                          title: const Text('Sign Out'),
-                          content: const Text('Are you sure you want to sign out?'),
-                          actions: [
-                            TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
-                            TextButton(onPressed: () => Navigator.pop(context, true), child: const Text('Sign Out', style: TextStyle(color: Colors.redAccent))),
-                          ],
-                        ),
-                      );
-                      if (confirm == true) {
-                        await auth.signOut();
-                        if (context.mounted) context.go('/splash');
-                      }
-                    }, color: Colors.redAccent),
-                    _buildSettingsTile(Icons.delete_forever_outlined, 'Delete Account', () async {
-                       final confirm = await showDialog<bool>(
-                        context: context,
-                        builder: (context) => AlertDialog(
-                          title: const Text('Delete Account'),
-                          content: const Text('This will permanently delete all your data. This action cannot be undone.'),
-                          actions: [
-                            TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
-                            TextButton(onPressed: () => Navigator.pop(context, true), child: const Text('Delete', style: TextStyle(color: Colors.redAccent))),
-                          ],
-                        ),
-                      );
-                      if (confirm == true) {
-                        // In a real app, you'd delete Firestore data first
-                        await user?.delete();
-                        if (context.mounted) context.go('/splash');
-                      }
-                    }, color: Colors.redAccent),
+                    if (isPremium)
+                      _buildSettingsTile(
+                        Icons.logout, 
+                        'Sign Out', 
+                        _handleSignOut, 
+                        color: Colors.redAccent
+                      ),
+                    _buildSettingsTile(
+                      Icons.delete_forever_outlined, 
+                      'Delete All Data', 
+                      _handleDeleteData, 
+                      color: Colors.redAccent
+                    ),
                   ]),
                   const SizedBox(height: 40),
                   const Center(
