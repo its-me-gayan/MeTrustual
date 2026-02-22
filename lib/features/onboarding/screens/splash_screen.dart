@@ -199,7 +199,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                             ),
                             child: Center(
                               child: Text(
-                                '☀️',
+                                '🌸',
                                 style: GoogleFonts.nunito(fontSize: 45),
                               ),
                             ),
@@ -230,11 +230,11 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                                     letterSpacing: -0.5,
                                   ),
                                   children: [
-                                    TextSpan(text: 'Sol'),
+                                    TextSpan(text: 'Me'),
                                     TextSpan(
-                                      text: 'ana',
+                                      text: 'Trustual',
                                       style: GoogleFonts.nunito(
-                                        color: Color(0xFFC97B3A),
+                                        color: Color(0xFFD97B8A),
                                         fontStyle: FontStyle.normal,
                                       ),
                                     ),
@@ -242,7 +242,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                                 ),
                               ),
                               Text(
-                                'your light. your rhythm. ✨',
+                                'Your health, your choice ✨',
                                 style: GoogleFonts.nunito(
                                   fontSize: 12,
                                   fontWeight: FontWeight.w700,
@@ -308,7 +308,7 @@ class PetalModel {
   final Duration duration =
       Duration(milliseconds: 4000 + math.Random().nextInt(3000));
   final Duration delay = Duration(milliseconds: math.Random().nextInt(3000));
-  final String emoji = ['✨', '⭐', '💫', '🌟'][math.Random().nextInt(4)];
+  final String emoji = ['🌸', '✨', '💕', '🌸'][math.Random().nextInt(4)];
 }
 
 class FloatingPetal extends StatefulWidget {
