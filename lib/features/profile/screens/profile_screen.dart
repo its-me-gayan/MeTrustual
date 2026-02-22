@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/providers/firebase_providers.dart';
+import '../../../core/providers/mode_provider.dart';
 import '../../../core/services/notification_service.dart';
 import '../../../core/services/uuid_persistence_service.dart';
 import '../../../core/services/biometric_service.dart';
