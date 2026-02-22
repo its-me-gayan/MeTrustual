@@ -197,7 +197,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           }
 
           // Finally delete the main user document
-          await userDocRef.delete();
+          await firestore.collection('users').doc(uid).delete();
         }
 
         // 2. Clear Local Storage
