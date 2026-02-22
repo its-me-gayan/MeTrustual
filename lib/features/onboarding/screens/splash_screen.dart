@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -21,9 +20,6 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
   late AnimationController _barController;
   late AnimationController _fadeController;
   late AnimationController _slideController;
-
-  final List<PetalModel> _petals = List.generate(15, (index) => PetalModel());
-  final List<double> _ringDelays = [0.0, 0.7, 1.4];
 
   @override
   void initState() {
@@ -49,7 +45,6 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
       duration: const Duration(milliseconds: 700),
     );
 
-    // Start bar and slide animations after a short delay
     Future.delayed(const Duration(milliseconds: 300), () {
       if (mounted) {
         _slideController.forward();
@@ -59,124 +54,29 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
       }
     });
 
-    // Navigate after animation
     Future.delayed(const Duration(milliseconds: 3200), () {
       if (mounted) {
         _fadeController.forward().then((_) async {
           final auth = ref.read(firebaseAuthProvider);
-          final uid = auth.currentUser?.uid;
+          final user = auth.currentUser;
 
-          // Check if user just signed up (hasn't completed biometric setup yet)
-          if (uid != null) {
+          if (user != null) {
             final biometricSetUp = await BiometricService.isBiometricSetUp();
             if (!biometricSetUp) {
-              // New user - route to biometric setup
-              context.go('/biometric-setup/$uid');
+              context.go('/biometric-setup/${user.uid}');
               return;
             }
 
-            // Biometric/PIN is set up - REQUIRE VERIFICATION before proceeding
-            print('🔐 Biometric is set up. Requiring verification...');
-            final verified = await _verifyPINOrBiometric();
-            if (!verified) {
-              print('❌ Verification failed. Returning to onboarding.');
-              if (mounted) context.go('/onboarding');
-              return;
-            }
-            print('✅ User verified. Proceeding...');
+            // Route to PIN verification screen instead of using dialogs
+            context.go('/pin-verification');
+            return;
           }
 
-          // Sync with Firestore before deciding navigation
-          await ref.read(modeProvider.notifier).syncFromFirestore();
-
-          final hasCompleted =
-              ref.read(modeProvider.notifier).hasCompletedJourney;
-          if (hasCompleted) {
-            context.go('/home');
-          } else {
-            context.go('/onboarding');
-          }
+          // Not logged in
+          context.go('/onboarding');
         });
       }
     });
-  }
-
-  /// Verify PIN or biometric. Returns true if verified successfully.
-  Future<bool> _verifyPINOrBiometric() async {
-    try {
-      // Try biometric first
-      print('🔐 Attempting biometric verification...');
-      final bioOk = await BiometricService.verifyWithBiometric();
-      if (bioOk) {
-        print('✅ Biometric verified!');
-        return true;
-      }
-
-      // Biometric failed or not available - prompt for PIN (up to 3 attempts)
-      print('⚠️ Biometric unavailable/failed. Prompting for PIN...');
-      for (int attempt = 0; attempt < 3; attempt++) {
-        final pin = await showDialog<String?>(
-          context: context,
-          barrierDismissible: false,
-          builder: (ctx) => _buildPINDialog(attempt + 1),
-        );
-
-        if (pin == null) {
-          print('❌ PIN entry cancelled by user');
-          return false; // User cancelled
-        }
-
-        final ok = await BiometricService.verifyWithPin(pin);
-        if (ok) {
-          print('✅ PIN verified!');
-          return true;
-        }
-
-        print('❌ Wrong PIN. Attempt ${attempt + 1}/3');
-        if (mounted && attempt < 2) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('❌ Incorrect PIN. Try again.'),
-              duration: Duration(seconds: 2),
-            ),
-          );
-        }
-      }
-
-      print('❌ Max PIN attempts exceeded');
-      return false;
-    } catch (e) {
-      print('❌ Verification error: $e');
-      return false;
-    }
-  }
-
-  /// Build PIN entry dialog
-  Widget _buildPINDialog(int attempt) {
-    final controller = TextEditingController();
-    return AlertDialog(
-      title: const Text('🔐 Enter PIN to unlock'),
-      content: TextField(
-        controller: controller,
-        obscureText: true,
-        keyboardType: TextInputType.number,
-        maxLength: 4,
-        decoration: const InputDecoration(
-          hintText: '4-digit PIN',
-          counterText: '',
-        ),
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context, null),
-          child: const Text('Cancel'),
-        ),
-        ElevatedButton(
-          onPressed: () => Navigator.pop(context, controller.text.trim()),
-          child: const Text('Unlock'),
-        ),
-      ],
-    );
   }
 
   @override
@@ -192,170 +92,63 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
   Widget build(BuildContext context) {
     return FadeTransition(
       opacity: Tween<double>(begin: 1.0, end: 0.0).animate(_fadeController),
-      child: ScaleTransition(
-        scale: Tween<double>(begin: 1.0, end: 1.06).animate(
-          CurvedAnimation(parent: _fadeController, curve: Curves.easeIn),
-        ),
-        child: Scaffold(
-          body: Container(
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  Color(0xFFFFF0F0),
-                  Color(0xFFFDE8F0),
-                  Color(0xFFF0E8FC),
-                ],
-                stops: [0.0, 0.4, 1.0],
-              ),
+      child: Scaffold(
+        body: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                Color(0xFFFFF0F0),
+                Color(0xFFFDE8F0),
+                Color(0xFFF0E8FC),
+              ],
+              stops: [0.0, 0.4, 1.0],
             ),
-            child: Stack(
+          ),
+          child: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                // Floating Petals
-                ..._petals.map((petal) => FloatingPetal(petal: petal)),
-
-                // Ripple Rings
-                Center(
-                  child: Stack(
-                    alignment: Alignment.center,
-                    children: _ringDelays
-                        .map((delay) => RippleRing(delay: delay))
-                        .toList(),
+                ScaleTransition(
+                  scale: Tween<double>(begin: 1.0, end: 1.07).animate(
+                    CurvedAnimation(parent: _logoController, curve: Curves.easeInOut),
+                  ),
+                  child: Container(
+                    width: 100,
+                    height: 100,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      gradient: AppColors.cycleCircleGradient,
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppColors.primaryRose.withOpacity(0.3),
+                          blurRadius: 36,
+                          offset: const Offset(0, 12),
+                        ),
+                      ],
+                    ),
+                    child: const Center(
+                      child: Text('🌸', style: TextStyle(fontSize: 45)),
+                    ),
                   ),
                 ),
-
-                // Center Content
-                Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      // Logo Circle
-                      ScaleTransition(
-                        scale: Tween<double>(begin: 1.0, end: 1.07).animate(
-                          CurvedAnimation(
-                              parent: _logoController, curve: Curves.easeInOut),
-                        ),
-                        child: Container(
-                          width: 100,
-                          height: 100,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            gradient: AppColors.cycleCircleGradient,
-                            boxShadow: [
-                              BoxShadow(
-                                color: const Color(0xFFFCE8E8).withOpacity(0.5),
-                                blurRadius: 0,
-                                spreadRadius: 10,
-                              ),
-                              BoxShadow(
-                                color: AppColors.primaryRose.withOpacity(0.3),
-                                blurRadius: 36,
-                                offset: const Offset(0, 12),
-                              ),
-                            ],
-                          ),
-                          child: RotationTransition(
-                            turns: Tween<double>(begin: -0.014, end: 0.014)
-                                .animate(
-                              CurvedAnimation(
-                                  parent: _logoController,
-                                  curve: Curves.easeInOut),
-                            ),
-                            child: const Center(
-                              child: Text(
-                                '🌸',
-                                style: TextStyle(fontSize: 45),
-                              ),
-                            ),
-                          ),
-                        ),
+                const SizedBox(height: 24),
+                SlideTransition(
+                  position: Tween<Offset>(begin: const Offset(0, 0.5), end: Offset.zero).animate(
+                    CurvedAnimation(parent: _slideController, curve: Curves.easeOutCubic),
+                  ),
+                  child: FadeTransition(
+                    opacity: _slideController,
+                    child: const Text(
+                      'MeTrustual',
+                      style: TextStyle(
+                        fontSize: 32,
+                        fontWeight: FontWeight.w900,
+                        color: AppColors.textDark,
+                        letterSpacing: -0.5,
                       ),
-                      const SizedBox(height: 14),
-                      // App Name
-                      SlideTransition(
-                        position: Tween<Offset>(
-                                begin: const Offset(0, 0.5), end: Offset.zero)
-                            .animate(
-                          CurvedAnimation(
-                              parent: _slideController,
-                              curve: const Cubic(0.2, 0.8, 0.4, 1.0)),
-                        ),
-                        child: FadeTransition(
-                          opacity: _slideController,
-                          child: Column(
-                            children: [
-                              RichText(
-                                text: const TextSpan(
-                                  style: TextStyle(
-                                    fontSize: 29,
-                                    fontWeight: FontWeight.w900,
-                                    color: AppColors.textDark,
-                                    fontFamily: 'Nunito',
-                                    letterSpacing: -0.5,
-                                  ),
-                                  children: [
-                                    TextSpan(text: 'Me'),
-                                    TextSpan(
-                                      text: 'Trustual',
-                                      style: TextStyle(
-                                        color: AppColors.primaryRose,
-                                        fontStyle: FontStyle.italic,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              const Text(
-                                'your cycle, your story 💕',
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w700,
-                                  color: AppColors.textMuted,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 28),
-                      // Loading Bar
-                      FadeTransition(
-                        opacity: CurvedAnimation(
-                          parent: _slideController,
-                          curve: const Interval(0.5, 1.0),
-                        ),
-                        child: Container(
-                          width: 100,
-                          height: 4,
-                          decoration: BoxDecoration(
-                            color: AppColors.primaryRose.withOpacity(0.12),
-                            borderRadius: BorderRadius.circular(2),
-                          ),
-                          child: AnimatedBuilder(
-                            animation: _barController,
-                            builder: (context, child) {
-                              return FractionallySizedBox(
-                                alignment: Alignment.centerLeft,
-                                widthFactor: _barController.value,
-                                child: Container(
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(2),
-                                    gradient: const LinearGradient(
-                                      colors: [
-                                        Color(0xFFF0C0C8),
-                                        AppColors.primaryRose,
-                                        Color(0xFFC060A0)
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              );
-                            },
-                          ),
-                        ),
-                      ),
-                    ],
+                    ),
                   ),
                 ),
               ],
@@ -363,123 +156,6 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
           ),
         ),
       ),
-    );
-  }
-}
-
-class PetalModel {
-  final double left = math.Random().nextDouble() * 100;
-  final double size = 12 + math.Random().nextDouble() * 14;
-  final Duration duration =
-      Duration(milliseconds: 4000 + math.Random().nextInt(3000));
-  final Duration delay = Duration(milliseconds: math.Random().nextInt(3000));
-  final String emoji = ['🌸', '✿', '🌺', '✾'][math.Random().nextInt(4)];
-}
-
-class FloatingPetal extends StatefulWidget {
-  final PetalModel petal;
-  const FloatingPetal({super.key, required this.petal});
-
-  @override
-  State<FloatingPetal> createState() => _FloatingPetalState();
-}
-
-class _FloatingPetalState extends State<FloatingPetal>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller =
-        AnimationController(vsync: this, duration: widget.petal.duration);
-    Future.delayed(widget.petal.delay, () {
-      if (mounted) _controller.repeat();
-    });
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: _controller,
-      builder: (context, child) {
-        final progress = _controller.value;
-        final opacity = progress < 0.08
-            ? progress * 8.75
-            : (progress > 0.85 ? (1 - progress) * 2 : 0.7);
-        return Positioned(
-          left: MediaQuery.of(context).size.width * (widget.petal.left / 100),
-          bottom: MediaQuery.of(context).size.height * (progress * 1.1) - 50,
-          child: Opacity(
-            opacity: opacity.clamp(0.0, 1.0),
-            child: Transform.rotate(
-              angle: progress * math.pi * 2.2,
-              child: Text(widget.petal.emoji,
-                  style: TextStyle(fontSize: widget.petal.size)),
-            ),
-          ),
-        );
-      },
-    );
-  }
-}
-
-class RippleRing extends StatefulWidget {
-  final double delay;
-  const RippleRing({super.key, required this.delay});
-
-  @override
-  State<RippleRing> createState() => _RippleRingState();
-}
-
-class _RippleRingState extends State<RippleRing>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-        vsync: this, duration: const Duration(milliseconds: 2800));
-    Future.delayed(Duration(milliseconds: (widget.delay * 1000).toInt()), () {
-      if (mounted) _controller.repeat();
-    });
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: _controller,
-      builder: (context, child) {
-        final progress = _controller.value;
-        return Opacity(
-          opacity: (1 - progress) * 0.9,
-          child: Transform.scale(
-            scale: 0.5 + progress * 1.0,
-            child: Container(
-              width: 250,
-              height: 250,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(
-                    color: AppColors.primaryRose.withOpacity(0.15), width: 1.5),
-              ),
-            ),
-          ),
-        );
-      },
     );
   }
 }

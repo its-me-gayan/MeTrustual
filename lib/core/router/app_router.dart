@@ -4,6 +4,8 @@ import '../../features/onboarding/screens/onboarding_screen.dart';
 import '../../features/onboarding/screens/biometric_setup_screen.dart';
 import '../../features/onboarding/screens/mode_selection_screen.dart';
 import '../../features/onboarding/screens/journey_screen.dart';
+import '../../features/onboarding/screens/pin_verification_screen.dart';
+import '../../features/onboarding/screens/login_screen.dart';
 import '../../features/home/screens/home_screen.dart';
 import '../../features/logging/screens/log_screen.dart';
 import '../../features/insights/screens/insights_screen.dart';
@@ -24,11 +26,19 @@ final GoRouter appRouter = GoRouter(
       builder: (context, state) => const OnboardingScreen(),
     ),
     GoRoute(
+      path: '/login',
+      builder: (context, state) => const LoginScreen(),
+    ),
+    GoRoute(
       path: '/biometric-setup/:uid',
       builder: (context, state) {
         final uid = state.pathParameters['uid'] ?? '';
         return BiometricSetupScreen(uid: uid);
       },
+    ),
+    GoRoute(
+      path: '/pin-verification',
+      builder: (context, state) => const PinVerificationScreen(),
     ),
     GoRoute(
       path: '/mode-selection',

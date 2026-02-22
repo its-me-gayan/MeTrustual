@@ -62,7 +62,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                 ),
                 const Spacer(flex: 2),
 
-                // ── Language Grid (3 rows x 2 cols using Row/Column) ──
+                // ── Language Grid ──
                 _buildLangRow(languages[0], languages[1]),
                 const SizedBox(height: 10),
                 _buildLangRow(languages[2], languages[3]),
@@ -91,13 +91,11 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                 // ── Promise Card ──
                 Container(
                   width: double.infinity,
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                   decoration: BoxDecoration(
                     color: AppColors.sageGreen.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(16),
-                    border:
-                        Border.all(color: AppColors.sageGreen.withOpacity(0.2)),
+                    border: Border.all(color: AppColors.sageGreen.withOpacity(0.2)),
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -125,78 +123,75 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
                 const Spacer(flex: 2),
 
-                // ── CTA Button ──
-                SizedBox(
-                  width: double.infinity,
-                  child: Container(
-                    decoration: BoxDecoration(
-                      gradient: AppColors.primaryGradient,
-                      borderRadius: BorderRadius.circular(18),
-                      boxShadow: [
-                        BoxShadow(
-                          color: AppColors.primaryRose.withOpacity(0.35),
-                          offset: const Offset(0, 6),
-                          blurRadius: 18,
+                // ── CTA Buttons ──
+                Column(
+                  children: [
+                    SizedBox(
+                      width: double.infinity,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          gradient: AppColors.primaryGradient,
+                          borderRadius: BorderRadius.circular(18),
+                          boxShadow: [
+                            BoxShadow(
+                              color: AppColors.primaryRose.withOpacity(0.35),
+                              offset: const Offset(0, 6),
+                              blurRadius: 18,
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
-                    child: ElevatedButton(
-                      onPressed: () async {
-                        try {
-                          print('📝 Starting onboarding...');
-                          final auth = ref.read(firebaseAuthProvider);
+                        child: ElevatedButton(
+                          onPressed: () async {
+                            try {
+                              final auth = ref.read(firebaseAuthProvider);
+                              await ref
+                                  .read(onboardingProvider.notifier)
+                                  .completeOnboarding(
+                                    language: selectedLang,
+                                    anonymousMode: keepPrivate,
+                                    cloudSync: backupData,
+                                  );
 
-                          // Complete onboarding and create user
-                          await ref
-                              .read(onboardingProvider.notifier)
-                              .completeOnboarding(
-                                language: selectedLang,
-                                anonymousMode: keepPrivate,
-                                cloudSync: backupData,
-                              );
+                              await Future.delayed(const Duration(milliseconds: 500));
+                              final uid = auth.currentUser?.uid;
 
-                          print('✅ Onboarding completed');
-
-                          // Give a moment for auth state to update
-                          await Future.delayed(
-                              const Duration(milliseconds: 500));
-
-                          // Get the newly created user ID
-                          final uid = auth.currentUser?.uid;
-                          print('🆔 Got UID: $uid');
-
-                          if (mounted && uid != null && uid.isNotEmpty) {
-                            // Navigate to mandatory biometric setup
-                            final route = '/biometric-setup/$uid';
-                            print('🔀 Navigating to: $route');
-                            // Use push instead of go to ensure proper stack
-                            context.push(route);
-                          } else if (mounted) {
-                            print(
-                                '❌ UID is null or empty or widget not mounted');
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                  content: Text(
-                                      'Failed to create account. Please try again.')),
-                            );
-                          }
-                        } catch (e) {
-                          print('❌ Error during onboarding: $e');
-                          if (mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text('Error: $e')),
-                            );
-                          }
-                        }
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.transparent,
-                        shadowColor: Colors.transparent,
-                        padding: const EdgeInsets.symmetric(vertical: 14),
+                              if (mounted && uid != null && uid.isNotEmpty) {
+                                context.push('/biometric-setup/$uid');
+                              }
+                            } catch (e) {
+                              if (mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(content: Text('Error: $e')),
+                                );
+                              }
+                            }
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.transparent,
+                            shadowColor: Colors.transparent,
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                          ),
+                          child: Text('onboarding_cta'.tr()),
+                        ),
                       ),
-                      child: Text('onboarding_cta'.tr()),
                     ),
-                  ),
+                    const SizedBox(height: 16),
+                    TextButton(
+                      onPressed: () => context.push('/login'),
+                      child: RichText(
+                        text: const TextSpan(
+                          style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textMid),
+                          children: [
+                            TextSpan(text: 'Already a premium user? '),
+                            TextSpan(
+                              text: 'Log In',
+                              style: TextStyle(color: AppColors.primaryRose, fontWeight: FontWeight.w900),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
 
                 const Spacer(flex: 3),
@@ -232,8 +227,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       child: Container(
         height: 44,
         decoration: BoxDecoration(
-          color:
-              isSelected ? AppColors.petalLight.withOpacity(0.3) : Colors.white,
+          color: isSelected ? AppColors.petalLight.withOpacity(0.3) : Colors.white,
           borderRadius: BorderRadius.circular(14),
           border: Border.all(
             color: isSelected ? AppColors.primaryRose : AppColors.border,
@@ -274,17 +268,11 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
               children: [
                 Text(
                   title,
-                  style: const TextStyle(
-                      fontWeight: FontWeight.w800,
-                      fontSize: 13,
-                      color: AppColors.textDark),
+                  style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 13, color: AppColors.textDark),
                 ),
                 Text(
                   subtitle,
-                  style: const TextStyle(
-                      fontSize: 11,
-                      color: AppColors.textMuted,
-                      fontWeight: FontWeight.w600),
+                  style: const TextStyle(fontSize: 11, color: AppColors.textMuted, fontWeight: FontWeight.w600),
                 ),
               ],
             ),
