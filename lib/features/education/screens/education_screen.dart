@@ -5,6 +5,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/premium_gate.dart';
 import '../../../core/providers/dynamic_content_provider.dart';
 import '../../../core/widgets/app_bottom_nav.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class EducationScreen extends ConsumerWidget {
   const EducationScreen({super.key});
@@ -70,7 +71,7 @@ class EducationScreen extends ConsumerWidget {
                   padding: EdgeInsets.symmetric(vertical: 12),
                   child: Text(
                     '🌍 30+ languages supported',
-                    style: TextStyle(fontSize: 11, color: AppColors.textMuted, fontWeight: FontWeight.w700),
+                    style: GoogleFonts.nunito(fontSize: 11, color: AppColors.textMuted, fontWeight: FontWeight.w700),
                   ),
                 ),
               ),
@@ -129,7 +130,7 @@ class EducationScreen extends ConsumerWidget {
             ),
             child: Text(
               cat,
-              style: TextStyle(
+              style: GoogleFonts.nunito(
                 fontSize: 12,
                 fontWeight: FontWeight.w800,
                 color: isFirst ? Colors.white : AppColors.textDark,
@@ -157,7 +158,7 @@ class EducationScreen extends ConsumerWidget {
             height: 48,
             decoration: BoxDecoration(color: AppColors.background, borderRadius: BorderRadius.circular(12)),
             alignment: Alignment.center,
-            child: Text(icon, style: const TextStyle(fontSize: 24)),
+            child: Text(icon, style: GoogleFonts.nunito(fontSize: 24)),
           ),
           const SizedBox(width: 14),
           Expanded(
@@ -169,18 +170,18 @@ class EducationScreen extends ConsumerWidget {
                   decoration: BoxDecoration(color: tagColor.withOpacity(0.1), borderRadius: BorderRadius.circular(4)),
                   child: Text(
                     tag.toUpperCase(),
-                    style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: tagColor),
+                    style: GoogleFonts.nunito(fontSize: 9, fontWeight: FontWeight.w900, color: tagColor),
                   ),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   title,
-                  style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w900, color: AppColors.textDark),
+                  style: GoogleFonts.nunito(fontSize: 14, fontWeight: FontWeight.w900, color: AppColors.textDark),
                 ),
                 const SizedBox(height: 2),
                 Text(
                   meta,
-                  style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: AppColors.textMuted),
+                  style: GoogleFonts.nunito(fontSize: 11, fontWeight: FontWeight.w700, color: AppColors.textMuted),
                 ),
               ],
             ),

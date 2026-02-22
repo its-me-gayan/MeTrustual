@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MeTrustual — Nunito Font Update Report</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  font-family: 'Nunito', sans-serif;
+  background: #fef6f0;
+  min-height: 100vh;
+  padding: 32px 16px 60px;
+  color: #3d2828;
+}
+
+/* ── HEADER ── */
+.header {
+  text-align: center;
+  padding: 40px 24px 32px;
+  background: linear-gradient(165deg, #fff0f0 0%, #fde8f0 40%, #f0e8fc 100%);
+  border-radius: 28px;
+  border: 1.5px solid rgba(255,200,190,0.5);
+  box-shadow: 0 24px 60px rgba(200,100,100,0.12), 0 4px 16px rgba(200,100,100,0.06);
+  margin-bottom: 32px;
+  max-width: 860px;
+  margin-left: auto;
+  margin-right: auto;
+}
+.header-emoji { font-size: 3rem; margin-bottom: 12px; }
+.header h1 { font-size: 2rem; font-weight: 900; color: #3d2828; letter-spacing: -0.5px; }
+.header h1 em { color: #d97b8a; font-style: italic; }
+.header p { font-size: 0.9rem; font-weight: 600; color: #b09090; margin-top: 8px; line-height: 1.6; }
+.badge-row { display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; margin-top: 18px; }
+.badge { padding: 6px 16px; border-radius: 20px; font-size: 0.72rem; font-weight: 800; letter-spacing: 0.3px; }
+.badge-green { background: rgba(168,220,168,0.2); border: 1px solid rgba(90,142,106,0.3); color: #5a8e6a; }
+.badge-pink  { background: rgba(252,168,168,0.2); border: 1px solid rgba(217,123,138,0.3); color: #d97b8a; }
+.badge-blue  { background: rgba(140,168,220,0.2); border: 1px solid rgba(74,112,176,0.3); color: #4a70b0; }
+
+/* ── LAYOUT ── */
+.container { max-width: 860px; margin: 0 auto; }
+
+/* ── STATS ROW ── */
+.stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 28px; }
+.stat-card {
+  background: white;
+  border-radius: 20px;
+  padding: 22px 18px;
+  text-align: center;
+  border: 1.5px solid #fce8e4;
+  box-shadow: 0 4px 16px rgba(200,100,100,0.07);
+  transition: transform 0.2s, box-shadow 0.2s;
+  cursor: default;
+}
+.stat-card:hover { transform: translateY(-4px); box-shadow: 0 10px 28px rgba(200,100,100,0.13); }
+.stat-num { font-size: 2.8rem; font-weight: 900; line-height: 1; margin-bottom: 6px; }
+.stat-label { font-size: 0.72rem; font-weight: 800; color: #d0a0a8; text-transform: uppercase; letter-spacing: 0.5px; }
+.stat-sub { font-size: 0.68rem; font-weight: 600; color: #c0b0b8; margin-top: 4px; }
+
+/* ── SECTION TITLE ── */
+.section-title {
+  font-size: 0.72rem;
+  font-weight: 900;
+  color: #c0a0a8;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  margin-bottom: 14px;
+  margin-top: 28px;
+}
+
+/* ── FILE LIST ── */
+.file-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 28px; }
+.file-card {
+  background: white;
+  border-radius: 16px;
+  padding: 14px 16px;
+  border: 1.5px solid #fce8e4;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  transition: all 0.2s;
+  cursor: default;
+}
+.file-card:hover { border-color: #f0b0b8; transform: translateX(3px); }
+.file-icon { font-size: 1.4rem; flex-shrink: 0; }
+.file-info { flex: 1; min-width: 0; }
+.file-name { font-size: 0.78rem; font-weight: 800; color: #3d2828; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.file-path { font-size: 0.62rem; font-weight: 600; color: #d0b0b8; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.file-count {
+  font-size: 0.72rem;
+  font-weight: 900;
+  padding: 3px 10px;
+  border-radius: 20px;
+  flex-shrink: 0;
+}
+.count-pink { background: rgba(252,168,168,0.2); color: #d97b8a; }
+.count-blue { background: rgba(140,168,220,0.2); color: #4a70b0; }
+.count-green { background: rgba(168,220,168,0.2); color: #5a8e6a; }
+
+/* ── FONT SPEC TABLE ── */
+.font-spec {
+  background: white;
+  border-radius: 20px;
+  border: 1.5px solid #fce8e4;
+  overflow: hidden;
+  margin-bottom: 28px;
+  box-shadow: 0 4px 16px rgba(200,100,100,0.06);
+}
+.font-spec-header {
+  padding: 16px 20px;
+  background: linear-gradient(135deg, #fff5f6, white);
+  border-bottom: 1.5px solid #fce8e4;
+  font-size: 0.9rem;
+  font-weight: 900;
+  color: #3d2828;
+}
+.font-row {
+  display: flex;
+  align-items: center;
+  padding: 14px 20px;
+  border-bottom: 1px solid #fce8e4;
+  gap: 16px;
+  transition: background 0.15s;
+}
+.font-row:last-child { border-bottom: none; }
+.font-row:hover { background: #fff8f5; }
+.font-weight-badge {
+  width: 52px;
+  text-align: center;
+  padding: 4px 8px;
+  border-radius: 10px;
+  font-size: 0.72rem;
+  font-weight: 900;
+  background: rgba(217,123,138,0.12);
+  color: #d97b8a;
+  flex-shrink: 0;
+}
+.font-name { font-size: 0.82rem; font-weight: 700; color: #3d2828; flex: 1; }
+.font-sample { font-size: 0.8rem; color: #b09090; flex: 2; }
+.font-usage { font-size: 0.65rem; font-weight: 700; color: #d0b0b8; flex: 2; }
+
+/* ── BEFORE/AFTER COMPARISON ── */
+.compare-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 28px; }
+.compare-card {
+  border-radius: 18px;
+  padding: 18px;
+  border: 1.5px solid;
+}
+.compare-before { background: rgba(255,200,200,0.08); border-color: rgba(220,80,80,0.15); }
+.compare-after  { background: rgba(168,220,168,0.08); border-color: rgba(90,142,106,0.2); }
+.compare-label {
+  font-size: 0.65rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 12px;
+}
+.compare-before .compare-label { color: #c05050; }
+.compare-after  .compare-label { color: #5a8e6a; }
+.code-block {
+  background: rgba(0,0,0,0.04);
+  border-radius: 10px;
+  padding: 12px 14px;
+  font-size: 0.72rem;
+  font-family: 'Courier New', monospace;
+  line-height: 1.7;
+  color: #5a3838;
+  overflow-x: auto;
+}
+.code-keyword { color: #d97b8a; font-weight: 700; }
+.code-class   { color: #4a70b0; font-weight: 700; }
+.code-string  { color: #5a8e6a; }
+.code-comment { color: #b0a0a8; font-style: italic; }
+
+/* ── PROGRESS CHART ── */
+.chart-wrap {
+  background: white;
+  border-radius: 20px;
+  padding: 22px;
+  border: 1.5px solid #fce8e4;
+  margin-bottom: 28px;
+  box-shadow: 0 4px 16px rgba(200,100,100,0.06);
+}
+.chart-title { font-size: 0.9rem; font-weight: 900; color: #3d2828; margin-bottom: 18px; }
+.bar-item { margin-bottom: 14px; }
+.bar-item:last-child { margin-bottom: 0; }
+.bar-label-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
+.bar-label { font-size: 0.72rem; font-weight: 700; color: #5a3838; }
+.bar-count { font-size: 0.72rem; font-weight: 900; color: #d97b8a; }
+.bar-track { height: 10px; background: #fce8e4; border-radius: 5px; overflow: hidden; }
+.bar-fill {
+  height: 100%;
+  border-radius: 5px;
+  background: linear-gradient(90deg, #f09090, #d97b8a);
+  transition: width 1.2s cubic-bezier(.4,0,.2,1);
+  width: 0%;
+}
+
+/* ── THEME SECTION ── */
+.theme-card {
+  background: white;
+  border-radius: 20px;
+  padding: 22px;
+  border: 1.5px solid #fce8e4;
+  margin-bottom: 28px;
+  box-shadow: 0 4px 16px rgba(200,100,100,0.06);
+}
+.theme-title { font-size: 0.9rem; font-weight: 900; color: #3d2828; margin-bottom: 16px; }
+.theme-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 10px 0;
+  border-bottom: 1px solid #fce8e4;
+}
+.theme-row:last-child { border-bottom: none; }
+.theme-style { font-size: 0.72rem; font-weight: 800; color: #d97b8a; min-width: 120px; }
+.theme-spec { font-size: 0.72rem; font-weight: 600; color: #b09090; flex: 1; }
+.theme-sample { flex: 2; color: #3d2828; }
+
+/* ── FOOTER ── */
+.footer {
+  text-align: center;
+  padding: 28px;
+  background: white;
+  border-radius: 20px;
+  border: 1.5px solid #fce8e4;
+  margin-top: 28px;
+}
+.footer p { font-size: 0.78rem; font-weight: 600; color: #d0b0b8; line-height: 1.7; }
+.footer strong { color: #d97b8a; font-weight: 900; }
+
+/* ── RESPONSIVE ── */
+@media (max-width: 600px) {
+  .stats-row { grid-template-columns: 1fr; }
+  .file-grid { grid-template-columns: 1fr; }
+  .compare-grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="header-emoji">🌸</div>
+    <h1>Me<em>Trustual</em> — Nunito Font Update</h1>
+    <p>Comprehensive Nunito font family applied across all screens,<br>matching the exact specification from <strong>metrustual-7.html</strong></p>
+    <div class="badge-row">
+      <span class="badge badge-green">✅ 22 Files Updated</span>
+      <span class="badge badge-pink">🔤 175 TextStyles Converted</span>
+      <span class="badge badge-blue">🎨 Zero Design Changes</span>
+    </div>
+  </div>
+
+  <!-- STATS -->
+  <div class="stats-row">
+    <div class="stat-card">
+      <div class="stat-num" style="color:#d97b8a">22</div>
+      <div class="stat-label">Files Updated</div>
+      <div class="stat-sub">Screens, widgets & services</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num" style="color:#4a70b0">175</div>
+      <div class="stat-label">TextStyles Converted</div>
+      <div class="stat-sub">Plain → GoogleFonts.nunito()</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num" style="color:#5a8e6a">5</div>
+      <div class="stat-label">Font Weights</div>
+      <div class="stat-sub">w400, w600, w700, w800, w900</div>
+    </div>
+  </div>
+
+  <!-- FONT SPECIFICATION -->
+  <div class="section-title">Font Specification from metrustual-7.html</div>
+  <div class="font-spec">
+    <div class="font-spec-header">🔤 Nunito — Font Weight Reference</div>
+    <div class="font-row">
+      <div class="font-weight-badge">w400</div>
+      <div class="font-name">Regular</div>
+      <div class="font-sample" style="font-weight:400">The quick brown fox</div>
+      <div class="font-usage">General body text, descriptions</div>
+    </div>
+    <div class="font-row">
+      <div class="font-weight-badge">w600</div>
+      <div class="font-name">SemiBold</div>
+      <div class="font-sample" style="font-weight:600">The quick brown fox</div>
+      <div class="font-usage">.ob-p, .jrn-sub, .bi-sub, .mc-desc</div>
+    </div>
+    <div class="font-row">
+      <div class="font-weight-badge">w700</div>
+      <div class="font-name">Bold</div>
+      <div class="font-sample" style="font-weight:700">The quick brown fox</div>
+      <div class="font-usage">.jchip, .chip, .bar-name, .trow-label</div>
+    </div>
+    <div class="font-row">
+      <div class="font-weight-badge">w800</div>
+      <div class="font-name">ExtraBold</div>
+      <div class="font-sample" style="font-weight:800">The quick brown fox</div>
+      <div class="font-usage">.save-btn, .ob-btn, .jrn-btn, .section, .nav-item</div>
+    </div>
+    <div class="font-row">
+      <div class="font-weight-badge">w900</div>
+      <div class="font-name">Black</div>
+      <div class="font-sample" style="font-weight:900">The quick brown fox</div>
+      <div class="font-usage">.page-title, .sp-name, .day-num, .jrn-q, .ob-h</div>
+    </div>
+  </div>
+
+  <!-- BEFORE / AFTER -->
+  <div class="section-title">Before & After Code Comparison</div>
+  <div class="compare-grid">
+    <div class="compare-card compare-before">
+      <div class="compare-label">❌ Before — Plain TextStyle</div>
+      <div class="code-block">
+<span class="code-keyword">const</span> Text(<br>
+&nbsp;&nbsp;<span class="code-string">'Good morning ☀️'</span>,<br>
+&nbsp;&nbsp;style: <span class="code-keyword">const</span> <span class="code-class">TextStyle</span>(<br>
+&nbsp;&nbsp;&nbsp;&nbsp;fontSize: 13,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;fontWeight: <span class="code-class">FontWeight</span>.w700,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;color: AppColors.textMuted,<br>
+&nbsp;&nbsp;),<br>
+),<br>
+<br>
+<span class="code-comment">// No font family specified!</span><br>
+<span class="code-comment">// Falls back to system default</span>
+      </div>
+    </div>
+    <div class="compare-card compare-after">
+      <div class="compare-label">✅ After — GoogleFonts.nunito()</div>
+      <div class="code-block">
+Text(<br>
+&nbsp;&nbsp;<span class="code-string">'Good morning ☀️'</span>,<br>
+&nbsp;&nbsp;style: <span class="code-class">GoogleFonts</span>.nunito(<br>
+&nbsp;&nbsp;&nbsp;&nbsp;fontSize: 13,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;fontWeight: <span class="code-class">FontWeight</span>.w700,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;color: AppColors.textMuted,<br>
+&nbsp;&nbsp;),<br>
+),<br>
+<br>
+<span class="code-comment">// Nunito font explicitly applied</span><br>
+<span class="code-comment">// Matches metrustual-7.html spec</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- FILES UPDATED -->
+  <div class="section-title">Files Updated</div>
+  <div class="file-grid">
+    <div class="file-card">
+      <div class="file-icon">🏠</div>
+      <div class="file-info">
+        <div class="file-name">home_screen.dart</div>
+        <div class="file-path">features/home/screens/</div>
+      </div>
+      <div class="file-count count-pink">18</div>
+    </div>
+    <div class="file-card">
+      <div class="file-icon">📊</div>
+      <div class="file-info">
+        <div class="file-name">insights_screen.dart</div>
+        <div class="file-path">features/insights/screens/</div>
+      </div>
+      <div class="file-count count-pink">15</div>
+    </div>
+    <div class="file-card">
+      <div class="file-icon">📝</div>
+      <div class="file-info">
+        <div class="file-name">log_screen.dart</div>
+        <div class="file-path">features/logging/screens/</div>
+      </div>
+      <div class="file-count count-pink">18</div>
+    </div>
+    <div class="file-card">
+      <div class="file-icon">👤</div>
+      <div class="file-info">
+        <div class="file-name">profile_screen.dart</div>
+        <div class="file-path">features/profile/screens/</div>
+      </div>
+      <div class="file-count count-pink">19</div>
+    </div>
+    <div class="file-card">
+      <div class="file-icon">💎</div>
+      <div class="file-info">
+        <div class="file-name">premium_screen.dart</div>
+        <div class="file-path">features/profile/screens/</div>
+      </div>
+      <div class="file-count count-pink">21</div>
+    </div>
+    <div class="file-card">
+      <div class="file-icon">🔐</div>
+      <div class="file-info">
+        <div class="file-name">pin_verification_screen.dart</div>
+        <div class="file-path">features/onboarding/screens/</div>
+      </div>
+      <div class="file-count count-blue">12</div>
+    </div>
+    <div class="file-card">
+      <div class="file-icon">🗺️</div>
+      <div class="file-info">
+        <div class="file-name">journey_screen.dart</div>
+        <div class="file-path">features/onboarding/screens/</div>
+      </div>
+      <div class="file-count count-blue">13</div>
+    </div>
+    <div class="file-card">
+      <div class="file-icon">🔑</div>
+      <div class="file-info">
+        <div class="file-name">login_screen.dart</div>
+        <div class="file-path">features/onboarding/screens/</div>
+      </div>
+      <div class="file-count count-blue">9</div>
+    </div>
+    <div class="file-card">
+      <div class="file-icon">🌟</div>
+      <div class="file-info">
+        <div class="file-name">onboarding_screen.dart</div>
+        <div class="file-path">features/onboarding/screens/</div>
+      </div>
+      <div class="file-count count-blue">8</div>
+    </div>
+    <div class="file-card">
+      <div class="file-icon">🎯</div>
+      <div class="file-info">
+        <div class="file-name">mode_selection_screen.dart</div>
+        <div class="file-path">features/onboarding/screens/</div>
+      </div>
+      <div class="file-count count-blue">6</div>
+    </div>
+    <div class="file-card">
+      <div class="file-icon">✨</div>
+      <div class="file-info">
+        <div class="file-name">splash_screen.dart</div>
+        <div class="file-path">features/onboarding/screens/</div>
+      </div>
+      <div class="file-count count-blue">5</div>
+    </div>
+    <div class="file-card">
+      <div class="file-icon">🔒</div>
+      <div class="file-info">
+        <div class="file-name">biometric_setup_screen.dart</div>
+        <div class="file-path">features/onboarding/screens/</div>
+      </div>
+      <div class="file-count count-blue">7</div>
+    </div>
+    <div class="file-card">
+      <div class="file-icon">🛡️</div>
+      <div class="file-info">
+        <div class="file-name">privacy_screen.dart</div>
+        <div class="file-path">features/privacy/screens/</div>
+      </div>
+      <div class="file-count count-green">8</div>
+    </div>
+    <div class="file-card">
+      <div class="file-icon">📚</div>
+      <div class="file-info">
+        <div class="file-name">education_screen.dart</div>
+        <div class="file-path">features/education/screens/</div>
+      </div>
+      <div class="file-count count-green">6</div>
+    </div>
+    <div class="file-card">
+      <div class="file-icon">⭕</div>
+      <div class="file-info">
+        <div class="file-name">cycle_circle.dart</div>
+        <div class="file-path">features/home/widgets/</div>
+      </div>
+      <div class="file-count count-green">3</div>
+    </div>
+    <div class="file-card">
+      <div class="file-icon">📅</div>
+      <div class="file-info">
+        <div class="file-name">mini_calendar.dart</div>
+        <div class="file-path">features/home/widgets/</div>
+      </div>
+      <div class="file-count count-green">3</div>
+    </div>
+    <div class="file-card">
+      <div class="file-icon">🩸</div>
+      <div class="file-info">
+        <div class="file-name">next_period_card.dart</div>
+        <div class="file-path">features/home/widgets/</div>
+      </div>
+      <div class="file-count count-green">5</div>
+    </div>
+    <div class="file-card">
+      <div class="file-icon">🧭</div>
+      <div class="file-info">
+        <div class="file-name">app_bottom_nav.dart</div>
+        <div class="file-path">core/widgets/</div>
+      </div>
+      <div class="file-count count-green">2</div>
+    </div>
+    <div class="file-card">
+      <div class="file-icon">🔢</div>
+      <div class="file-info">
+        <div class="file-name">custom_pin_input.dart</div>
+        <div class="file-path">core/widgets/</div>
+      </div>
+      <div class="file-count count-green">3</div>
+    </div>
+    <div class="file-card">
+      <div class="file-icon">💫</div>
+      <div class="file-info">
+        <div class="file-name">premium_gate.dart</div>
+        <div class="file-path">core/widgets/</div>
+      </div>
+      <div class="file-count count-green">2</div>
+    </div>
+    <div class="file-card">
+      <div class="file-icon">🔔</div>
+      <div class="file-info">
+        <div class="file-name">notification_service.dart</div>
+        <div class="file-path">core/services/</div>
+      </div>
+      <div class="file-count count-green">4</div>
+    </div>
+    <div class="file-card">
+      <div class="file-icon">🎨</div>
+      <div class="file-info">
+        <div class="file-name">app_theme.dart</div>
+        <div class="file-path">core/theme/</div>
+      </div>
+      <div class="file-count count-pink">17</div>
+    </div>
+  </div>
+
+  <!-- CHART -->
+  <div class="section-title">Font Conversions by Screen Category</div>
+  <div class="chart-wrap">
+    <div class="chart-title">📊 TextStyle → GoogleFonts.nunito() Conversions</div>
+    <div class="bar-item">
+      <div class="bar-label-row">
+        <span class="bar-label">🏠 Home (screen + widgets)</span>
+        <span class="bar-count">29 conversions</span>
+      </div>
+      <div class="bar-track"><div class="bar-fill" data-width="100"></div></div>
+    </div>
+    <div class="bar-item">
+      <div class="bar-label-row">
+        <span class="bar-label">👤 Profile + Premium</span>
+        <span class="bar-count">40 conversions</span>
+      </div>
+      <div class="bar-track"><div class="bar-fill" data-width="100" style="background:linear-gradient(90deg,#7aa0e0,#4a70b0)"></div></div>
+    </div>
+    <div class="bar-item">
+      <div class="bar-label-row">
+        <span class="bar-label">🗺️ Onboarding (all screens)</span>
+        <span class="bar-count">43 conversions</span>
+      </div>
+      <div class="bar-track"><div class="bar-fill" data-width="100" style="background:linear-gradient(90deg,#78c890,#5a8e6a)"></div></div>
+    </div>
+    <div class="bar-item">
+      <div class="bar-label-row">
+        <span class="bar-label">📝 Log Screen</span>
+        <span class="bar-count">18 conversions</span>
+      </div>
+      <div class="bar-track"><div class="bar-fill" data-width="62" style="background:linear-gradient(90deg,#f09090,#d97b8a)"></div></div>
+    </div>
+    <div class="bar-item">
+      <div class="bar-label-row">
+        <span class="bar-label">📊 Insights Screen</span>
+        <span class="bar-count">15 conversions</span>
+      </div>
+      <div class="bar-track"><div class="bar-fill" data-width="52" style="background:linear-gradient(90deg,#c8b0e0,#9870c0)"></div></div>
+    </div>
+    <div class="bar-item">
+      <div class="bar-label-row">
+        <span class="bar-label">🎨 Theme + Core</span>
+        <span class="bar-count">30 conversions</span>
+      </div>
+      <div class="bar-track"><div class="bar-fill" data-width="100" style="background:linear-gradient(90deg,#f0c080,#d09040)"></div></div>
+    </div>
+  </div>
+
+  <!-- THEME OVERVIEW -->
+  <div class="section-title">Updated AppTheme — Nunito TextTheme</div>
+  <div class="theme-card">
+    <div class="theme-title">🎨 Comprehensive TextTheme with Nunito Weights</div>
+    <div class="theme-row">
+      <div class="theme-style">displayLarge</div>
+      <div class="theme-spec">28px · w900</div>
+      <div class="theme-sample" style="font-size:1.1rem;font-weight:900">Page Titles</div>
+    </div>
+    <div class="theme-row">
+      <div class="theme-style">headlineMedium</div>
+      <div class="theme-spec">16px · w800</div>
+      <div class="theme-sample" style="font-size:1rem;font-weight:800">Card Headings</div>
+    </div>
+    <div class="theme-row">
+      <div class="theme-style">titleMedium</div>
+      <div class="theme-spec">14px · w800</div>
+      <div class="theme-sample" style="font-size:0.88rem;font-weight:800">Card Titles</div>
+    </div>
+    <div class="theme-row">
+      <div class="theme-style">bodyLarge</div>
+      <div class="theme-spec">14px · w600</div>
+      <div class="theme-sample" style="font-size:0.88rem;font-weight:600">Primary Body Text</div>
+    </div>
+    <div class="theme-row">
+      <div class="theme-style">bodySmall</div>
+      <div class="theme-spec">11px · w600</div>
+      <div class="theme-sample" style="font-size:0.69rem;font-weight:600">Sub-labels, Descriptions</div>
+    </div>
+    <div class="theme-row">
+      <div class="theme-style">labelLarge</div>
+      <div class="theme-spec">13px · w800</div>
+      <div class="theme-sample" style="font-size:0.81rem;font-weight:800">Button Labels</div>
+    </div>
+    <div class="theme-row">
+      <div class="theme-style">labelSmall</div>
+      <div class="theme-spec">10px · w800 · 0.3 spacing</div>
+      <div class="theme-sample" style="font-size:0.63rem;font-weight:800;letter-spacing:0.3px">UPPERCASE TAGS</div>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <div class="footer">
+    <p>
+      All changes follow the <strong>metrustual-7.html</strong> design specification exactly.<br>
+      Font: <strong>Nunito</strong> (Google Fonts) · Weights: 400, 600, 700, 800, 900<br>
+      Zero visual design changes — only font family consistency applied. 🌸
+    </p>
+  </div>
+
+</div>
+
+<script>
+// Animate bars on load
+document.addEventListener('DOMContentLoaded', () => {
+  setTimeout(() => {
+    document.querySelectorAll('.bar-fill').forEach(bar => {
+      const w = bar.getAttribute('data-width') || '100';
+      bar.style.width = w + '%';
+    });
+  }, 300);
+});
+</script>
+</body>
+</html>

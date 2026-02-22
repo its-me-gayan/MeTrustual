@@ -7,6 +7,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/providers/mode_provider.dart';
 import '../../../core/services/biometric_service.dart';
 import '../../../core/providers/firebase_providers.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class SplashScreen extends ConsumerStatefulWidget {
   const SplashScreen({super.key});
@@ -194,7 +195,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                             child: const Center(
                               child: Text(
                                 '🌸',
-                                style: TextStyle(fontSize: 45),
+                                style: GoogleFonts.nunito(fontSize: 45),
                               ),
                             ),
                           ),
@@ -216,7 +217,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                             children: [
                               RichText(
                                 text: const TextSpan(
-                                  style: TextStyle(
+                                  style: GoogleFonts.nunito(
                                     fontSize: 29,
                                     fontWeight: FontWeight.w900,
                                     color: AppColors.textDark,
@@ -227,7 +228,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                                     TextSpan(text: 'Me'),
                                     TextSpan(
                                       text: 'Trustual',
-                                      style: TextStyle(
+                                      style: GoogleFonts.nunito(
                                         color: AppColors.primaryRose,
                                         fontStyle: FontStyle.italic,
                                       ),
@@ -237,7 +238,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                               ),
                               const Text(
                                 'your cycle, your story 💕',
-                                style: TextStyle(
+                                style: GoogleFonts.nunito(
                                   fontSize: 12,
                                   fontWeight: FontWeight.w700,
                                   color: AppColors.textMuted,
@@ -350,7 +351,7 @@ class _FloatingPetalState extends State<FloatingPetal>
             child: Transform.rotate(
               angle: progress * math.pi * 2.2,
               child: Text(widget.petal.emoji,
-                  style: TextStyle(fontSize: widget.petal.size)),
+                  style: GoogleFonts.nunito(fontSize: widget.petal.size)),
             ),
           ),
         );

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class CustomPinInput extends StatefulWidget {
   final String label;
@@ -48,7 +49,7 @@ class _CustomPinInputState extends State<CustomPinInput> {
       children: [
         Text(
           widget.label,
-          style: const TextStyle(
+          style: GoogleFonts.nunito(
             fontSize: 14,
             fontWeight: FontWeight.w700,
             color: AppColors.textDark,
@@ -83,7 +84,7 @@ class _CustomPinInputState extends State<CustomPinInput> {
               keyboardType: TextInputType.number,
               maxLength: widget.maxLength,
               onChanged: widget.onChanged,
-              style: const TextStyle(
+              style: GoogleFonts.nunito(
                 fontSize: 18,
                 fontWeight: FontWeight.w700,
                 color: AppColors.textDark,
@@ -91,7 +92,7 @@ class _CustomPinInputState extends State<CustomPinInput> {
               ),
               decoration: InputDecoration(
                 hintText: widget.hintText,
-                hintStyle: const TextStyle(
+                hintStyle: GoogleFonts.nunito(
                   color: AppColors.textMuted,
                   fontWeight: FontWeight.w600,
                 ),

@@ -5,6 +5,7 @@ import 'package:easy_localization/easy_localization.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/premium_gate.dart';
 import '../../../core/widgets/app_bottom_nav.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class InsightsScreen extends ConsumerStatefulWidget {
   const InsightsScreen({super.key});
@@ -43,7 +44,7 @@ class _InsightsScreenState extends ConsumerState<InsightsScreen> {
               const SizedBox(height: 4),
               Text(
                 _getPageSub(),
-                style: const TextStyle(
+                style: GoogleFonts.nunito(
                   fontSize: 11.5,
                   fontWeight: FontWeight.w700,
                   color: AppColors.textMuted,
@@ -204,7 +205,7 @@ class _InsightsScreenState extends ConsumerState<InsightsScreen> {
                     padding: const EdgeInsets.only(top: 8.0),
                     child: Text(
                       '✅ You\'re within the healthy range for week 24',
-                      style: TextStyle(
+                      style: GoogleFonts.nunito(
                           fontSize: 11,
                           color: const Color(0xFF7090B0),
                           fontWeight: FontWeight.w600),
@@ -326,12 +327,12 @@ class _InsightsScreenState extends ConsumerState<InsightsScreen> {
       ),
       child: Column(
         children: [
-          Text(emoji, style: const TextStyle(fontSize: 48)),
+          Text(emoji, style: GoogleFonts.nunito(fontSize: 48)),
           const SizedBox(height: 12),
           Text(
             title,
             textAlign: TextAlign.center,
-            style: const TextStyle(
+            style: GoogleFonts.nunito(
               fontSize: 20,
               fontWeight: FontWeight.w900,
               color: AppColors.textDark,
@@ -341,7 +342,7 @@ class _InsightsScreenState extends ConsumerState<InsightsScreen> {
           Text(
             subtitle,
             textAlign: TextAlign.center,
-            style: TextStyle(
+            style: GoogleFonts.nunito(
               fontSize: 13,
               fontWeight: FontWeight.w600,
               color: AppColors.textMuted.withOpacity(0.8),
@@ -377,7 +378,7 @@ class _InsightsScreenState extends ConsumerState<InsightsScreen> {
         children: [
           Text(
             title,
-            style: const TextStyle(
+            style: GoogleFonts.nunito(
               fontSize: 13,
               fontWeight: FontWeight.w900,
               color: AppColors.textDark,
@@ -417,7 +418,7 @@ class _InsightsScreenState extends ConsumerState<InsightsScreen> {
           children: labels
               .map((label) => Text(
                     label,
-                    style: const TextStyle(
+                    style: GoogleFonts.nunito(
                         fontSize: 10,
                         fontWeight: FontWeight.w700,
                         color: AppColors.textMuted),
@@ -464,7 +465,7 @@ class _InsightsScreenState extends ConsumerState<InsightsScreen> {
           children: labels
               .map((label) => Text(
                     label,
-                    style: const TextStyle(
+                    style: GoogleFonts.nunito(
                         fontSize: 10,
                         fontWeight: FontWeight.w700,
                         color: AppColors.textMuted),
@@ -523,17 +524,17 @@ class _InsightsScreenState extends ConsumerState<InsightsScreen> {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text('Day 1',
-                style: const TextStyle(
+                style: GoogleFonts.nunito(
                     fontSize: 10,
                     fontWeight: FontWeight.w700,
                     color: AppColors.textMuted)),
             Text('Ovulation ↑',
-                style: const TextStyle(
+                style: GoogleFonts.nunito(
                     fontSize: 10,
                     fontWeight: FontWeight.w700,
                     color: AppColors.textMuted)),
             Text('Today',
-                style: const TextStyle(
+                style: GoogleFonts.nunito(
                     fontSize: 10,
                     fontWeight: FontWeight.w700,
                     color: AppColors.textMuted)),
@@ -553,7 +554,7 @@ class _InsightsScreenState extends ConsumerState<InsightsScreen> {
             width: 80,
             child: Text(
               name,
-              style: const TextStyle(
+              style: GoogleFonts.nunito(
                   fontSize: 13,
                   fontWeight: FontWeight.w700,
                   color: AppColors.textDark),
@@ -585,7 +586,7 @@ class _InsightsScreenState extends ConsumerState<InsightsScreen> {
               alignment: Alignment.centerRight,
               child: Text(
                 emoji ?? value ?? '${(fillFactor * 10).round()}×',
-                style: TextStyle(
+                style: GoogleFonts.nunito(
                     fontSize: 13, fontWeight: FontWeight.w700, color: color),
               ),
             ),
@@ -603,14 +604,14 @@ class _InsightsScreenState extends ConsumerState<InsightsScreen> {
         children: [
           Text(
             label,
-            style: const TextStyle(
+            style: GoogleFonts.nunito(
                 fontSize: 14,
                 fontWeight: FontWeight.w700,
                 color: AppColors.textDark),
           ),
           Text(
             value,
-            style: TextStyle(
+            style: GoogleFonts.nunito(
                 fontSize: 14, fontWeight: FontWeight.w700, color: color),
           ),
         ],

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../providers/premium_provider.dart';
 import '../theme/app_colors.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class PremiumGate extends ConsumerWidget {
   final Widget child;
@@ -39,7 +40,7 @@ class PremiumGate extends ConsumerWidget {
               const SizedBox(height: 8),
               Text(
                 message ?? 'Unlock with Premium',
-                style: const TextStyle(fontWeight: FontWeight.w800, color: AppColors.textMid),
+                style: GoogleFonts.nunito(fontWeight: FontWeight.w800, color: AppColors.textMid),
               ),
             ],
           ),
@@ -70,7 +71,7 @@ class PremiumGate extends ConsumerWidget {
                     const SizedBox(width: 8),
                     Text(
                       message ?? 'Unlock Premium',
-                      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 14),
+                      style: GoogleFonts.nunito(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 14),
                     ),
                   ],
                 ),

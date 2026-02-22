@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/services/biometric_service.dart';
 import '../../../core/services/uuid_persistence_service.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class BiometricSetupScreen extends ConsumerStatefulWidget {
   final String uid;
@@ -179,7 +180,7 @@ class _BiometricSetupScreenState extends ConsumerState<BiometricSetupScreen> {
             color: AppColors.primaryRose.withOpacity(0.1),
           ),
           child: const Center(
-            child: Text('🔒', style: TextStyle(fontSize: 48)),
+            child: Text('🔒', style: GoogleFonts.nunito(fontSize: 48)),
           ),
         ),
         const SizedBox(height: 24),
@@ -196,7 +197,7 @@ class _BiometricSetupScreenState extends ConsumerState<BiometricSetupScreen> {
               ? 'Set up biometric lock to protect your health data'
               : 'Set up a PIN to protect your health data',
           textAlign: TextAlign.center,
-          style: const TextStyle(
+          style: GoogleFonts.nunito(
             fontSize: 14,
             color: AppColors.textMid,
             fontWeight: FontWeight.w600,
@@ -226,7 +227,7 @@ class _BiometricSetupScreenState extends ConsumerState<BiometricSetupScreen> {
                     )
                   : Text(
                       _isBiometricAvailable ? 'Set Biometric Lock' : 'Set PIN',
-                      style: const TextStyle(
+                      style: GoogleFonts.nunito(
                         fontSize: 16,
                         fontWeight: FontWeight.w900,
                         color: Colors.white,
@@ -239,7 +240,7 @@ class _BiometricSetupScreenState extends ConsumerState<BiometricSetupScreen> {
         Text(
           'This step is required • Takes less than 1 minute',
           textAlign: TextAlign.center,
-          style: const TextStyle(
+          style: GoogleFonts.nunito(
             fontSize: 11,
             color: AppColors.textMuted,
             fontWeight: FontWeight.w600,
@@ -264,7 +265,7 @@ class _BiometricSetupScreenState extends ConsumerState<BiometricSetupScreen> {
               color: AppColors.primaryRose.withOpacity(0.1),
             ),
             child: const Center(
-              child: Text('🔐', style: TextStyle(fontSize: 48)),
+              child: Text('🔐', style: GoogleFonts.nunito(fontSize: 48)),
             ),
           ),
           const SizedBox(height: 24),
@@ -279,7 +280,7 @@ class _BiometricSetupScreenState extends ConsumerState<BiometricSetupScreen> {
           Text(
             'Choose a 4-digit PIN to protect your data',
             textAlign: TextAlign.center,
-            style: const TextStyle(
+            style: GoogleFonts.nunito(
               fontSize: 14,
               color: AppColors.textMid,
               fontWeight: FontWeight.w600,
@@ -315,7 +316,7 @@ class _BiometricSetupScreenState extends ConsumerState<BiometricSetupScreen> {
                       )
                     : const Text(
                         'Continue',
-                        style: TextStyle(
+                        style: GoogleFonts.nunito(
                           fontSize: 16,
                           fontWeight: FontWeight.w900,
                           color: Colors.white,

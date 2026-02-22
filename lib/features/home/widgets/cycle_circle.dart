@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../core/theme/app_colors.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class CycleCircle extends StatelessWidget {
   final int day;
@@ -66,7 +67,7 @@ class CycleCircle extends StatelessWidget {
               children: [
                 Text(
                   '$day',
-                  style: TextStyle(
+                  style: GoogleFonts.nunito(
                     fontSize: 52,
                     fontWeight: FontWeight.w900,
                     color: accentColor,
@@ -75,7 +76,7 @@ class CycleCircle extends StatelessWidget {
                 ),
                 Text(
                   label ?? 'Cycle Day',
-                  style: const TextStyle(
+                  style: GoogleFonts.nunito(
                     fontSize: 12,
                     fontWeight: FontWeight.w700,
                     color: AppColors.textMuted,
@@ -91,7 +92,7 @@ class CycleCircle extends StatelessWidget {
                   ),
                   child: Text(
                     phase.toUpperCase(),
-                    style: const TextStyle(
+                    style: GoogleFonts.nunito(
                       fontSize: 10,
                       fontWeight: FontWeight.w800,
                       color: Colors.white,

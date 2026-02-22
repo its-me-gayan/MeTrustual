@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_colors.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class PrivacyScreen extends StatefulWidget {
   const PrivacyScreen({super.key});
@@ -75,7 +76,7 @@ class _PrivacyScreenState extends State<PrivacyScreen> {
                             content: const Text('This will permanently delete all your data. This action cannot be undone.'),
                             actions: [
                               TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
-                              TextButton(onPressed: () => Navigator.pop(context, true), child: const Text('Delete', style: TextStyle(color: Colors.redAccent))),
+                              TextButton(onPressed: () => Navigator.pop(context, true), child: const Text('Delete', style: GoogleFonts.nunito(color: Colors.redAccent))),
                             ],
                           ),
                         );
@@ -103,11 +104,11 @@ class _PrivacyScreenState extends State<PrivacyScreen> {
       ),
       child: Column(
         children: [
-          const Text('🔐', style: TextStyle(fontSize: 40)),
+          const Text('🔐', style: GoogleFonts.nunito(fontSize: 40)),
           const SizedBox(height: 10),
           Text(
             'privacy_promise'.tr(),
-            style: const TextStyle(
+            style: GoogleFonts.nunito(
                 fontSize: 16,
                 fontWeight: FontWeight.w900,
                 color: AppColors.textDark),
@@ -116,7 +117,7 @@ class _PrivacyScreenState extends State<PrivacyScreen> {
           const Text(
             'We never sell your health data or show you ads. Everything is encrypted and you can delete it all anytime.',
             textAlign: TextAlign.center,
-            style: TextStyle(
+            style: GoogleFonts.nunito(
                 fontSize: 12,
                 color: AppColors.textMid,
                 fontWeight: FontWeight.w600,
@@ -147,7 +148,7 @@ class _PrivacyScreenState extends State<PrivacyScreen> {
           borderRadius: BorderRadius.circular(8),
           border: Border.all(color: AppColors.border)),
       child: Text(text,
-          style: const TextStyle(
+          style: GoogleFonts.nunito(
               fontSize: 10,
               fontWeight: FontWeight.w800,
               color: AppColors.textMid)),
@@ -167,7 +168,7 @@ class _PrivacyScreenState extends State<PrivacyScreen> {
         children: [
           Text(
             title,
-            style: const TextStyle(
+            style: GoogleFonts.nunito(
                 fontSize: 13,
                 fontWeight: FontWeight.w900,
                 color: AppColors.textDark),
@@ -190,12 +191,12 @@ class _PrivacyScreenState extends State<PrivacyScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(title,
-                    style: const TextStyle(
+                    style: GoogleFonts.nunito(
                         fontSize: 13,
                         fontWeight: FontWeight.w800,
                         color: AppColors.textDark)),
                 Text(sub,
-                    style: const TextStyle(
+                    style: GoogleFonts.nunito(
                         fontSize: 11,
                         fontWeight: FontWeight.w600,
                         color: AppColors.textMuted)),

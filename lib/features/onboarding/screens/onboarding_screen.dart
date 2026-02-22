@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/providers/firebase_providers.dart';
 import '../providers/onboarding_provider.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class OnboardingScreen extends ConsumerStatefulWidget {
   const OnboardingScreen({super.key});
@@ -44,7 +45,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
               children: [
                 // ── Header ──
                 const Spacer(flex: 2),
-                const Text('🌸', style: TextStyle(fontSize: 52)),
+                const Text('🌸', style: GoogleFonts.nunito(fontSize: 52)),
                 const SizedBox(height: 8),
                 Text(
                   'onboarding_title'.tr(),
@@ -102,7 +103,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                     children: [
                       const Text(
                         '🛡️ Our promise to you',
-                        style: TextStyle(
+                        style: GoogleFonts.nunito(
                           color: AppColors.sageGreen,
                           fontWeight: FontWeight.w900,
                           fontSize: 12,
@@ -111,7 +112,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                       const SizedBox(height: 2),
                       Text(
                         'No ads. No selling your data. No judgement. Delete everything anytime.',
-                        style: TextStyle(
+                        style: GoogleFonts.nunito(
                           color: AppColors.sageGreen.withOpacity(0.8),
                           fontWeight: FontWeight.w600,
                           fontSize: 11,
@@ -177,12 +178,12 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                       onPressed: () => context.push('/login'),
                       child: RichText(
                         text: const TextSpan(
-                          style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textMid),
+                          style: GoogleFonts.nunito(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textMid),
                           children: [
                             TextSpan(text: 'Already a premium user? '),
                             TextSpan(
                               text: 'Log In',
-                              style: TextStyle(color: AppColors.primaryRose, fontWeight: FontWeight.w900),
+                              style: GoogleFonts.nunito(color: AppColors.primaryRose, fontWeight: FontWeight.w900),
                             ),
                           ],
                         ),
@@ -234,7 +235,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
         alignment: Alignment.center,
         child: Text(
           '${lang['flag']} ${lang['name']}',
-          style: TextStyle(
+          style: GoogleFonts.nunito(
             fontWeight: FontWeight.w800,
             fontSize: 13,
             color: isSelected ? AppColors.primaryRose : AppColors.textDark,
@@ -265,11 +266,11 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
               children: [
                 Text(
                   title,
-                  style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 13, color: AppColors.textDark),
+                  style: GoogleFonts.nunito(fontWeight: FontWeight.w800, fontSize: 13, color: AppColors.textDark),
                 ),
                 Text(
                   subtitle,
-                  style: const TextStyle(fontSize: 11, color: AppColors.textMuted, fontWeight: FontWeight.w600),
+                  style: GoogleFonts.nunito(fontSize: 11, color: AppColors.textMuted, fontWeight: FontWeight.w600),
                 ),
               ],
             ),

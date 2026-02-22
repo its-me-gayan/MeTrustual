@@ -11,6 +11,7 @@ import '../../../core/services/uuid_persistence_service.dart';
 import '../../../core/services/biometric_service.dart';
 import '../../../core/services/backup_service.dart';
 import '../../../models/user_profile_model.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({super.key});
@@ -31,13 +32,13 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Edit Profile',
-            style: TextStyle(
+            style: GoogleFonts.nunito(
                 fontWeight: FontWeight.w900, color: AppColors.textDark)),
         content: TextField(
           controller: nameController,
           decoration: const InputDecoration(
             labelText: 'Display Name',
-            labelStyle: TextStyle(color: AppColors.textMid),
+            labelStyle: GoogleFonts.nunito(color: AppColors.textMid),
             focusedBorder: UnderlineInputBorder(
                 borderSide: BorderSide(color: AppColors.primaryRose)),
           ),
@@ -47,11 +48,11 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           TextButton(
               onPressed: () => Navigator.pop(context),
               child: const Text('Cancel',
-                  style: TextStyle(color: AppColors.textMid))),
+                  style: GoogleFonts.nunito(color: AppColors.textMid))),
           TextButton(
             onPressed: () => Navigator.pop(context, nameController.text),
             child: const Text('Save',
-                style: TextStyle(
+                style: GoogleFonts.nunito(
                     color: AppColors.primaryRose, fontWeight: FontWeight.w800)),
           ),
         ],
@@ -99,16 +100,16 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           mainAxisSize: MainAxisSize.min,
           children: [
             const Text('Select Language',
-                style: TextStyle(
+                style: GoogleFonts.nunito(
                     fontSize: 18,
                     fontWeight: FontWeight.w900,
                     color: AppColors.textDark)),
             const SizedBox(height: 10),
             ...languages.map((lang) => ListTile(
                   leading:
-                      Text(lang['flag']!, style: const TextStyle(fontSize: 24)),
+                      Text(lang['flag']!, style: GoogleFonts.nunito(fontSize: 24)),
                   title: Text(lang['name']!,
-                      style: const TextStyle(fontWeight: FontWeight.w700)),
+                      style: GoogleFonts.nunito(fontWeight: FontWeight.w700)),
                   trailing: context.locale.languageCode == lang['code']
                       ? const Icon(Icons.check_circle,
                           color: AppColors.primaryRose)
@@ -138,7 +139,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           TextButton(
               onPressed: () => Navigator.pop(context, true),
               child: const Text('Sign Out',
-                  style: TextStyle(color: Colors.redAccent))),
+                  style: GoogleFonts.nunito(color: Colors.redAccent))),
         ],
       ),
     );
@@ -174,7 +175,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           TextButton(
               onPressed: () => Navigator.pop(context, true),
               child: const Text('Delete Everything',
-                  style: TextStyle(color: Colors.redAccent))),
+                  style: GoogleFonts.nunito(color: Colors.redAccent))),
         ],
       ),
     );
@@ -359,7 +360,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                             child: Text(
                               'MeTrustual v1.0.0\nMade with ❤️ for you',
                               textAlign: TextAlign.center,
-                              style: TextStyle(
+                              style: GoogleFonts.nunito(
                                   fontSize: 11,
                                   color: AppColors.textMuted,
                                   fontWeight: FontWeight.w700),
@@ -396,12 +397,12 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           ),
           const SizedBox(height: 16),
           Text(name,
-              style: const TextStyle(
+              style: GoogleFonts.nunito(
                   fontSize: 20,
                   fontWeight: FontWeight.w900,
                   color: AppColors.textDark)),
           Text(email,
-              style: const TextStyle(
+              style: GoogleFonts.nunito(
                   fontSize: 13,
                   fontWeight: FontWeight.w700,
                   color: AppColors.textMuted)),
@@ -430,14 +431,14 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const Text('MeTrustual Premium',
-                    style: TextStyle(
+                    style: GoogleFonts.nunito(
                         color: Colors.white,
                         fontSize: 18,
                         fontWeight: FontWeight.w900)),
                 const SizedBox(height: 4),
                 Text(
                   'Unlock all features and sync across devices.',
-                  style: TextStyle(
+                  style: GoogleFonts.nunito(
                       color: Colors.white.withOpacity(0.9),
                       fontSize: 13,
                       fontWeight: FontWeight.w600),
@@ -456,7 +457,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 16),
             ),
             child: const Text('Upgrade',
-                style: TextStyle(fontWeight: FontWeight.w900)),
+                style: GoogleFonts.nunito(fontWeight: FontWeight.w900)),
           ),
         ],
       ),
@@ -486,14 +487,14 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text('Premium Member',
-                    style: TextStyle(
+                    style: GoogleFonts.nunito(
                         color: AppColors.textDark,
                         fontSize: 18,
                         fontWeight: FontWeight.w900)),
                 SizedBox(height: 4),
                 Text(
                   'Enjoy your unlimited access!',
-                  style: TextStyle(
+                  style: GoogleFonts.nunito(
                       color: AppColors.textMid,
                       fontSize: 13,
                       fontWeight: FontWeight.w600),
@@ -511,7 +512,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       padding: const EdgeInsets.only(left: 4, bottom: 8),
       child: Text(
         title,
-        style: const TextStyle(
+        style: GoogleFonts.nunito(
             fontSize: 11,
             fontWeight: FontWeight.w900,
             color: Color(0xFFC0A0A8),
@@ -537,7 +538,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       leading: Icon(icon, color: color ?? AppColors.textMid, size: 22),
       title: Text(
         title,
-        style: TextStyle(
+        style: GoogleFonts.nunito(
             fontSize: 14,
             fontWeight: FontWeight.w800,
             color: color ?? AppColors.textDark),

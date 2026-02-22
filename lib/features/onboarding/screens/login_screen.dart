@@ -5,6 +5,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/providers/firebase_providers.dart';
 import '../../../core/services/biometric_service.dart';
 import '../../../core/services/uuid_persistence_service.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -95,7 +96,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: 20),
-              const Text('🌸', style: TextStyle(fontSize: 48)),
+              const Text('🌸', style: GoogleFonts.nunito(fontSize: 48)),
               const SizedBox(height: 16),
               Text(
                 'Welcome Back',
@@ -107,7 +108,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               const SizedBox(height: 8),
               const Text(
                 'Log in to sync your premium data across devices',
-                style: TextStyle(
+                style: GoogleFonts.nunito(
                   fontSize: 14,
                   color: AppColors.textMid,
                   fontWeight: FontWeight.w600,
@@ -153,7 +154,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   },
                   child: const Text(
                     'Forgot Password?',
-                    style: TextStyle(
+                    style: GoogleFonts.nunito(
                       color: AppColors.primaryRose,
                       fontWeight: FontWeight.w700,
                     ),
@@ -194,7 +195,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           )
                         : const Text(
                             'Log In',
-                            style: TextStyle(
+                            style: GoogleFonts.nunito(
                               fontSize: 16,
                               fontWeight: FontWeight.w900,
                               color: Colors.white,
@@ -210,13 +211,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   children: [
                     const Text(
                       'Don\'t have an account?',
-                      style: TextStyle(color: AppColors.textMid, fontWeight: FontWeight.w600),
+                      style: GoogleFonts.nunito(color: AppColors.textMid, fontWeight: FontWeight.w600),
                     ),
                     TextButton(
                       onPressed: () => context.pop(),
                       child: const Text(
                         'Sign Up',
-                        style: TextStyle(
+                        style: GoogleFonts.nunito(
                           color: AppColors.primaryRose,
                           fontWeight: FontWeight.w800,
                         ),
@@ -245,7 +246,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       children: [
         Text(
           label,
-          style: const TextStyle(
+          style: GoogleFonts.nunito(
             fontSize: 14,
             fontWeight: FontWeight.w700,
             color: AppColors.textDark,
@@ -262,14 +263,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             controller: controller,
             obscureText: obscureText,
             keyboardType: keyboardType,
-            style: const TextStyle(
+            style: GoogleFonts.nunito(
               fontSize: 16,
               fontWeight: FontWeight.w600,
               color: AppColors.textDark,
             ),
             decoration: InputDecoration(
               hintText: hint,
-              hintStyle: const TextStyle(
+              hintStyle: GoogleFonts.nunito(
                 color: AppColors.textMuted,
                 fontWeight: FontWeight.w500,
               ),

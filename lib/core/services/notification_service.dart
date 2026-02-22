@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../theme/app_colors.dart';
 
 class NotificationService {
@@ -38,18 +39,18 @@ class NotificationService {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
+                    Text(
                       'Oops!',
-                      style: TextStyle(
-                        color: Color(0xFFD32F2F),
+                      style: GoogleFonts.nunito(
+                        color: const Color(0xFFD32F2F),
                         fontSize: 14,
                         fontWeight: FontWeight.w900,
                       ),
                     ),
                     Text(
                       message,
-                      style: const TextStyle(
-                        color: Color(0xFFD32F2F),
+                      style: GoogleFonts.nunito(
+                        color: const Color(0xFFD32F2F),
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
                       ),
@@ -100,18 +101,18 @@ class NotificationService {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
+                    Text(
                       'Success!',
-                      style: TextStyle(
-                        color: Color(0xFF2E7D32),
+                      style: GoogleFonts.nunito(
+                        color: const Color(0xFF2E7D32),
                         fontSize: 14,
                         fontWeight: FontWeight.w900,
                       ),
                     ),
                     Text(
                       message,
-                      style: const TextStyle(
-                        color: Color(0xFF2E7D32),
+                      style: GoogleFonts.nunito(
+                        color: const Color(0xFF2E7D32),
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
                       ),

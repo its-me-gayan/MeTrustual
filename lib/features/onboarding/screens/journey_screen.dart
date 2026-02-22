@@ -459,7 +459,7 @@ class _JourneyScreenState extends ConsumerState<JourneyScreen> {
                   child: Column(
                     children: [
                       const SizedBox(height: 10),
-                      Text(step['icon'], style: const TextStyle(fontSize: 48)),
+                      Text(step['icon'], style: GoogleFonts.nunito(fontSize: 48)),
                       const SizedBox(height: 16),
                       Text(
                         step['q'],
@@ -603,7 +603,7 @@ class _JourneyScreenState extends ConsumerState<JourneyScreen> {
                   ),
                   child: Row(
                     children: [
-                      Text(opt['e'], style: const TextStyle(fontSize: 24)),
+                      Text(opt['e'], style: GoogleFonts.nunito(fontSize: 24)),
                       const SizedBox(width: 14),
                       Expanded(
                         child: Text(

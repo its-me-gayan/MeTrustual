@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:easy_localization/easy_localization.dart';
 import '../../../core/theme/app_colors.dart';
 import '../providers/home_provider.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class NextPeriodCard extends ConsumerWidget {
   const NextPeriodCard({super.key});
@@ -42,7 +43,7 @@ class NextPeriodCard extends ConsumerWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Text('🩸', style: TextStyle(fontSize: 18)),
+          const Text('🩸', style: GoogleFonts.nunito(fontSize: 18)),
           const SizedBox(width: 10),
           Column(
             mainAxisSize: MainAxisSize.min,
@@ -50,7 +51,7 @@ class NextPeriodCard extends ConsumerWidget {
             children: [
               const Text(
                 'NEXT PERIOD',
-                style: TextStyle(
+                style: GoogleFonts.nunito(
                   fontSize: 8,
                   fontWeight: FontWeight.w900,
                   color: Color(0xFFFF758F),
@@ -60,7 +61,7 @@ class NextPeriodCard extends ConsumerWidget {
               const SizedBox(height: 2),
               Text(
                 nextDate,
-                style: const TextStyle(
+                style: GoogleFonts.nunito(
                   fontSize: 14,
                   fontWeight: FontWeight.w900,
                   color: AppColors.textDark,
@@ -75,7 +76,7 @@ class NextPeriodCard extends ConsumerWidget {
             children: [
               Text(
                 daysUntil > 0 ? 'In $daysUntil days' : 'Today!',
-                style: const TextStyle(
+                style: GoogleFonts.nunito(
                   fontSize: 10,
                   fontWeight: FontWeight.w700,
                   color: AppColors.textMuted,
@@ -90,7 +91,7 @@ class NextPeriodCard extends ConsumerWidget {
                 ),
                 child: const Text(
                   '85%',
-                  style: TextStyle(
+                  style: GoogleFonts.nunito(
                     fontSize: 9,
                     fontWeight: FontWeight.w900,
                     color: Colors.white,

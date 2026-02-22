@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../theme/app_colors.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class AppBottomNav extends StatelessWidget {
   final int activeIndex;
@@ -37,12 +38,12 @@ class AppBottomNav extends StatelessWidget {
         children: [
           Text(
             icon,
-            style: const TextStyle(fontSize: 20),
+            style: GoogleFonts.nunito(fontSize: 20),
           ),
           const SizedBox(height: 3),
           Text(
             label.toUpperCase(),
-            style: TextStyle(
+            style: GoogleFonts.nunito(
               fontSize: 9,
               fontWeight: FontWeight.w800,
               color: isActive ? AppColors.primaryRose : const Color(0xFFE0B0B0),

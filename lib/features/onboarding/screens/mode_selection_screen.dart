@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_colors.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class ModeSelectionScreen extends StatelessWidget {
   const ModeSelectionScreen({super.key});
@@ -26,7 +27,7 @@ class ModeSelectionScreen extends StatelessWidget {
                 RichText(
                   textAlign: TextAlign.center,
                   text: const TextSpan(
-                    style: TextStyle(
+                    style: GoogleFonts.nunito(
                       fontSize: 24,
                       fontWeight: FontWeight.w900,
                       color: AppColors.textDark,
@@ -37,7 +38,7 @@ class ModeSelectionScreen extends StatelessWidget {
                       TextSpan(text: 'How should we\n'),
                       TextSpan(
                         text: 'help you',
-                        style: TextStyle(
+                        style: GoogleFonts.nunito(
                           color: AppColors.primaryRose,
                           fontStyle: FontStyle.italic,
                         ),
@@ -50,7 +51,7 @@ class ModeSelectionScreen extends StatelessWidget {
                 const Text(
                   'Select a mode to personalise your experience.\nYou can switch anytime from your home screen.',
                   textAlign: TextAlign.center,
-                  style: TextStyle(
+                  style: GoogleFonts.nunito(
                     fontSize: 12.5,
                     color: Color(0xFFB09090),
                     fontWeight: FontWeight.w600,
@@ -127,7 +128,7 @@ class ModeSelectionScreen extends StatelessWidget {
         ),
         child: Row(
           children: [
-            Text(emoji, style: const TextStyle(fontSize: 38)),
+            Text(emoji, style: GoogleFonts.nunito(fontSize: 38)),
             const SizedBox(width: 14),
             Expanded(
               child: Column(
@@ -135,7 +136,7 @@ class ModeSelectionScreen extends StatelessWidget {
                 children: [
                   Text(
                     title,
-                    style: const TextStyle(
+                    style: GoogleFonts.nunito(
                       fontSize: 16,
                       fontWeight: FontWeight.w900,
                       color: AppColors.textDark,
@@ -144,7 +145,7 @@ class ModeSelectionScreen extends StatelessWidget {
                   const SizedBox(height: 3),
                   Text(
                     desc,
-                    style: const TextStyle(
+                    style: GoogleFonts.nunito(
                       fontSize: 11,
                       fontWeight: FontWeight.w600,
                       color: Color(0xFFB09090),

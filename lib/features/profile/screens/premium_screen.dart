@@ -6,6 +6,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/providers/firebase_providers.dart';
 import '../../../core/services/notification_service.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class PremiumScreen extends ConsumerStatefulWidget {
   const PremiumScreen({super.key});
@@ -69,7 +70,7 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen> {
               RichText(
                 textAlign: TextAlign.center,
                 text: const TextSpan(
-                  style: TextStyle(
+                  style: GoogleFonts.nunito(
                     fontSize: 24,
                     fontWeight: FontWeight.w900,
                     color: AppColors.textDark,
@@ -79,7 +80,7 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen> {
                     TextSpan(text: 'Create your '),
                     TextSpan(
                       text: 'account',
-                      style: TextStyle(
+                      style: GoogleFonts.nunito(
                           color: AppColors.primaryRose,
                           fontStyle: FontStyle.italic),
                     ),
@@ -89,7 +90,7 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen> {
               const SizedBox(height: 8),
               const Text(
                 'Secure your data and unlock all features.',
-                style: TextStyle(
+                style: GoogleFonts.nunito(
                     color: AppColors.textMid,
                     fontWeight: FontWeight.w600,
                     fontSize: 13),
@@ -155,7 +156,7 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen> {
                           child: CircularProgressIndicator(
                               color: Colors.white, strokeWidth: 2))
                       : const Text('Create Account & Continue',
-                          style: TextStyle(
+                          style: GoogleFonts.nunito(
                               color: Colors.white,
                               fontWeight: FontWeight.w900,
                               fontSize: 16)),
@@ -180,11 +181,11 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen> {
       child: TextField(
         controller: controller,
         obscureText: isObscure,
-        style: const TextStyle(
+        style: GoogleFonts.nunito(
             fontWeight: FontWeight.w700, color: AppColors.textDark),
         decoration: InputDecoration(
           hintText: hint,
-          hintStyle: const TextStyle(
+          hintStyle: GoogleFonts.nunito(
               color: AppColors.textMuted, fontWeight: FontWeight.w600),
           prefixIcon: Icon(icon, color: AppColors.textMuted, size: 20),
           border: InputBorder.none,
@@ -238,7 +239,7 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen> {
               ),
               const SizedBox(height: 24),
               const Text('You\'re Premium!',
-                  style: TextStyle(
+                  style: GoogleFonts.nunito(
                       fontSize: 24,
                       fontWeight: FontWeight.w900,
                       color: AppColors.textDark)),
@@ -246,7 +247,7 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen> {
               const Text(
                 'Welcome to the family. Your journey just got even better.',
                 textAlign: TextAlign.center,
-                style: TextStyle(
+                style: GoogleFonts.nunito(
                     fontWeight: FontWeight.w600, color: AppColors.textMid),
               ),
               const SizedBox(height: 32),
@@ -265,7 +266,7 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen> {
                     elevation: 0,
                   ),
                   child: const Text('Start Exploring',
-                      style: TextStyle(
+                      style: GoogleFonts.nunito(
                           color: Colors.white, fontWeight: FontWeight.w900)),
                 ),
               ),
@@ -302,7 +303,7 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen> {
                           'Personalized alerts tailored to your unique cycle.'),
                       const SizedBox(height: 40),
                       const Text('Select a plan',
-                          style: TextStyle(
+                          style: GoogleFonts.nunito(
                               fontSize: 18,
                               fontWeight: FontWeight.w900,
                               color: AppColors.textDark)),
@@ -341,7 +342,7 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen> {
                         child: CircularProgressIndicator(
                             color: Colors.white, strokeWidth: 2))
                     : const Text('Unlock Premium Now',
-                        style: TextStyle(
+                        style: GoogleFonts.nunito(
                             fontSize: 16,
                             fontWeight: FontWeight.w900,
                             color: Colors.white)),
@@ -382,13 +383,13 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen> {
             decoration: BoxDecoration(
                 color: AppColors.primaryRose.withOpacity(0.1),
                 shape: BoxShape.circle),
-            child: const Text('✨', style: TextStyle(fontSize: 32)),
+            child: const Text('✨', style: GoogleFonts.nunito(fontSize: 32)),
           ),
           const SizedBox(height: 20),
           RichText(
             textAlign: TextAlign.center,
             text: const TextSpan(
-              style: TextStyle(
+              style: GoogleFonts.nunito(
                   fontSize: 28,
                   fontWeight: FontWeight.w900,
                   color: AppColors.textDark,
@@ -397,7 +398,7 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen> {
                 TextSpan(text: 'MeTrustual '),
                 TextSpan(
                     text: 'Premium',
-                    style: TextStyle(
+                    style: GoogleFonts.nunito(
                         color: AppColors.primaryRose,
                         fontStyle: FontStyle.italic)),
               ],
@@ -407,7 +408,7 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen> {
           const Text(
             'Experience the full power of personalized health.',
             textAlign: TextAlign.center,
-            style: TextStyle(
+            style: GoogleFonts.nunito(
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
                 color: AppColors.textMid),
@@ -430,7 +431,7 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen> {
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(color: AppColors.border, width: 1.5)),
             alignment: Alignment.center,
-            child: Text(emoji, style: const TextStyle(fontSize: 24)),
+            child: Text(emoji, style: GoogleFonts.nunito(fontSize: 24)),
           ),
           const SizedBox(width: 16),
           Expanded(
@@ -438,12 +439,12 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(title,
-                    style: const TextStyle(
+                    style: GoogleFonts.nunito(
                         fontSize: 15,
                         fontWeight: FontWeight.w900,
                         color: AppColors.textDark)),
                 Text(desc,
-                    style: const TextStyle(
+                    style: GoogleFonts.nunito(
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
                         color: AppColors.textMid)),
@@ -500,12 +501,12 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(title,
-                      style: const TextStyle(
+                      style: GoogleFonts.nunito(
                           fontSize: 16,
                           fontWeight: FontWeight.w900,
                           color: AppColors.textDark)),
                   Text(sub,
-                      style: const TextStyle(
+                      style: GoogleFonts.nunito(
                           fontSize: 12,
                           fontWeight: FontWeight.w700,
                           color: AppColors.textMuted)),
@@ -513,7 +514,7 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen> {
               ),
             ),
             Text(price,
-                style: const TextStyle(
+                style: GoogleFonts.nunito(
                     fontSize: 18,
                     fontWeight: FontWeight.w900,
                     color: AppColors.textDark)),

@@ -5,6 +5,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/premium_gate.dart';
 import '../../../core/providers/mode_provider.dart';
 import '../../../core/services/notification_service.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class LogScreen extends ConsumerStatefulWidget {
   const LogScreen({super.key});
@@ -58,7 +59,7 @@ class _LogScreenState extends ConsumerState<LogScreen> {
                   ),
                   Text(
                     _getPageTitle(currentMode),
-                    style: const TextStyle(
+                    style: GoogleFonts.nunito(
                       fontSize: 22,
                       fontWeight: FontWeight.w900,
                       color: AppColors.textDark,
@@ -69,7 +70,7 @@ class _LogScreenState extends ConsumerState<LogScreen> {
               const SizedBox(height: 4),
               Text(
                 _getPageSub(currentMode),
-                style: const TextStyle(
+                style: GoogleFonts.nunito(
                   fontSize: 11.5,
                   fontWeight: FontWeight.w700,
                   color: AppColors.textMuted,
@@ -290,7 +291,7 @@ class _LogScreenState extends ConsumerState<LogScreen> {
       padding: const EdgeInsets.only(top: 20, bottom: 10, left: 4),
       child: Text(
         title.toUpperCase(),
-        style: const TextStyle(
+        style: GoogleFonts.nunito(
           fontSize: 11,
           fontWeight: FontWeight.w900,
           color: Color(0xFFC0A0A8),
@@ -329,10 +330,10 @@ class _LogScreenState extends ConsumerState<LogScreen> {
             ),
             child: Column(
               children: [
-                Text(flow['icon']!, style: const TextStyle(fontSize: 28)),
+                Text(flow['icon']!, style: GoogleFonts.nunito(fontSize: 28)),
                 Text(
                   flow['label']!,
-                  style: TextStyle(
+                  style: GoogleFonts.nunito(
                     fontSize: 11,
                     fontWeight: FontWeight.w800,
                     color:
@@ -391,7 +392,7 @@ class _LogScreenState extends ConsumerState<LogScreen> {
                 width: 1.5,
               ),
             ),
-            child: Text(mood, style: const TextStyle(fontSize: 28)),
+            child: Text(mood, style: GoogleFonts.nunito(fontSize: 28)),
           ),
         );
       }).toList(),
@@ -411,7 +412,7 @@ class _LogScreenState extends ConsumerState<LogScreen> {
         children: [
           const Text(
             '👶 Kick Counter — Today',
-            style: TextStyle(
+            style: GoogleFonts.nunito(
                 fontSize: 12,
                 fontWeight: FontWeight.w800,
                 color: Color(0xFF4A70B0)),
@@ -419,7 +420,7 @@ class _LogScreenState extends ConsumerState<LogScreen> {
           const SizedBox(height: 10),
           Text(
             kicks.toString(),
-            style: const TextStyle(
+            style: GoogleFonts.nunito(
                 fontSize: 48,
                 fontWeight: FontWeight.w900,
                 color: Color(0xFF4A70B0)),
@@ -441,14 +442,14 @@ class _LogScreenState extends ConsumerState<LogScreen> {
                 ],
               ),
               child: const Center(
-                  child: Text('👶', style: TextStyle(fontSize: 32))),
+                  child: Text('👶', style: GoogleFonts.nunito(fontSize: 32))),
             ),
           ),
           const SizedBox(height: 12),
           const Text(
             'Tap when you feel baby move — aim for 10 kicks in 2 hours',
             textAlign: TextAlign.center,
-            style: TextStyle(
+            style: GoogleFonts.nunito(
                 fontSize: 10,
                 fontWeight: FontWeight.w700,
                 color: Color(0xFF7090C0)),
@@ -472,7 +473,7 @@ class _LogScreenState extends ConsumerState<LogScreen> {
         children: [
           const Text(
             '🌡️ Basal Body Temperature',
-            style: TextStyle(
+            style: GoogleFonts.nunito(
                 fontSize: 12,
                 fontWeight: FontWeight.w800,
                 color: Color(0xFF5A8E6A)),
@@ -500,7 +501,7 @@ class _LogScreenState extends ConsumerState<LogScreen> {
               const SizedBox(width: 12),
               const Text(
                 '°C',
-                style: TextStyle(
+                style: GoogleFonts.nunito(
                     fontSize: 18,
                     fontWeight: FontWeight.w900,
                     color: Color(0xFF5A8E6A)),
@@ -510,7 +511,7 @@ class _LogScreenState extends ConsumerState<LogScreen> {
           const SizedBox(height: 8),
           const Text(
             'taken immediately on waking, before getting up',
-            style: TextStyle(
+            style: GoogleFonts.nunito(
                 fontSize: 10,
                 fontWeight: FontWeight.w700,
                 color: Color(0xFF8Aae8a)),
@@ -541,7 +542,7 @@ class _LogScreenState extends ConsumerState<LogScreen> {
             ),
             child: Text(
               chip,
-              style: TextStyle(
+              style: GoogleFonts.nunito(
                 fontSize: 12,
                 fontWeight: FontWeight.w800,
                 color: isSelected ? Colors.white : AppColors.textMid,
@@ -574,7 +575,7 @@ class _LogScreenState extends ConsumerState<LogScreen> {
             ),
             child: Text(
               chip,
-              style: TextStyle(
+              style: GoogleFonts.nunito(
                 fontSize: 12,
                 fontWeight: FontWeight.w800,
                 color: isSelected ? Colors.white : AppColors.textMid,
@@ -620,7 +621,7 @@ class _LogScreenState extends ConsumerState<LogScreen> {
         children: [
           Text(
             label,
-            style: const TextStyle(
+            style: GoogleFonts.nunito(
                 fontSize: 10,
                 fontWeight: FontWeight.w800,
                 color: AppColors.textMuted),
@@ -634,7 +635,7 @@ class _LogScreenState extends ConsumerState<LogScreen> {
               }, color),
               Text(
                 value.toString(),
-                style: TextStyle(
+                style: GoogleFonts.nunito(
                     fontSize: 18, fontWeight: FontWeight.w900, color: color),
               ),
               _buildStepBtn(Icons.add, () {
@@ -699,7 +700,7 @@ class _LogScreenState extends ConsumerState<LogScreen> {
         ),
         child: Text(
           mode == 'preg' ? 'Save today\'s log 💙' : 'Save today\'s log ✓',
-          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w900),
+          style: GoogleFonts.nunito(fontSize: 16, fontWeight: FontWeight.w900),
         ),
       ),
     );

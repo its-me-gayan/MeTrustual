@@ -10,6 +10,7 @@ import '../widgets/next_period_card.dart';
 import '../providers/home_provider.dart';
 import '../../../core/providers/firebase_providers.dart';
 import '../../../core/widgets/app_bottom_nav.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -51,7 +52,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     children: [
                       const Text(
                         'Good morning ☀️',
-                        style: TextStyle(
+                        style: GoogleFonts.nunito(
                           fontSize: 13,
                           fontWeight: FontWeight.w700,
                           color: AppColors.textMuted,
@@ -64,7 +65,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         },
                         child: Text(
                           '${user?.displayName ?? 'Aisha'} 👋',
-                          style: const TextStyle(
+                          style: GoogleFonts.nunito(
                             fontSize: 24,
                             fontWeight: FontWeight.w900,
                             color: AppColors.textDark,
@@ -339,7 +340,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           children: [
             Text(
               value,
-              style: TextStyle(
+              style: GoogleFonts.nunito(
                 fontSize: 20,
                 fontWeight: FontWeight.w900,
                 color: color ?? AppColors.primaryRose,
@@ -348,7 +349,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             const SizedBox(height: 3),
             Text(
               label.toUpperCase(),
-              style: const TextStyle(
+              style: GoogleFonts.nunito(
                 fontSize: 10,
                 fontWeight: FontWeight.w700,
                 color: AppColors.textMuted,
@@ -381,7 +382,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         children: [
           const Text(
             '👶 Baby Updates',
-            style: TextStyle(
+            style: GoogleFonts.nunito(
               fontSize: 13,
               fontWeight: FontWeight.w900,
               color: Color(0xFF4A70B0),
@@ -391,7 +392,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           const SizedBox(height: 10),
           const Text(
             'Week 24: Your baby is about the size of a mango 🥭',
-            style: TextStyle(
+            style: GoogleFonts.nunito(
               fontSize: 12,
               fontWeight: FontWeight.w700,
               color: AppColors.textDark,
@@ -401,7 +402,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           const SizedBox(height: 12),
           const Text(
             'Developments: Hearing is fully developed. Baby can hear your voice and heartbeat.',
-            style: TextStyle(
+            style: GoogleFonts.nunito(
               fontSize: 11,
               fontWeight: FontWeight.w600,
               color: AppColors.textMid,
@@ -426,7 +427,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         children: [
           const Text(
             'Fertile Window',
-            style: TextStyle(
+            style: GoogleFonts.nunito(
               fontSize: 13,
               fontWeight: FontWeight.w900,
               color: Color(0xFF5A8E6A),
@@ -442,7 +443,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   children: [
                     const Text(
                       'Feb 19 - Feb 23',
-                      style: TextStyle(
+                      style: GoogleFonts.nunito(
                         fontSize: 12,
                         fontWeight: FontWeight.w800,
                         color: AppColors.textDark,
@@ -472,7 +473,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               const SizedBox(width: 12),
               const Text(
                 '50%',
-                style: TextStyle(
+                style: GoogleFonts.nunito(
                   fontSize: 16,
                   fontWeight: FontWeight.w900,
                   color: Color(0xFF5A8E6A),
@@ -505,7 +506,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           if (icon != null)
             Padding(
               padding: const EdgeInsets.only(right: 12),
-              child: Text(icon, style: const TextStyle(fontSize: 32)),
+              child: Text(icon, style: GoogleFonts.nunito(fontSize: 32)),
             ),
           Expanded(
             child: Column(
@@ -513,7 +514,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               children: [
                 Text(
                   title,
-                  style: TextStyle(
+                  style: GoogleFonts.nunito(
                     fontSize: 11,
                     fontWeight: FontWeight.w900,
                     color: color,
@@ -523,7 +524,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 const SizedBox(height: 4),
                 Text(
                   value,
-                  style: TextStyle(
+                  style: GoogleFonts.nunito(
                     fontSize: 14,
                     fontWeight: FontWeight.w900,
                     color: color,
@@ -532,7 +533,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 const SizedBox(height: 2),
                 Text(
                   sub,
-                  style: TextStyle(
+                  style: GoogleFonts.nunito(
                     fontSize: 10,
                     fontWeight: FontWeight.w600,
                     color: color.withOpacity(0.7),
@@ -548,7 +549,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 children: [
                   Text(
                     '$percentage%',
-                    style: TextStyle(
+                    style: GoogleFonts.nunito(
                       fontSize: 18,
                       fontWeight: FontWeight.w900,
                       color: color,
@@ -556,7 +557,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   ),
                   Text(
                     'Confidence',
-                    style: TextStyle(
+                    style: GoogleFonts.nunito(
                       fontSize: 9,
                       fontWeight: FontWeight.w700,
                       color: color.withOpacity(0.7),
@@ -583,7 +584,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         children: [
           const Text(
             'Switch tracker',
-            style: TextStyle(
+            style: GoogleFonts.nunito(
               fontSize: 14,
               fontWeight: FontWeight.w900,
               color: AppColors.textDark,
@@ -637,7 +638,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         ),
         child: Text(
           text,
-          style: TextStyle(
+          style: GoogleFonts.nunito(
             fontSize: 12,
             fontWeight: FontWeight.w800,
             color: urgent ? const Color(0xFFD97B8A) : AppColors.textMid,

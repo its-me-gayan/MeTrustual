@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../core/theme/app_colors.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class MiniCalendar extends StatelessWidget {
   const MiniCalendar({super.key});
@@ -13,7 +14,7 @@ class MiniCalendar extends StatelessWidget {
       children: [
         const Text(
           'February 2026 🗓️',
-          style: TextStyle(
+          style: GoogleFonts.nunito(
             fontSize: 14,
             fontWeight: FontWeight.w800,
             color: AppColors.textDark,
@@ -34,7 +35,7 @@ class MiniCalendar extends StatelessWidget {
               return Center(
                 child: Text(
                   days[index],
-                  style: const TextStyle(
+                  style: GoogleFonts.nunito(
                     fontSize: 10,
                     fontWeight: FontWeight.w800,
                     color: AppColors.textMuted,
@@ -71,7 +72,7 @@ class MiniCalendar extends StatelessWidget {
               alignment: Alignment.center,
               child: Text(
                 '$dayNum',
-                style: TextStyle(
+                style: GoogleFonts.nunito(
                   fontSize: 12,
                   fontWeight: FontWeight.w700,
                   color: isToday 
