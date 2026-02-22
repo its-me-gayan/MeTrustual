@@ -360,7 +360,8 @@ class _SelfCareScreenState extends ConsumerState<SelfCareScreen> {
                     _affIdx = (_affIdx + 1) % list.length;
                   });
                 },
-                child: const Icon(Icons.refresh, size: 16, color: AppColors.textMuted),
+                child: const Icon(Icons.refresh,
+                    size: 16, color: AppColors.textMuted),
               ),
             ],
           ),
@@ -426,7 +427,8 @@ class _SelfCareScreenState extends ConsumerState<SelfCareScreen> {
               ],
             ),
           ),
-          const Icon(Icons.arrow_forward_ios, size: 16, color: AppColors.textMuted),
+          const Icon(Icons.arrow_forward_ios,
+              size: 16, color: AppColors.textMuted),
         ],
       ),
     );
@@ -545,28 +547,32 @@ class _SelfCareScreenState extends ConsumerState<SelfCareScreen> {
             'badge': 'PHASE 1: RESTORE',
             'hero_e': '🩸',
             'hero_t': 'Winter Season',
-            'hero_d': 'Focus on rest, warmth, and gentle nourishment. Your body is clearing space for a new cycle.'
+            'hero_d':
+                'Focus on rest, warmth, and gentle nourishment. Your body is clearing space for a new cycle.'
           };
         case 'Follicular':
           return {
             'badge': 'PHASE 2: RENEW',
             'hero_e': '🌱',
             'hero_t': 'Spring Season',
-            'hero_d': 'Energy is rising. Focus on planning, light movement, and fresh beginnings.'
+            'hero_d':
+                'Energy is rising. Focus on planning, light movement, and fresh beginnings.'
           };
         case 'Ovulatory':
           return {
             'badge': 'PHASE 3: RADIATE',
             'hero_e': '✨',
             'hero_t': 'Summer Season',
-            'hero_d': 'Your peak energy and confidence. Perfect for socializing and high-intensity movement.'
+            'hero_d':
+                'Your peak energy and confidence. Perfect for socializing and high-intensity movement.'
           };
         case 'Luteal':
           return {
             'badge': 'PHASE 4: REFLECT',
             'hero_e': '🌙',
             'hero_t': 'Autumn Season',
-            'hero_d': 'Turn inward. Focus on completion, nesting, and managing PMS with care.'
+            'hero_d':
+                'Turn inward. Focus on completion, nesting, and managing PMS with care.'
           };
       }
     } else if (mode == 'preg') {
@@ -576,28 +582,32 @@ class _SelfCareScreenState extends ConsumerState<SelfCareScreen> {
             'badge': 'FOUNDATION',
             'hero_e': '💙',
             'hero_t': 'The Beginning',
-            'hero_d': 'Nurture the seed. Focus on hydration, folic acid, and plenty of rest.'
+            'hero_d':
+                'Nurture the seed. Focus on hydration, folic acid, and plenty of rest.'
           };
         case '2nd Trim':
           return {
             'badge': 'BLOOMING',
             'hero_e': '🌸',
             'hero_t': 'The Golden Phase',
-            'hero_d': 'Feel the glow. Focus on bonding, gentle prenatal yoga, and baby prep.'
+            'hero_d':
+                'Feel the glow. Focus on bonding, gentle prenatal yoga, and baby prep.'
           };
         case '3rd Trim':
           return {
             'badge': 'PREPARATION',
             'hero_e': '🌟',
             'hero_t': 'The Home Stretch',
-            'hero_d': 'Prepare for arrival. Focus on nesting, birth prep, and managing discomfort.'
+            'hero_d':
+                'Prepare for arrival. Focus on nesting, birth prep, and managing discomfort.'
           };
         case 'Newborn':
           return {
             'badge': 'POSTPARTUM',
             'hero_e': '👼',
             'hero_t': 'The 4th Trimester',
-            'hero_d': 'Healing and bonding. Focus on recovery, support, and learning baby\'s cues.'
+            'hero_d':
+                'Healing and bonding. Focus on recovery, support, and learning baby\'s cues.'
           };
       }
     } else {
@@ -607,28 +617,32 @@ class _SelfCareScreenState extends ConsumerState<SelfCareScreen> {
             'badge': 'PREPARATION',
             'hero_e': '📅',
             'hero_t': 'Cycle Start',
-            'hero_d': 'Laying the groundwork. Focus on baseline health and cycle tracking.'
+            'hero_d':
+                'Laying the groundwork. Focus on baseline health and cycle tracking.'
           };
         case 'Pre-Ovul':
           return {
             'badge': 'FERTILE WINDOW',
             'hero_e': '🌱',
             'hero_t': 'Energy Rising',
-            'hero_d': 'Your body is preparing. Focus on cervical mucus signs and vitality.'
+            'hero_d':
+                'Your body is preparing. Focus on cervical mucus signs and vitality.'
           };
         case 'Peak':
           return {
             'badge': 'OVULATION',
             'hero_e': '🎯',
             'hero_t': 'Peak Fertility',
-            'hero_d': 'The key moment. Focus on timing, BBT confirmation, and wellness.'
+            'hero_d':
+                'The key moment. Focus on timing, BBT confirmation, and wellness.'
           };
         case 'Post-Ovul':
           return {
             'badge': 'THE WAIT',
             'hero_e': '📉',
             'hero_t': 'Implantation Window',
-            'hero_d': 'Support progesterone. Focus on calm, warmth, and mindful waiting.'
+            'hero_d':
+                'Support progesterone. Focus on calm, warmth, and mindful waiting.'
           };
       }
     }
@@ -640,85 +654,285 @@ class _SelfCareScreenState extends ConsumerState<SelfCareScreen> {
       switch (phase) {
         case 'Menstrual':
           return [
-            {'e': '🍵', 't': 'Warm Raspberry Tea', 's': 'Soothe uterine muscles and relax', 'dur': '5 min'},
-            {'e': '🧘', 't': 'Gentle Child\'s Pose', 's': 'Release lower back tension', 'dur': '10 min'},
-            {'e': '📓', 't': 'Release Journaling', 's': 'Write down what you\'re letting go of', 'dur': '5 min'},
-            {'e': '🛌', 't': '9 PM Digital Detox', 's': 'Early rest to support recovery', 'dur': 'All night'},
+            {
+              'e': '🍵',
+              't': 'Warm Raspberry Tea',
+              's': 'Soothe uterine muscles and relax',
+              'dur': '5 min'
+            },
+            {
+              'e': '🧘',
+              't': 'Gentle Child\'s Pose',
+              's': 'Release lower back tension',
+              'dur': '10 min'
+            },
+            {
+              'e': '📓',
+              't': 'Release Journaling',
+              's': 'Write down what you\'re letting go of',
+              'dur': '5 min'
+            },
+            {
+              'e': '🛌',
+              't': '9 PM Digital Detox',
+              's': 'Early rest to support recovery',
+              'dur': 'All night'
+            },
           ];
         case 'Follicular':
           return [
-            {'e': '🏃', 't': 'Brisk Morning Walk', 's': 'Boost cortisol and wake up your body', 'dur': '20 min'},
-            {'e': '🥑', 't': 'Hormone-Healthy Fats', 's': 'Support oestrogen production', 'dur': 'Daily'},
-            {'e': '🎯', 't': 'Set 3 Intentions', 's': 'Plan your cycle goals now', 'dur': '5 min'},
+            {
+              'e': '🏃',
+              't': 'Brisk Morning Walk',
+              's': 'Boost cortisol and wake up your body',
+              'dur': '20 min'
+            },
+            {
+              'e': '🥑',
+              't': 'Hormone-Healthy Fats',
+              's': 'Support oestrogen production',
+              'dur': 'Daily'
+            },
+            {
+              'e': '🎯',
+              't': 'Set 3 Intentions',
+              's': 'Plan your cycle goals now',
+              'dur': '5 min'
+            },
           ];
         case 'Ovulatory':
           return [
-            {'e': '💃', 't': 'High-Energy Movement', 's': 'Channel your peak vitality', 'dur': '30 min'},
-            {'e': '🥗', 't': 'Raw Veggie Fiber', 's': 'Help your liver process oestrogen', 'dur': 'Daily'},
-            {'e': '✨', 't': 'Social Connection', 's': 'Call a friend or attend an event', 'dur': 'Evening'},
+            {
+              'e': '💃',
+              't': 'High-Energy Movement',
+              's': 'Channel your peak vitality',
+              'dur': '30 min'
+            },
+            {
+              'e': '🥗',
+              't': 'Raw Veggie Fiber',
+              's': 'Help your liver process oestrogen',
+              'dur': 'Daily'
+            },
+            {
+              'e': '✨',
+              't': 'Social Connection',
+              's': 'Call a friend or attend an event',
+              'dur': 'Evening'
+            },
           ];
         case 'Luteal':
           return [
-            {'e': '🧂', 't': 'Reduce Sodium intake', 's': 'Minimize bloating and water retention', 'dur': 'Daily'},
-            {'e': '🧘', 't': 'Restorative Yoga', 's': 'Calm the nervous system', 'dur': '15 min'},
-            {'e': '🛀', 't': 'Epsom Salt Bath', 's': 'Magnesium for mood and cramps', 'dur': '20 min'},
+            {
+              'e': '🧂',
+              't': 'Reduce Sodium intake',
+              's': 'Minimize bloating and water retention',
+              'dur': 'Daily'
+            },
+            {
+              'e': '🧘',
+              't': 'Restorative Yoga',
+              's': 'Calm the nervous system',
+              'dur': '15 min'
+            },
+            {
+              'e': '🛀',
+              't': 'Epsom Salt Bath',
+              's': 'Magnesium for mood and cramps',
+              'dur': '20 min'
+            },
           ];
       }
     } else if (mode == 'preg') {
       switch (phase) {
         case '1st Trim':
           return [
-            {'e': '💧', 't': 'Morning Hydration', 's': 'Small sips to manage nausea', 'dur': 'Daily'},
-            {'e': '💊', 't': 'Prenatal Vitamin', 's': 'Essential folic acid & iron', 'dur': '1 min'},
-            {'e': '😴', 't': 'Mid-day Power Nap', 's': 'Listen to your body\'s fatigue', 'dur': '20 min'},
+            {
+              'e': '💧',
+              't': 'Morning Hydration',
+              's': 'Small sips to manage nausea',
+              'dur': 'Daily'
+            },
+            {
+              'e': '💊',
+              't': 'Prenatal Vitamin',
+              's': 'Essential folic acid & iron',
+              'dur': '1 min'
+            },
+            {
+              'e': '😴',
+              't': 'Mid-day Power Nap',
+              's': 'Listen to your body\'s fatigue',
+              'dur': '20 min'
+            },
           ];
         case '2nd Trim':
           return [
-            {'e': '🧘', 't': 'Prenatal Yoga', 's': 'Stay flexible and relieve pressure', 'dur': '15 min'},
-            {'e': '🧴', 't': 'Belly Oil Ritual', 's': 'Connect with baby & skin care', 'dur': '5 min'},
-            {'e': '🥗', 't': 'Iron-Rich Lunch', 's': 'Support blood volume increase', 'dur': 'Daily'},
+            {
+              'e': '🧘',
+              't': 'Prenatal Yoga',
+              's': 'Stay flexible and relieve pressure',
+              'dur': '15 min'
+            },
+            {
+              'e': '🧴',
+              't': 'Belly Oil Ritual',
+              's': 'Connect with baby & skin care',
+              'dur': '5 min'
+            },
+            {
+              'e': '🥗',
+              't': 'Iron-Rich Lunch',
+              's': 'Support blood volume increase',
+              'dur': 'Daily'
+            },
           ];
         case '3rd Trim':
           return [
-            {'e': '🚶', 't': 'Pelvic Tilt Exercises', 's': 'Prepare for baby\'s descent', 'dur': '10 min'},
-            {'e': '🫖', 't': 'Red Raspberry Leaf Tea', 's': 'Tone the uterus for labor', 'dur': '5 min'},
-            {'e': '🦶', 't': 'Foot Soak & Elevate', 's': 'Reduce swelling and relax', 'dur': '15 min'},
+            {
+              'e': '🚶',
+              't': 'Pelvic Tilt Exercises',
+              's': 'Prepare for baby\'s descent',
+              'dur': '10 min'
+            },
+            {
+              'e': '🫖',
+              't': 'Red Raspberry Leaf Tea',
+              's': 'Tone the uterus for labor',
+              'dur': '5 min'
+            },
+            {
+              'e': '🦶',
+              't': 'Foot Soak & Elevate',
+              's': 'Reduce swelling and relax',
+              'dur': '15 min'
+            },
           ];
         case 'Newborn':
           return [
-            {'e': '🤱', 't': 'Skin-to-Skin Time', 's': 'Regulate baby and boost oxytocin', 'dur': '30 min'},
-            {'e': '🍲', 't': 'Warm, Soft Foods', 's': 'Easy digestion for recovery', 'dur': 'Daily'},
-            {'e': '💤', 't': 'Sleep When Baby Sleeps', 's': 'Prioritize rest over chores', 'dur': 'Daily'},
+            {
+              'e': '🤱',
+              't': 'Skin-to-Skin Time',
+              's': 'Regulate baby and boost oxytocin',
+              'dur': '30 min'
+            },
+            {
+              'e': '🍲',
+              't': 'Warm, Soft Foods',
+              's': 'Easy digestion for recovery',
+              'dur': 'Daily'
+            },
+            {
+              'e': '💤',
+              't': 'Sleep When Baby Sleeps',
+              's': 'Prioritize rest over chores',
+              'dur': 'Daily'
+            },
           ];
       }
     } else {
       switch (phase) {
         case 'Early':
           return [
-            {'e': '🧘', 't': 'Grounding Yoga', 's': 'Center yourself', 'dur': '15 min'},
-            {'e': '💧', 't': 'Hydration Ritual', 's': 'Start hydrating well', 'dur': 'All day'},
-            {'e': '📓', 't': 'Fertility Journal', 's': 'Note your observations', 'dur': '5 min'},
+            {
+              'e': '🧘',
+              't': 'Grounding Yoga',
+              's': 'Center yourself',
+              'dur': '15 min'
+            },
+            {
+              'e': '💧',
+              't': 'Hydration Ritual',
+              's': 'Start hydrating well',
+              'dur': 'All day'
+            },
+            {
+              'e': '📓',
+              't': 'Fertility Journal',
+              's': 'Note your observations',
+              'dur': '5 min'
+            },
           ];
         case 'Pre-Ovul':
           return [
-            {'e': '🧘', 't': 'Core & Hip Yoga Flow', 's': 'Boost blood flow to reproductive organs', 'dur': '10 min'},
-            {'e': '🌿', 't': 'Seed Cycling — Flax & Pumpkin', 's': 'Day 1–14: oestrogen-supporting seeds', 'dur': '2 min'},
-            {'e': '🌡️', 't': 'BBT Journaling', 's': 'Log your temp trend and cervical signs', 'dur': '3 min'},
-            {'e': '💧', 't': 'Hydration Ritual', 's': 'Cervical mucus loves water — drink up!', 'dur': 'All day'},
+            {
+              'e': '🧘',
+              't': 'Core & Hip Yoga Flow',
+              's': 'Boost blood flow to reproductive organs',
+              'dur': '10 min'
+            },
+            {
+              'e': '🌿',
+              't': 'Seed Cycling — Flax & Pumpkin',
+              's': 'Day 1–14: oestrogen-supporting seeds',
+              'dur': '2 min'
+            },
+            {
+              'e': '🌡️',
+              't': 'BBT Journaling',
+              's': 'Log your temp trend and cervical signs',
+              'dur': '3 min'
+            },
+            {
+              'e': '💧',
+              't': 'Hydration Ritual',
+              's': 'Cervical mucus loves water — drink up!',
+              'dur': 'All day'
+            },
           ];
         case 'Peak':
           return [
-            {'e': '🌡️', 't': 'Confirm BBT Spike', 's': 'Temp rises 0.2–0.5°C after ovulation — log it!', 'dur': '2 min'},
-            {'e': '💊', 't': 'Check OPK Result', 's': 'Look for blazing positive LH strip today', 'dur': '2 min'},
-            {'e': '🏃', 't': 'Light Walk After Intimacy', 's': 'Gentle movement — no intense exercise today', 'dur': '15 min'},
-            {'e': '🫐', 't': 'Antioxidant-Rich Smoothie', 's': 'Protect egg quality: berries, CoQ10, maca', 'dur': '5 min'},
+            {
+              'e': '🌡️',
+              't': 'Confirm BBT Spike',
+              's': 'Temp rises 0.2–0.5°C after ovulation — log it!',
+              'dur': '2 min'
+            },
+            {
+              'e': '💊',
+              't': 'Check OPK Result',
+              's': 'Look for blazing positive LH strip today',
+              'dur': '2 min'
+            },
+            {
+              'e': '🏃',
+              't': 'Light Walk After Intimacy',
+              's': 'Gentle movement — no intense exercise today',
+              'dur': '15 min'
+            },
+            {
+              'e': '🫐',
+              't': 'Antioxidant-Rich Smoothie',
+              's': 'Protect egg quality: berries, CoQ10, maca',
+              'dur': '5 min'
+            },
           ];
         case 'Post-Ovul':
           return [
-            {'e': '🌿', 't': 'Seed Cycling — Sesame & Sunflower', 's': 'Switch to Phase 2 seeds for progesterone support', 'dur': 'Daily'},
-            {'e': '🧘', 't': 'Restorative Yoga', 's': 'Support progesterone with gentle, calming movement', 'dur': '12 min'},
-            {'e': '🌡️', 't': 'Track BBT Stay Elevated', 's': 'If temp stays high 18+ days — take a test!', 'dur': 'Daily'},
-            {'e': '🫖', 't': 'Raspberry Leaf Tea', 's': 'Uterine toner to prepare for either outcome', 'dur': '5 min'},
+            {
+              'e': '🌿',
+              't': 'Seed Cycling — Sesame & Sunflower',
+              's': 'Switch to Phase 2 seeds for progesterone support',
+              'dur': 'Daily'
+            },
+            {
+              'e': '🧘',
+              't': 'Restorative Yoga',
+              's': 'Support progesterone with gentle, calming movement',
+              'dur': '12 min'
+            },
+            {
+              'e': '🌡️',
+              't': 'Track BBT Stay Elevated',
+              's': 'If temp stays high 18+ days — take a test!',
+              'dur': 'Daily'
+            },
+            {
+              'e': '🫖',
+              't': 'Raspberry Leaf Tea',
+              's': 'Uterine toner to prepare for either outcome',
+              'dur': '5 min'
+            },
           ];
       }
     }
@@ -770,7 +984,9 @@ class _RitualOverlayState extends State<RitualOverlay> {
   }
 
   void _next() {
-    if (_durToSec(widget.rituals[_currentIndex]['dur']!) > 0 && !_timerRunning && !_completed.contains(_currentIndex)) {
+    if (_durToSec(widget.rituals[_currentIndex]['dur']!) > 0 &&
+        !_timerRunning &&
+        !_completed.contains(_currentIndex)) {
       _startTimer();
     } else {
       _advance();
@@ -967,11 +1183,16 @@ class _RitualOverlayState extends State<RitualOverlay> {
                       final isDone = _completed.contains(idx);
                       return Container(
                         margin: const EdgeInsets.only(bottom: 7),
-                        padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 10),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 13, vertical: 10),
                         decoration: BoxDecoration(
-                          color: isDone ? Colors.white.withOpacity(0.5) : Colors.white,
+                          color: isDone
+                              ? Colors.white.withOpacity(0.5)
+                              : Colors.white,
                           border: Border.all(
-                            color: isDone ? Colors.green.withOpacity(0.3) : widget.color.withOpacity(0.1),
+                            color: isDone
+                                ? Colors.green.withOpacity(0.3)
+                                : widget.color.withOpacity(0.1),
                             width: 1.5,
                           ),
                           borderRadius: BorderRadius.circular(13),
@@ -982,14 +1203,20 @@ class _RitualOverlayState extends State<RitualOverlay> {
                               width: 22,
                               height: 22,
                               decoration: BoxDecoration(
-                                color: isDone ? Colors.green : Colors.transparent,
+                                color:
+                                    isDone ? Colors.green : Colors.transparent,
                                 border: Border.all(
-                                  color: isDone ? Colors.green : widget.color.withOpacity(0.3),
+                                  color: isDone
+                                      ? Colors.green
+                                      : widget.color.withOpacity(0.3),
                                   width: 2,
                                 ),
                                 borderRadius: BorderRadius.circular(7),
                               ),
-                              child: isDone ? const Icon(Icons.check, size: 14, color: Colors.white) : null,
+                              child: isDone
+                                  ? const Icon(Icons.check,
+                                      size: 14, color: Colors.white)
+                                  : null,
                             ),
                             const SizedBox(width: 10),
                             Expanded(
@@ -998,7 +1225,9 @@ class _RitualOverlayState extends State<RitualOverlay> {
                                 style: GoogleFonts.nunito(
                                   fontSize: 13,
                                   fontWeight: FontWeight.w700,
-                                  color: isDone ? Colors.green : AppColors.textDark,
+                                  color: isDone
+                                      ? Colors.green
+                                      : AppColors.textDark,
                                 ),
                               ),
                             ),
@@ -1019,8 +1248,12 @@ class _RitualOverlayState extends State<RitualOverlay> {
                   child: OutlinedButton(
                     onPressed: _advance,
                     style: OutlinedButton.styleFrom(
-                      side: Border.all(color: widget.color.withOpacity(0.1), width: 1.5),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                      side: BorderSide(
+                        color: widget.color.withOpacity(0.1),
+                        width: 1.5,
+                      ),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16)),
                       padding: const EdgeInsets.symmetric(vertical: 14),
                     ),
                     child: Text(
@@ -1041,7 +1274,8 @@ class _RitualOverlayState extends State<RitualOverlay> {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: widget.color,
                       foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16)),
                       padding: const EdgeInsets.symmetric(vertical: 14),
                       elevation: 0,
                     ),
