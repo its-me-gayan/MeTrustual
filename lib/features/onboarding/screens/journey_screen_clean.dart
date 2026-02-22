@@ -19,10 +19,7 @@ class JourneyScreen extends ConsumerStatefulWidget {
 class _JourneyScreenState extends ConsumerState<JourneyScreen> {
   int currentStep = 0;
   final Map<String, dynamic> journeyData = {};
-  bool _isLoading = false;
-  bool _stepsLoaded = false;
 
-  late List<Map<String, dynamic>> steps;
   late final Color accentColor;
   late final LinearGradient progressGradient;
 
@@ -31,60 +28,6 @@ class _JourneyScreenState extends ConsumerState<JourneyScreen> {
     super.initState();
     accentColor = _getModeColor(widget.mode);
     progressGradient = _getModeGradient(widget.mode);
-    _loadJourneyStepsAndData();
-  }
-
-  Future<void> _loadJourneyStepsAndData() async {
-    setState(() => _isLoading = true);
-    try {
-      // Load journey steps from Firebase using the correct provider
-      final stepsAsyncValue =
-          await ref.read(journeyStepsProvider(widget.mode).future);
-      setState(() {
-        steps = stepsAsyncValue;
-        _stepsLoaded = true;
-      });
-
-      // Load existing user journey data
-      await _loadExistingData();
-    } catch (e) {
-      debugPrint('Error loading journey steps: $e');
-      // Fallback to hardcoded steps
-      setState(() {
-        steps = _getHardcodedJourneySteps(widget.mode);
-        _stepsLoaded = true;
-      });
-      await _loadExistingData();
-    } finally {
-      setState(() => _isLoading = false);
-    }
-  }
-
-  Future<void> _loadExistingData() async {
-    setState(() => _isLoading = true);
-    try {
-      final auth = ref.read(firebaseAuthProvider);
-      final firestore = ref.read(firestoreProvider);
-      final uid = auth.currentUser?.uid;
-
-      if (uid != null) {
-        final doc = await firestore
-            .collection('users')
-            .doc(uid)
-            .collection('journey')
-            .doc(widget.mode)
-            .get();
-        if (doc.exists) {
-          setState(() {
-            journeyData.addAll(doc.data()!);
-          });
-        }
-      }
-    } catch (e) {
-      debugPrint('Error loading journey data: $e');
-    } finally {
-      setState(() => _isLoading = false);
-    }
   }
 
   Color _getModeColor(String mode) {
@@ -351,8 +294,8 @@ class _JourneyScreenState extends ConsumerState<JourneyScreen> {
     }
   }
 
-  Future<void> _nextStep(List<Map<String, dynamic>> stepsList) async {
-    final step = stepsList[currentStep];
+  Future<void> _nextStep(List<Map<String, dynamic>> steps) async {
+    final step = steps[currentStep];
     final key = step['key'];
     final isRequired = step['required'] == true;
     final value = journeyData[key];
@@ -364,7 +307,7 @@ class _JourneyScreenState extends ConsumerState<JourneyScreen> {
     }
 
     await _saveData();
-    if (currentStep < stepsList.length - 1) {
+    if (currentStep < steps.length - 1) {
       setState(() => currentStep++);
     } else {
       await ref.read(modeProvider.notifier).setMode(widget.mode);
@@ -374,7 +317,6 @@ class _JourneyScreenState extends ConsumerState<JourneyScreen> {
       final uid = auth.currentUser?.uid;
 
       if (mounted) {
-        // Move biometric setup to the end of the journey
         context.go('/biometric-setup/$uid');
       }
     }
@@ -390,218 +332,214 @@ class _JourneyScreenState extends ConsumerState<JourneyScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: ref.watch(journeyStepsProvider(widget.mode)).when(
-            loading: () => const Center(child: CircularProgressIndicator()),
-            error: (error, stackTrace) {
-              debugPrint('Error loading journey steps: $error\n$stackTrace');
-              return Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Icon(Icons.error_outline,
-                        size: 64, color: Colors.red),
-                    const SizedBox(height: 16),
-                    const Text('Failed to load journey steps'),
-                    const SizedBox(height: 8),
-                    Text(
-                      error.toString(),
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(fontSize: 12, color: Colors.grey),
-                    ),
-                    const SizedBox(height: 24),
-                    ElevatedButton(
-                      onPressed: () => context.go('/mode-selection'),
-                      child: const Text('Go Back'),
-                    ),
-                  ],
+    return ref.watch(journeyStepsProvider(widget.mode)).when(
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (error, stackTrace) {
+        debugPrint('Error loading journey steps: $error\n$stackTrace');
+        return Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.error_outline, size: 64, color: Colors.red),
+              const SizedBox(height: 16),
+              const Text('Failed to load journey steps'),
+              const SizedBox(height: 8),
+              Text(
+                error.toString(),
+                textAlign: TextAlign.center,
+                style: const TextStyle(fontSize: 12, color: Colors.grey),
+              ),
+              const SizedBox(height: 24),
+              ElevatedButton(
+                onPressed: () => context.go('/mode-selection'),
+                child: const Text('Go Back'),
+              ),
+            ],
+          ),
+        );
+      },
+      data: (steps) {
+        if (steps.isEmpty) {
+          return Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.warning, size: 64, color: Colors.orange),
+                const SizedBox(height: 16),
+                const Text('No journey steps found'),
+                const SizedBox(height: 24),
+                ElevatedButton(
+                  onPressed: () => context.go('/mode-selection'),
+                  child: const Text('Go Back'),
                 ),
-              );
-            },
-            data: (steps) {
-              if (steps.isEmpty) {
-                return Center(
+              ],
+            ),
+          );
+        }
+
+        final step = steps[currentStep];
+        final progress = (currentStep + 1) / steps.length;
+        final isSingleChoice = step['type'] == 'chips-big-single' ||
+            step['type'] == 'chips-single';
+
+        return Container(
+          width: double.infinity,
+          height: double.infinity,
+          decoration: BoxDecoration(gradient: progressGradient),
+          child: SafeArea(
+            child: Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 24, vertical: 20),
                   child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Icon(Icons.warning, size: 64, color: Colors.orange),
-                      const SizedBox(height: 16),
-                      const Text('No journey steps found'),
-                      const SizedBox(height: 24),
-                      ElevatedButton(
-                        onPressed: () => context.go('/mode-selection'),
-                        child: const Text('Go Back'),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          GestureDetector(
+                            onTap: _prevStep,
+                            child: const Icon(Icons.arrow_back_ios,
+                                color: Colors.white, size: 20),
+                          ),
+                          Text(
+                            'STEP ${currentStep + 1} OF ${steps.length}',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w800,
+                              letterSpacing: 1,
+                            ),
+                          ),
+                          const SizedBox(width: 20),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(8),
+                        child: LinearProgressIndicator(
+                          value: progress,
+                          minHeight: 6,
+                          backgroundColor: Colors.white.withOpacity(0.3),
+                          valueColor: const AlwaysStoppedAnimation<Color>(
+                              Colors.white),
+                        ),
                       ),
                     ],
                   ),
-                );
-              }
-
-              final step = steps[currentStep];
-              final progress = (currentStep + 1) / steps.length;
-              final isSingleChoice = step['type'] == 'chips-big-single' ||
-                  step['type'] == 'chips-single';
-
-              return Container(
-                width: double.infinity,
-                height: double.infinity,
-                decoration: BoxDecoration(gradient: progressGradient),
-                child: SafeArea(
-                  child: Column(
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 24, vertical: 20),
-                        child: Column(
-                          children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                GestureDetector(
-                                  onTap: _prevStep,
-                                  child: const Icon(Icons.arrow_back_ios,
-                                      color: Colors.white, size: 20),
-                                ),
-                                Text(
-                                  'STEP ${currentStep + 1} OF ${steps.length}',
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w800,
-                                    letterSpacing: 1,
+                ),
+                Expanded(
+                  child: SingleChildScrollView(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 24),
+                      child: Column(
+                        children: [
+                          const SizedBox(height: 24),
+                          Text(
+                            step['icon'],
+                            style: const TextStyle(fontSize: 56),
+                          ),
+                          const SizedBox(height: 20),
+                          Text(
+                            step['q'],
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(
+                              fontSize: 24,
+                              fontWeight: FontWeight.w900,
+                              color: Colors.white,
+                              height: 1.3,
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          Text(
+                            step['sub'],
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                              color: Colors.white.withOpacity(0.8),
+                              height: 1.4,
+                            ),
+                          ),
+                          if (step['warn'] != null)
+                            Padding(
+                              padding: const EdgeInsets.only(top: 16),
+                              child: Container(
+                                padding: const EdgeInsets.all(12),
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withOpacity(0.15),
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(
+                                    color: Colors.white.withOpacity(0.3),
+                                    width: 1,
                                   ),
                                 ),
-                                const SizedBox(width: 20),
-                              ],
-                            ),
-                            const SizedBox(height: 12),
-                            ClipRRect(
-                              borderRadius: BorderRadius.circular(8),
-                              child: LinearProgressIndicator(
-                                value: progress,
-                                minHeight: 6,
-                                backgroundColor: Colors.white.withOpacity(0.3),
-                                valueColor: const AlwaysStoppedAnimation<Color>(
-                                    Colors.white),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      Expanded(
-                        child: SingleChildScrollView(
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 24),
-                            child: Column(
-                              children: [
-                                const SizedBox(height: 24),
-                                Text(
-                                  step['icon'],
-                                  style: const TextStyle(fontSize: 56),
-                                ),
-                                const SizedBox(height: 20),
-                                Text(
-                                  step['q'],
-                                  textAlign: TextAlign.center,
-                                  style: const TextStyle(
-                                    fontSize: 24,
-                                    fontWeight: FontWeight.w900,
-                                    color: Colors.white,
-                                    height: 1.3,
-                                  ),
-                                ),
-                                const SizedBox(height: 12),
-                                Text(
-                                  step['sub'],
+                                child: Text(
+                                  step['warn'],
                                   textAlign: TextAlign.center,
                                   style: TextStyle(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w500,
-                                    color: Colors.white.withOpacity(0.8),
-                                    height: 1.4,
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w600,
+                                    color: Colors.white.withOpacity(0.9),
                                   ),
                                 ),
-                                if (step['warn'] != null)
-                                  Padding(
-                                    padding: const EdgeInsets.only(top: 16),
-                                    child: Container(
-                                      padding: const EdgeInsets.all(12),
-                                      decoration: BoxDecoration(
-                                        color: Colors.white.withOpacity(0.15),
-                                        borderRadius: BorderRadius.circular(12),
-                                        border: Border.all(
-                                          color: Colors.white.withOpacity(0.3),
-                                          width: 1,
-                                        ),
-                                      ),
-                                      child: Text(
-                                        step['warn'],
-                                        textAlign: TextAlign.center,
-                                        style: TextStyle(
-                                          fontSize: 12,
-                                          fontWeight: FontWeight.w600,
-                                          color: Colors.white.withOpacity(0.9),
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                const SizedBox(height: 32),
-                                _buildStepInput(step),
-                                const SizedBox(height: 32),
-                              ],
+                              ),
+                            ),
+                          const SizedBox(height: 32),
+                          _buildStepInput(step),
+                          const SizedBox(height: 32),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(24.0),
+                  child: Column(
+                    children: [
+                      if (step['skip'] != null)
+                        TextButton(
+                          onPressed: () => _nextStep(steps),
+                          child: Text(
+                            step['skip'],
+                            style: const TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w800,
+                              color: Color(0xFFD0B0B8),
                             ),
                           ),
                         ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.all(24.0),
-                        child: Column(
-                          children: [
-                            if (step['skip'] != null)
-                              TextButton(
-                                onPressed: () => _nextStep(steps),
-                                child: Text(
-                                  step['skip'],
-                                  style: const TextStyle(
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.w800,
-                                    color: Color(0xFFD0B0B8),
-                                  ),
-                                ),
+                      const SizedBox(height: 12),
+                      if (!isSingleChoice)
+                        SizedBox(
+                          width: double.infinity,
+                          height: 56,
+                          child: ElevatedButton(
+                            onPressed: () => _nextStep(steps),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: accentColor,
+                              foregroundColor: Colors.white,
+                              elevation: 6,
+                              shadowColor: accentColor.withOpacity(0.35),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(18),
                               ),
-                            const SizedBox(height: 12),
-                            if (!isSingleChoice)
-                              SizedBox(
-                                width: double.infinity,
-                                height: 56,
-                                child: ElevatedButton(
-                                  onPressed: () => _nextStep(steps),
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: accentColor,
-                                    foregroundColor: Colors.white,
-                                    elevation: 6,
-                                    shadowColor: accentColor.withOpacity(0.35),
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(18),
-                                    ),
-                                  ),
-                                  child: const Text(
-                                    'Continue',
-                                    style: TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.w900),
-                                  ),
-                                ),
-                              ),
-                          ],
+                            ),
+                            child: const Text(
+                              'Continue',
+                              style: TextStyle(
+                                  fontSize: 16, fontWeight: FontWeight.w900),
+                            ),
+                          ),
                         ),
-                      ),
                     ],
                   ),
                 ),
-              );
-            },
+              ],
+            ),
           ),
+        );
+      },
     );
   }
 
@@ -627,20 +565,6 @@ class _JourneyScreenState extends ConsumerState<JourneyScreen> {
                     setState(() {
                       journeyData[key] = opt['v'];
                     });
-                    // Auto-advance for single choice
-                    if (step['type'] == 'chips-big-single') {
-                      Future.delayed(const Duration(milliseconds: 300), () {
-                        final steps = ref
-                            .read(journeyStepsProvider(widget.mode))
-                            .maybeWhen(
-                              data: (data) => data,
-                              orElse: () => [],
-                            );
-                        if (steps.isNotEmpty) {
-                          _nextStep(List<Map<String, dynamic>>.from(steps));
-                        }
-                      });
-                    }
                   }
                 },
                 child: Container(
