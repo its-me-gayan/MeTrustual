@@ -158,11 +158,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     switch (route) {
       case '/home':
         return 0;
-      case '/log':
-        return 1;
       case '/insights':
+        return 1;
+      case '/education':
         return 2;
-      case '/learn':
+      case '/privacy':
         return 3;
       default:
         return 0;
@@ -198,11 +198,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 'label': 'Period Days',
                 'color': const Color(0xFFC9A0D0)
               },
-              {
-                'value': '12',
-                'label': 'Logged',
-                'color': const Color(0xFF8AB88A)
-              },
             ),
             const SizedBox(height: 24),
             const PremiumGate(
@@ -235,11 +230,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 'value': 'Jun 5',
                 'label': 'Due Date',
                 'color': const Color(0xFF9870C0)
-              },
-              {
-                'value': '28',
-                'label': 'Logs',
-                'color': const Color(0xFF8AB88A)
               },
             ),
             const SizedBox(height: 24),
@@ -280,11 +270,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 'label': 'Next Period',
                 'color': AppColors.primaryRose
               },
-              {
-                'value': '28',
-                'label': 'Cycle Len',
-                'color': const Color(0xFF8AB88A)
-              },
             ),
             const SizedBox(height: 24),
             PremiumGate(
@@ -306,15 +291,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     }
   }
 
-  Widget _buildPillsRow(Map<String, dynamic> pill1, Map<String, dynamic> pill2,
-      Map<String, dynamic> pill3) {
+  Widget _buildPillsRow(Map<String, dynamic> pill1, Map<String, dynamic> pill2) {
     return Row(
       children: [
         _buildStatPill(pill1['value'], pill1['label'], color: pill1['color']),
         const SizedBox(width: 8),
         _buildStatPill(pill2['value'], pill2['label'], color: pill2['color']),
-        const SizedBox(width: 8),
-        _buildStatPill(pill3['value'], pill3['label'], color: pill3['color']),
       ],
     );
   }
@@ -325,31 +307,34 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         padding: const EdgeInsets.symmetric(vertical: 12),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(18),
           border: Border.all(color: AppColors.border, width: 1.5),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.04),
-              offset: Offset(0, 2),
-              blurRadius: 10,
-            ),
-          ],
         ),
         child: Column(
           children: [
             Text(
               value,
               style: GoogleFonts.nunito(
-                fontSize: 20,
+                fontSize: 18,
                 fontWeight: FontWeight.w900,
                 color: color ?? AppColors.primaryRose,
               ),
             ),
-            const SizedBox(height: 3),
+            const SizedBox(height: 2),
             Text(
-              label.toUpperCase(),
+              label,
               style: GoogleFonts.nunito(
                 fontSize: 10,
+                fontWeight: FontWeight.w800,
+                color: AppColors.textMuted,
+                letterSpacing: 0.3,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }e: 10,
                 fontWeight: FontWeight.w700,
                 color: AppColors.textMuted,
                 letterSpacing: 0.3,
