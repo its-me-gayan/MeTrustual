@@ -5,6 +5,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/providers/mode_provider.dart';
 import '../../../core/widgets/app_bottom_nav.dart';
 import 'package:go_router/go_router.dart';
+import 'dart:async';
 
 class SelfCareScreen extends ConsumerStatefulWidget {
   const SelfCareScreen({super.key});
@@ -15,7 +16,7 @@ class SelfCareScreen extends ConsumerStatefulWidget {
 
 class _SelfCareScreenState extends ConsumerState<SelfCareScreen> {
   int _affIdx = 0;
-  String? _selectedPhase; // Track selected phase
+  String? _selectedPhase;
 
   final Map<String, List<String>> _allAffirmations = {
     'period': [
@@ -53,7 +54,6 @@ class _SelfCareScreenState extends ConsumerState<SelfCareScreen> {
             ? const Color(0xFF5A8E6A)
             : AppColors.primaryRose;
 
-    // Initialize selected phase on first build
     if (_selectedPhase == null) {
       _selectedPhase = _getDefaultPhase(currentMode);
     }
@@ -163,13 +163,9 @@ class _SelfCareScreenState extends ConsumerState<SelfCareScreen> {
   }
 
   String _getDefaultPhase(String currentMode) {
-    if (currentMode == 'period') {
-      return 'Follicular';
-    } else if (currentMode == 'preg') {
-      return '2nd Trim';
-    } else {
-      return 'Pre-Ovul';
-    }
+    if (currentMode == 'period') return 'Follicular';
+    if (currentMode == 'preg') return '2nd Trim';
+    return 'Pre-Ovul';
   }
 
   Widget _buildPhaseStrip(String currentMode, Color color) {
@@ -238,7 +234,7 @@ class _SelfCareScreenState extends ConsumerState<SelfCareScreen> {
   }
 
   Widget _buildCareHero(String currentMode, Color color, String selectedPhase) {
-    final ritual = _getRitualForPhase(currentMode, selectedPhase);
+    final data = _getPhaseData(currentMode, selectedPhase);
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(24),
@@ -260,7 +256,7 @@ class _SelfCareScreenState extends ConsumerState<SelfCareScreen> {
               borderRadius: BorderRadius.circular(20),
             ),
             child: Text(
-              '✦ Today\'s focus',
+              data['badge']!,
               style: GoogleFonts.nunito(
                 fontSize: 10,
                 fontWeight: FontWeight.w900,
@@ -270,10 +266,10 @@ class _SelfCareScreenState extends ConsumerState<SelfCareScreen> {
             ),
           ),
           const SizedBox(height: 16),
-          Text(ritual['e']!, style: const TextStyle(fontSize: 48)),
+          Text(data['hero_e']!, style: const TextStyle(fontSize: 48)),
           const SizedBox(height: 12),
           Text(
-            ritual['t']!,
+            data['hero_t']!,
             style: GoogleFonts.nunito(
               fontSize: 18,
               fontWeight: FontWeight.w900,
@@ -282,7 +278,7 @@ class _SelfCareScreenState extends ConsumerState<SelfCareScreen> {
           ),
           const SizedBox(height: 6),
           Text(
-            ritual['d']!,
+            data['hero_d']!,
             textAlign: TextAlign.center,
             style: GoogleFonts.nunito(
               fontSize: 12,
@@ -295,7 +291,7 @@ class _SelfCareScreenState extends ConsumerState<SelfCareScreen> {
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
-              onPressed: () {},
+              onPressed: () => _startRitual(currentMode, selectedPhase),
               style: ElevatedButton.styleFrom(
                 backgroundColor: color,
                 foregroundColor: Colors.white,
@@ -311,6 +307,46 @@ class _SelfCareScreenState extends ConsumerState<SelfCareScreen> {
                   fontWeight: FontWeight.w900,
                   fontSize: 14,
                 ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 20),
+          _buildTipStrip(data),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTipStrip(Map<String, String> data) {
+    return Column(
+      children: [
+        _buildTipItem('💭', data['mood']!, const Color(0xFFE8F0FE), const Color(0xFF4A70B0)),
+        const SizedBox(height: 8),
+        _buildTipItem('🍽️', data['food']!, const Color(0xFFF0FAF4), const Color(0xFF5A8E6A)),
+        const SizedBox(height: 8),
+        _buildTipItem('⚠️', data['avoid']!, const Color(0xFFFFF5F6), const Color(0xFFD97B8A)),
+      ],
+    );
+  }
+
+  Widget _buildTipItem(String icon, String text, Color bg, Color textCol) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: bg,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Row(
+        children: [
+          Text(icon, style: const TextStyle(fontSize: 14)),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              text,
+              style: GoogleFonts.nunito(
+                fontSize: 10,
+                fontWeight: FontWeight.w700,
+                color: textCol,
               ),
             ),
           ),
@@ -375,59 +411,62 @@ class _SelfCareScreenState extends ConsumerState<SelfCareScreen> {
   }
 
   Widget _buildBreatheCard(Color color) {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: AppColors.border, width: 1.5),
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 48,
-            height: 48,
-            decoration: BoxDecoration(
-              color: color.withOpacity(0.1),
-              shape: BoxShape.circle,
+    return GestureDetector(
+      onTap: () => _startRitual(ref.read(modeProvider), _selectedPhase!),
+      child: Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(24),
+          border: Border.all(color: AppColors.border, width: 1.5),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 48,
+              height: 48,
+              decoration: BoxDecoration(
+                color: color.withOpacity(0.1),
+                shape: BoxShape.circle,
+              ),
+              alignment: Alignment.center,
+              child: const Text('🫁', style: TextStyle(fontSize: 24)),
             ),
-            alignment: Alignment.center,
-            child: const Text('🫁', style: TextStyle(fontSize: 24)),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  '4-7-8 Breathing',
-                  style: GoogleFonts.nunito(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w900,
-                    color: AppColors.textDark,
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Guided Ritual Session',
+                    style: GoogleFonts.nunito(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w900,
+                      color: AppColors.textDark,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  'Calm your nervous system in 2 minutes',
-                  style: GoogleFonts.nunito(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.textMid,
+                  const SizedBox(height: 2),
+                  Text(
+                    'Step-by-step with timers — tap to start',
+                    style: GoogleFonts.nunito(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.textMid,
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-          Text(
-            'Begin →',
-            style: GoogleFonts.nunito(
-              fontSize: 12,
-              fontWeight: FontWeight.w800,
-              color: color,
+            Text(
+              'Begin →',
+              style: GoogleFonts.nunito(
+                fontSize: 12,
+                fontWeight: FontWeight.w800,
+                color: color,
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -541,156 +580,196 @@ class _SelfCareScreenState extends ConsumerState<SelfCareScreen> {
     }).toList();
   }
 
-  // ─── PHASE-SPECIFIC DATA ───
+  void _startRitual(String mode, String phase) {
+    final rituals = _getRitualListForPhase(mode, phase);
+    final color = mode == 'preg'
+        ? const Color(0xFF4A70B0)
+        : mode == 'ovul'
+            ? const Color(0xFF5A8E6A)
+            : AppColors.primaryRose;
 
-  Map<String, String> _getRitualForPhase(String currentMode, String phase) {
-    if (currentMode == 'period') {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => RitualOverlay(rituals: rituals, color: color),
+    );
+  }
+
+  Map<String, String> _getPhaseData(String mode, String phase) {
+    if (mode == 'period') {
       switch (phase) {
         case 'Menstrual':
           return {
-            'e': '🧘',
-            't': 'Menstrual Phase Flow',
-            'd': 'Rest and restore — gentle practices to honor your body\'s need for recovery.'
+            'badge': '🩸 Days 1–5',
+            'hero_e': '🛌',
+            'hero_t': 'Rest & Restore',
+            'hero_d': 'Your body is shedding. Honour it with deep rest, warmth, and nourishment. This is not laziness — this is medicine.',
+            'mood': '🌧️ Low energy expected — be gentle',
+            'food': 'Iron-rich: lentils, spinach, dark chocolate 🍫',
+            'avoid': 'Avoid intense cardio, cold drinks & caffeine'
           };
         case 'Follicular':
           return {
-            'e': '🧘',
-            't': 'Follicular Phase Flow',
-            'd': 'Your energy is rising — perfect for gentle stretching & breathwork to welcome the new cycle.'
+            'badge': '🌱 Days 6–13',
+            'hero_e': '🧘',
+            'hero_t': 'Rise & Bloom',
+            'hero_d': 'Oestrogen is climbing. Your energy, creativity and social drive are building. The best time to start new things.',
+            'mood': '⬆️ Energy rising — great for new goals',
+            'food': 'Protein & complex carbs: eggs, oats, avocado 🥑',
+            'avoid': 'Don\'t overcommit — energy hasn\'t peaked yet'
           };
         case 'Ovulatory':
           return {
-            'e': '✨',
-            't': 'Ovulatory Phase Energy',
-            'd': 'Harness your peak energy — dynamic movement and social connection shine now.'
+            'badge': '✨ Days 14–16',
+            'hero_e': '🌟',
+            'hero_t': 'Peak Power Day',
+            'hero_d': 'You\'re at your most magnetic. Oestrogen + testosterone are peaking — socialise, create, and tackle your hardest tasks.',
+            'mood': '✨ Peak energy & confidence — shine!',
+            'food': 'Antioxidants: berries, flaxseeds, leafy greens 🫐',
+            'avoid': 'Watch for ovulation pain (Mittelschmerz)'
           };
         case 'Luteal':
           return {
-            'e': '🌙',
-            't': 'Luteal Phase Calm',
-            'd': 'Slow down and nurture — introspective practices support your inner wisdom.'
-          };
-        default:
-          return {
-            'e': '🧘',
-            't': 'Follicular Phase Flow',
-            'd': 'Your energy is rising — perfect for gentle stretching & breathwork to welcome the new cycle.'
+            'badge': '🌙 Days 17–28',
+            'hero_e': '🌙',
+            'hero_t': 'Wind Down & Nest',
+            'hero_d': 'Progesterone is rising. Your body is preparing. Cravings, mood dips and fatigue are normal — meet them with kindness.',
+            'mood': '🌊 Moody waves — journaling helps a lot',
+            'food': 'Progesterone support: vitamin B6, magnesium 🥜',
+            'avoid': 'Reduce salt & caffeine to ease bloating'
           };
       }
-    } else if (currentMode == 'preg') {
+    } else if (mode == 'preg') {
       switch (phase) {
         case '1st Trim':
           return {
-            'e': '💙',
-            't': '1st Trimester Wellness',
-            'd': 'Nourish and rest — support your body through these early changes with gentle care.'
+            'badge': '🌱 Weeks 1–12',
+            'hero_e': '🌱',
+            'hero_t': 'The Foundation',
+            'hero_d': 'Your body is working overtime to build a life. Nausea and fatigue are signs of a strong pregnancy. Go slow.',
+            'mood': '😴 Extreme fatigue — nap whenever you can',
+            'food': 'Folic acid & ginger for nausea 🫚',
+            'avoid': 'Avoid raw fish, unpasteurized cheese & high heat'
           };
         case '2nd Trim':
           return {
-            'e': '🌸',
-            't': '2nd Trimester Wellness',
-            'd': 'Your energy is back — nurture your body and bond with baby with these gentle daily rituals.'
+            'badge': '🌸 Weeks 13–27',
+            'hero_e': '🤰',
+            'hero_t': 'The Golden Phase',
+            'hero_d': 'Energy returns and the "glow" begins. A beautiful time to bond with baby and stay active with gentle movement.',
+            'mood': '😊 Mood stabilizing — enjoy the energy!',
+            'food': 'Calcium & Vitamin D for baby\'s bones 🥛',
+            'avoid': 'Don\'t lie flat on your back for long periods'
           };
         case '3rd Trim':
           return {
-            'e': '🌟',
-            't': '3rd Trimester Wellness',
-            'd': 'Prepare for birth — grounding practices to ease discomfort and build confidence.'
+            'badge': '🌟 Weeks 28–40',
+            'hero_e': '🌟',
+            'hero_t': 'The Home Stretch',
+            'hero_d': 'Your body is preparing for birth. Focus on pelvic floor health, breathing, and nesting. You are almost there.',
+            'mood': '⚖️ Mix of excitement and physical discomfort',
+            'food': 'Dates & raspberry leaf tea (from week 36) 🫖',
+            'avoid': 'Avoid heavy lifting and over-exertion'
           };
         case 'Newborn':
           return {
-            'e': '👼',
-            't': 'Postpartum Care',
-            'd': 'Recovery and bonding — gentle rituals to support your healing journey.'
-          };
-        default:
-          return {
-            'e': '🌸',
-            't': '2nd Trimester Wellness',
-            'd': 'Your energy is back — nurture your body and bond with baby with these gentle daily rituals.'
+            'badge': '👼 Postpartum',
+            'hero_e': '👼',
+            'hero_t': 'The Fourth Trimester',
+            'hero_d': 'Healing and bonding. Your only job is to recover and know your baby. Ask for help — you deserve it.',
+            'mood': '🌊 Hormonal shifts — "baby blues" are normal',
+            'food': 'Warm, easy-to-digest soups and stews 🍲',
+            'avoid': 'Don\'t rush back into exercise — heal first'
           };
       }
     } else {
       switch (phase) {
         case 'Early':
           return {
-            'e': '📅',
-            't': 'Early Cycle Rituals',
-            'd': 'Begin your journey — prepare your body and mind for the fertile window ahead.'
+            'badge': '📅 Days 1–7',
+            'hero_e': '📅',
+            'hero_t': 'Reset & Observe',
+            'hero_d': 'New cycle, new data. Focus on clearing inflammation and preparing your uterine lining for the month ahead.',
+            'mood': '🧘 Calm and focused — good for planning',
+            'food': 'Anti-inflammatory: turmeric, berries, salmon 🐟',
+            'avoid': 'Avoid alcohol and processed sugars'
           };
         case 'Pre-Ovul':
           return {
-            'e': '🌱',
-            't': 'Pre-Ovulation Rituals',
-            'd': 'Your fertile window is near — support your hormones with nurturing daily practices.'
+            'badge': '🌱 Days 8–13',
+            'hero_e': '🌿',
+            'hero_t': 'The Fertile Window',
+            'hero_d': 'Oestrogen is rising, cervical mucus is changing. Your body is preparing to release an egg. Support your libido.',
+            'mood': '🔥 Libido rising — feeling more attractive',
+            'food': 'Zinc & Vitamin E: pumpkin seeds, almonds 🥜',
+            'avoid': 'Avoid lubricants that aren\'t sperm-friendly'
           };
         case 'Peak':
           return {
-            'e': '🎯',
-            't': 'Peak Fertility Rituals',
-            'd': 'Your most fertile moment — celebrate your body\'s natural rhythm and power.'
+            'badge': '🎯 Ovulation Day',
+            'hero_e': '🎯',
+            'hero_t': 'Ovulation Day — Act Now',
+            'hero_d': 'Your LH has surged. The egg is released. This is your 12–24 hour peak window. Your body is at its most powerful.',
+            'mood': '✨ Peak confidence and libido today!',
+            'food': 'Antioxidants for egg quality: berries, walnuts 🫐',
+            'avoid': 'Avoid hot tubs, excessive heat on the abdomen'
           };
         case 'Post-Ovul':
           return {
-            'e': '📉',
-            't': 'Post-Ovulation Rituals',
-            'd': 'Transition phase — balance and grounding practices as hormones shift.'
-          };
-        default:
-          return {
-            'e': '🌱',
-            't': 'Pre-Ovulation Rituals',
-            'd': 'Your fertile window is near — support your hormones with nurturing daily practices.'
+            'badge': '📉 Days 15–28',
+            'hero_e': '🌙',
+            'hero_t': 'Luteal & Implantation Window',
+            'hero_d': 'Progesterone rises. If you\'re TTC, this is the implantation window (days 6–10 post-ovulation). Rest and nourish.',
+            'mood': '🌊 Progesterone dip = PMS — be kind to yourself',
+            'food': 'Progesterone support: vitamin B6, magnesium 🥜',
+            'avoid': 'Wait until day 28 before taking a pregnancy test'
           };
       }
     }
+    return {};
   }
 
-  List<Map<String, String>> _getRitualListForPhase(String currentMode, String phase) {
-    if (currentMode == 'period') {
+  List<Map<String, String>> _getRitualListForPhase(String mode, String phase) {
+    if (mode == 'period') {
       switch (phase) {
         case 'Menstrual':
           return [
-            {'e': '🧘', 't': 'Restorative Yoga', 's': 'Gentle poses to ease cramps', 'dur': '10 min'},
-            {'e': '🛁', 't': 'Warm Herbal Bath', 's': 'Relax and restore energy', 'dur': '20 min'},
-            {'e': '📓', 't': 'Reflection Journal', 's': 'Explore your inner wisdom', 'dur': '10 min'},
-            {'e': '🍵', 't': 'Herbal Tea Ritual', 's': 'Nourish with warming herbs', 'dur': '5 min'},
+            {'e': '🛁', 't': 'Warm Castor Oil Compress', 's': 'Place on lower abdomen to ease cramping', 'dur': '15 min'},
+            {'e': '🍫', 't': 'Anti-Inflammatory Foods', 's': 'Dark chocolate, ginger tea, leafy greens', 'dur': 'All day'},
+            {'e': '🧘', 't': 'Yin Yoga — Supported Child\'s Pose', 's': 'Surrender, breathe, release', 'dur': '10 min'},
+            {'e': '📓', 't': 'Letting Go Journal', 's': '"What am I releasing this cycle?"', 'dur': '5 min'},
           ];
         case 'Follicular':
           return [
             {'e': '🧘', 't': 'Morning Yoga — Sun Salutation', 's': 'Energise your body as oestrogen rises', 'dur': '8 min'},
-            {'e': '💆', 't': 'Gua Sha Face Massage', 's': 'Lymphatic drainage & glow routine', 'dur': '5 min'},
-            {'e': '🛁', 't': 'Rose & Magnesium Bath Soak', 's': 'Relax muscles & ease lingering cramps', 'dur': '20 min'},
+            {'e': '💆', 't': 'Gua Sha Face Massage', 's': 'Lymphatic drainage & natural glow', 'dur': '5 min'},
+            {'e': '🏃', 't': 'Light Cardio or Dance', 's': 'Harness rising energy — have fun!', 'dur': '20 min'},
             {'e': '📓', 't': 'Cycle Journal Prompt', 's': '"What do I want to invite this cycle?"', 'dur': '5 min'},
           ];
         case 'Ovulatory':
           return [
-            {'e': '🏃', 't': 'High-Energy Workout', 's': 'Harness peak energy levels', 'dur': '30 min'},
-            {'e': '💃', 't': 'Dance & Movement', 's': 'Express your confidence', 'dur': '15 min'},
-            {'e': '🤝', 't': 'Social Connection', 's': 'Reach out to loved ones', 'dur': '30 min'},
-            {'e': '✨', 't': 'Confidence Affirmation', 's': 'Celebrate your power', 'dur': '5 min'},
+            {'e': '💪', 't': 'HIIT or Strength Training', 's': 'Your pain tolerance is highest now — go for it', 'dur': '30 min'},
+            {'e': '🌸', 't': 'Self-Expression Ritual', 's': 'Wear something that makes you feel powerful', 'dur': '5 min'},
+            {'e': '🗣️', 't': 'Important Conversations', 's': 'Your communication is at its peak today', 'dur': 'Ongoing'},
+            {'e': '🫐', 't': 'Antioxidant Smoothie', 's': 'Berries, flaxseed & maca for hormone support', 'dur': '5 min'},
           ];
         case 'Luteal':
           return [
-            {'e': '🧘', 't': 'Yin Yoga Flow', 's': 'Deep stretches and release', 'dur': '20 min'},
-            {'e': '🎨', 't': 'Creative Expression', 's': 'Art, music, or writing', 'dur': '20 min'},
-            {'e': '📚', 't': 'Mindful Reading', 's': 'Nourish your mind', 'dur': '15 min'},
-            {'e': '🌙', 't': 'Moon Meditation', 's': 'Connect with inner stillness', 'dur': '10 min'},
-          ];
-        default:
-          return [
-            {'e': '🧘', 't': 'Morning Yoga — Sun Salutation', 's': 'Energise your body as oestrogen rises', 'dur': '8 min'},
-            {'e': '💆', 't': 'Gua Sha Face Massage', 's': 'Lymphatic drainage & glow routine', 'dur': '5 min'},
+            {'e': '🧘', 't': 'Restorative Yoga — Legs Up Wall', 's': 'Calms the nervous system, reduces bloating', 'dur': '12 min'},
+            {'e': '🌿', 't': 'Seed Cycling — Sesame & Sunflower', 's': 'Day 15–28: progesterone-supporting seeds', 'dur': '2 min'},
+            {'e': '📵', 't': 'Digital Sunset at 9pm', 's': 'Blue light worsens PMS — protect your sleep', 'dur': 'Nightly'},
+            {'e': '🫖', 't': 'Raspberry Leaf Tea', 's': 'Traditional uterine toner & cramp support', 'dur': '5 min'},
           ];
       }
-    } else if (currentMode == 'preg') {
+    } else if (mode == 'preg') {
       switch (phase) {
         case '1st Trim':
           return [
-            {'e': '🧘', 't': 'Gentle Prenatal Yoga', 's': 'Support your changing body', 'dur': '15 min'},
-            {'e': '🌿', 't': 'Herbal Support', 's': 'Nourish with pregnancy teas', 'dur': '5 min'},
-            {'e': '😴', 't': 'Rest & Restoration', 's': 'Honor your body\'s needs', 'dur': '20 min'},
-            {'e': '📓', 't': 'Pregnancy Journal', 's': 'Document your journey', 'dur': '10 min'},
+            {'e': '😴', 't': 'Power Nap Ritual', 's': '15-20 mins to combat first trim fatigue', 'dur': '20 min'},
+            {'e': '🫚', 't': 'Ginger & Lemon Water', 's': 'Sip slowly to settle morning sickness', 'dur': 'All day'},
+            {'e': '🧘', 't': 'Gentle Pelvic Tilts', 's': 'Relieve early back tension', 'dur': '5 min'},
+            {'e': '📓', 't': 'First Thoughts Journal', 's': '"How I felt when I saw the positive test"', 'dur': '10 min'},
           ];
         case '2nd Trim':
           return [
@@ -713,11 +792,6 @@ class _SelfCareScreenState extends ConsumerState<SelfCareScreen> {
             {'e': '🤝', 't': 'Bonding Ritual', 's': 'Connect with your baby', 'dur': '20 min'},
             {'e': '😴', 't': 'Rest When Baby Rests', 's': 'Prioritize your sleep', 'dur': '30 min'},
           ];
-        default:
-          return [
-            {'e': '🧘', 't': 'Prenatal Yoga — Hip Opener', 's': 'Safe stretches for your changing body', 'dur': '12 min'},
-            {'e': '🌬️', 't': '4-7-8 Breathing for Calm', 's': 'Reduce pregnancy anxiety & improve sleep', 'dur': '5 min'},
-          ];
       }
     } else {
       switch (phase) {
@@ -737,24 +811,286 @@ class _SelfCareScreenState extends ConsumerState<SelfCareScreen> {
           ];
         case 'Peak':
           return [
-            {'e': '🎯', 't': 'Peak Fertility Yoga', 's': 'Celebrate your power', 'dur': '15 min'},
-            {'e': '💃', 't': 'Sensual Movement', 's': 'Connect with your body', 'dur': '10 min'},
-            {'e': '🌿', 't': 'Seed Cycling — Sesame & Sunflower', 's': 'Peak phase seeds', 'dur': '2 min'},
-            {'e': '💕', 't': 'Intimacy Ritual', 's': 'Connect with your partner', 'dur': '30 min'},
+            {'e': '🌡️', 't': 'Confirm BBT Spike', 's': 'Temp rises 0.2–0.5°C after ovulation — log it!', 'dur': '2 min'},
+            {'e': '💊', 't': 'Check OPK Result', 's': 'Look for blazing positive LH strip today', 'dur': '2 min'},
+            {'e': '🏃', 't': 'Light Walk After Intimacy', 's': 'Gentle movement — no intense exercise today', 'dur': '15 min'},
+            {'e': '🫐', 't': 'Antioxidant-Rich Smoothie', 's': 'Protect egg quality: berries, CoQ10, maca', 'dur': '5 min'},
           ];
         case 'Post-Ovul':
           return [
-            {'e': '📉', 't': 'Transition Yoga', 's': 'Balance as hormones shift', 'dur': '12 min'},
-            {'e': '🌿', 't': 'Seed Cycling — Sesame & Sunflower', 's': 'Post-peak phase seeds', 'dur': '2 min'},
-            {'e': '🧘', 't': 'Grounding Meditation', 's': 'Find your center', 'dur': '10 min'},
-            {'e': '📓', 't': 'Cycle Reflection', 's': 'Document your experience', 'dur': '5 min'},
-          ];
-        default:
-          return [
-            {'e': '🧘', 't': 'Core & Hip Yoga Flow', 's': 'Boost blood flow to reproductive organs', 'dur': '10 min'},
-            {'e': '🌿', 't': 'Seed Cycling — Flax & Pumpkin', 's': 'Day 1–14: oestrogen-supporting seeds', 'dur': '2 min'},
+            {'e': '🌿', 't': 'Seed Cycling — Sesame & Sunflower', 's': 'Switch to Phase 2 seeds for progesterone support', 'dur': 'Daily'},
+            {'e': '🧘', 't': 'Restorative Yoga', 's': 'Support progesterone with gentle, calming movement', 'dur': '12 min'},
+            {'e': '🌡️', 't': 'Track BBT Stay Elevated', 's': 'If temp stays high 18+ days — take a test!', 'dur': 'Daily'},
+            {'e': '🫖', 't': 'Raspberry Leaf Tea', 's': 'Uterine toner to prepare for either outcome', 'dur': '5 min'},
           ];
       }
     }
+    return [];
   }
 }
+
+class RitualOverlay extends StatefulWidget {
+  final List<Map<String, String>> rituals;
+  final Color color;
+
+  const RitualOverlay({super.key, required this.rituals, required this.color});
+
+  @override
+  State<RitualOverlay> createState() => _RitualOverlayState();
+}
+
+class _RitualOverlayState extends State<RitualOverlay> {
+  int _currentIndex = 0;
+  int _timerSec = 0;
+  Timer? _timer;
+  bool _timerRunning = false;
+  final List<int> _completed = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _initStep();
+  }
+
+  void _initStep() {
+    final r = widget.rituals[_currentIndex];
+    _timerSec = _durToSec(r['dur']!);
+    _timerRunning = false;
+    _timer?.cancel();
+  }
+
+  int _durToSec(String dur) {
+    final m = RegExp(r'(\d+)\s*min').firstMatch(dur);
+    if (m != null) return int.parse(m.group(1)!) * 60;
+    return 0;
+  }
+
+  String _fmtTime(int sec) {
+    if (sec <= 0) return '✓';
+    final m = sec ~/ 60;
+    final s = sec % 60;
+    return m > 0 ? '$m:${s.toString().padLeft(2, '0')}' : '${s}s';
+  }
+
+  void _next() {
+    if (_durToSec(widget.rituals[_currentIndex]['dur']!) > 0 && !_timerRunning && !_completed.contains(_currentIndex)) {
+      _startTimer();
+    } else {
+      _advance();
+    }
+  }
+
+  void _startTimer() {
+    setState(() {
+      _timerRunning = true;
+    });
+    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (_timerSec > 0) {
+        setState(() {
+          _timerSec--;
+        });
+      } else {
+        timer.cancel();
+        _advance();
+      }
+    });
+  }
+
+  void _advance() {
+    if (!_completed.contains(_currentIndex)) {
+      setState(() {
+        _completed.add(_currentIndex);
+      });
+    }
+
+    if (_currentIndex < widget.rituals.length - 1) {
+      setState(() {
+        _currentIndex++;
+        _initStep();
+      });
+    } else {
+      Navigator.pop(context);
+    }
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final r = widget.rituals[_currentIndex];
+    final hasTimer = _durToSec(r['dur']!) > 0;
+
+    return Container(
+      height: MediaQuery.of(context).size.height * 0.9,
+      decoration: const BoxDecoration(
+        color: Color(0xFFFEF6F0),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(44)),
+      ),
+      padding: const EdgeInsets.all(24),
+      child: Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              IconButton(
+                onPressed: () => Navigator.pop(context),
+                icon: const Icon(Icons.close),
+                color: widget.color,
+              ),
+              Text(
+                'Today\'s Ritual',
+                style: GoogleFonts.nunito(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w900,
+                  color: AppColors.textDark,
+                ),
+              ),
+              Text(
+                '${_currentIndex + 1} of ${widget.rituals.length}',
+                style: GoogleFonts.nunito(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w800,
+                  color: AppColors.textMuted,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          LinearProgressIndicator(
+            value: (_currentIndex + 1) / widget.rituals.length,
+            backgroundColor: widget.color.withOpacity(0.1),
+            valueColor: AlwaysStoppedAnimation(widget.color),
+            borderRadius: BorderRadius.circular(3),
+          ),
+          const SizedBox(height: 40),
+          Text(r['e']!, style: const TextStyle(fontSize: 64)),
+          const SizedBox(height: 16),
+          Text(
+            r['t']!,
+            style: GoogleFonts.nunito(
+              fontSize: 20,
+              fontWeight: FontWeight.w900,
+              color: AppColors.textDark,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            r['s']!,
+            textAlign: TextAlign.center,
+            style: GoogleFonts.nunito(
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+              color: widget.color,
+            ),
+          ),
+          const SizedBox(height: 40),
+          if (hasTimer)
+            Stack(
+              alignment: Alignment.center,
+              children: [
+                SizedBox(
+                  width: 130,
+                  height: 130,
+                  child: CircularProgressIndicator(
+                    value: _timerSec / _durToSec(r['dur']!),
+                    strokeWidth: 8,
+                    backgroundColor: widget.color.withOpacity(0.1),
+                    valueColor: AlwaysStoppedAnimation(widget.color),
+                  ),
+                ),
+                Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      _fmtTime(_timerSec),
+                      style: GoogleFonts.nunito(
+                        fontSize: 24,
+                        fontWeight: FontWeight.w900,
+                        color: AppColors.textDark,
+                      ),
+                    ),
+                    Text(
+                      r['dur']!,
+                      style: GoogleFonts.nunito(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.textMuted,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          const Spacer(),
+          Column(
+            children: widget.rituals.asMap().entries.map((entry) {
+              final idx = entry.key;
+              final ri = entry.value;
+              final isDone = _completed.contains(idx);
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 20,
+                      height: 20,
+                      decoration: BoxDecoration(
+                        color: isDone ? widget.color : Colors.white,
+                        border: Border.all(color: widget.color, width: 1.5),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: isDone ? const Icon(Icons.check, size: 14, color: Colors.white) : null,
+                    ),
+                    const SizedBox(width: 12),
+                    Text(
+                      '${ri['e']} ${ri['t']}',
+                      style: GoogleFonts.nunito(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                        color: isDone ? widget.color : AppColors.textMid,
+                        decoration: isDone ? TextDecoration.lineThrough : null,
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            }).toList(),
+          ),
+          const SizedBox(height: 24),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: _next,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: widget.color,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(18),
+                ),
+                padding: const EdgeInsets.symmetric(vertical: 15),
+                elevation: 0,
+              ),
+              child: Text(
+                hasTimer && !_timerRunning
+                    ? 'Start timer ▶'
+                    : _currentIndex == widget.rituals.length - 1
+                        ? 'Finish session 🌸'
+                        : 'Mark done & next →',
+                style: GoogleFonts.nunito(
+                  fontWeight: FontWeight.w900,
+                  fontSize: 14,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+
