@@ -19,6 +19,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   String selectedLang = 'en';
   bool keepPrivate = true;
   bool backupData = false;
+  final TextEditingController _nicknameController = TextEditingController();
 
   final List<Map<String, String>> languages = [
     {'code': 'en', 'name': 'English', 'flag': '🇬🇧'},
@@ -30,6 +31,12 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   ];
 
   @override
+  void dispose() {
+    _nicknameController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
@@ -39,13 +46,13 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           gradient: AppColors.onboardingGradient,
         ),
         child: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24),
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 // ── Header ──
-                const Spacer(flex: 2),
+                const SizedBox(height: 40),
                 Text('🌸', style: GoogleFonts.nunito(fontSize: 52)),
                 const SizedBox(height: 8),
                 Text(
@@ -62,7 +69,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                         fontSize: 13,
                       ),
                 ),
-                const Spacer(flex: 2),
+                const SizedBox(height: 30),
 
                 // ── Language Grid ──
                 _buildLangRow(languages[0], languages[1]),
@@ -71,7 +78,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                 const SizedBox(height: 10),
                 _buildLangRow(languages[4], languages[5]),
 
-                const Spacer(flex: 2),
+                const SizedBox(height: 30),
 
                 // ── Toggle Cards ──
                 _buildToggleCard(
@@ -88,7 +95,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                   onChanged: (val) => setState(() => backupData = val),
                 ),
 
-                const Spacer(flex: 2),
+                const SizedBox(height: 20),
 
                 // ── Promise Card ──
                 Container(
@@ -125,7 +132,68 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                   ),
                 ),
 
-                const Spacer(flex: 2),
+                const SizedBox(height: 24),
+
+                // ── Nickname Section ──
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Text('🌸', style: const TextStyle(fontSize: 14)),
+                        const SizedBox(width: 6),
+                        Text(
+                          'What shall we call you?',
+                          style: GoogleFonts.nunito(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w900,
+                            color: AppColors.textDark,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 10),
+                    Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(18),
+                        border: Border.all(color: AppColors.border, width: 1.5),
+                      ),
+                      child: TextField(
+                        controller: _nicknameController,
+                        style: GoogleFonts.nunito(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.textDark,
+                        ),
+                        decoration: InputDecoration(
+                          hintText: 'Your name or nickname...',
+                          hintStyle: GoogleFonts.nunito(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.textMuted,
+                          ),
+                          border: InputBorder.none,
+                          contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 20, vertical: 16),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Center(
+                      child: Text(
+                        'This is just for you — shows on your home screen 💕',
+                        style: GoogleFonts.nunito(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.textMuted,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+
+                const SizedBox(height: 30),
 
                 // ── CTA Buttons ──
                 Column(
@@ -147,16 +215,17 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                         child: ElevatedButton(
                           onPressed: () async {
                             try {
+                              final nickname = _nicknameController.text.trim();
                               await ref
                                   .read(onboardingProvider.notifier)
                                   .completeOnboarding(
                                     language: selectedLang,
                                     anonymousMode: keepPrivate,
                                     cloudSync: backupData,
+                                    nickname: nickname.isEmpty ? 'Sweetie' : nickname,
                                   );
 
                               if (mounted) {
-                                // Navigate to mode selection instead of biometric setup
                                 context.go('/mode-selection');
                               }
                             } catch (e) {
@@ -170,11 +239,17 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                             shadowColor: Colors.transparent,
                             padding: const EdgeInsets.symmetric(vertical: 14),
                           ),
-                          child: Text('onboarding_cta'.tr()),
+                          child: Text(
+                            'Begin your journey 🌸',
+                            style: GoogleFonts.nunito(
+                              fontWeight: FontWeight.w900,
+                              fontSize: 16,
+                            ),
+                          ),
                         ),
                       ),
                     ),
-                    SizedBox(height: 16),
+                    const SizedBox(height: 16),
                     TextButton(
                       onPressed: () => context.push('/login'),
                       child: RichText(
@@ -184,7 +259,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                               fontWeight: FontWeight.w600,
                               color: AppColors.textMid),
                           children: [
-                            TextSpan(text: 'Already a premium user? '),
+                            const TextSpan(text: 'Already a premium user? '),
                             TextSpan(
                               text: 'Log In',
                               style: GoogleFonts.nunito(
@@ -197,8 +272,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                     ),
                   ],
                 ),
-
-                const Spacer(flex: 3),
+                const SizedBox(height: 40),
               ],
             ),
           ),

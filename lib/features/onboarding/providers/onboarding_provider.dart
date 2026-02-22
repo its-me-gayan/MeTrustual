@@ -18,13 +18,18 @@ class OnboardingNotifier extends StateNotifier<bool> {
     required String language,
     required bool anonymousMode,
     required bool cloudSync,
+    String nickname = 'Sweetie',
   }) async {
     final auth = _ref.read(firebaseAuthProvider);
     final firestore = _ref.read(firestoreProvider);
 
     // 1. Create anonymous user
     final userCredential = await auth.signInAnonymously();
-    final uid = userCredential.user!.uid;
+    final user = userCredential.user!;
+    final uid = user.uid;
+
+    // Update display name in Firebase Auth
+    await user.updateDisplayName(nickname);
 
     // 2. Save settings to Firestore
     await firestore
@@ -48,7 +53,7 @@ class OnboardingNotifier extends StateNotifier<bool> {
     // 3. Create initial profile
     final profile = UserProfile(
       uid: uid,
-      displayName: 'Lovely User',
+      displayName: nickname,
       ageGroup: 'adult',
       region: 'global',
       language: language,
@@ -91,6 +96,7 @@ class OnboardingNotifier extends StateNotifier<bool> {
     await prefs.setString('language', language);
     await prefs.setBool('anonymousMode', anonymousMode);
     await prefs.setBool('cloudSync', cloudSync);
+    await prefs.setString('nickname', nickname);
 
     state = true;
   }

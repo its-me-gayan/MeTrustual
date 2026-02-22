@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/services/notification_service.dart';
 import '../../../core/widgets/premium_gate.dart';
@@ -23,6 +24,53 @@ class HomeScreen extends ConsumerStatefulWidget {
 class _HomeScreenState extends ConsumerState<HomeScreen> {
   bool _isEditingNickname = false;
   final TextEditingController _nicknameController = TextEditingController();
+  String _displayName = 'Sweetie';
+
+  @override
+  void initState() {
+    super.initState();
+    _loadNickname();
+  }
+
+  Future<void> _loadNickname() async {
+    final prefs = await SharedPreferences.getInstance();
+    final auth = ref.read(firebaseAuthProvider);
+    final user = auth.currentUser;
+    
+    setState(() {
+      _displayName = prefs.getString('nickname') ?? user?.displayName ?? 'Sweetie';
+    });
+  }
+
+  Future<void> _saveNickname(String newName) async {
+    if (newName.isEmpty) newName = 'Sweetie';
+    
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('nickname', newName);
+    
+    final auth = ref.read(firebaseAuthProvider);
+    final user = auth.currentUser;
+    if (user != null) {
+      await user.updateDisplayName(newName);
+      
+      final firestore = ref.read(firestoreProvider);
+      await firestore
+          .collection('users')
+          .doc(user.uid)
+          .collection('profile')
+          .doc('current')
+          .update({'displayName': newName});
+    }
+    
+    setState(() {
+      _displayName = newName;
+      _isEditingNickname = false;
+    });
+    
+    if (mounted) {
+      NotificationService.showSuccess(context, 'Nickname updated! ✨');
+    }
+  }
 
   @override
   void dispose() {
@@ -33,8 +81,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     final homeData = ref.watch(homeDataProvider);
-    final auth = ref.watch(firebaseAuthProvider);
-    final user = auth.currentUser;
     final currentMode = ref.watch(modeProvider);
 
     return Scaffold(
@@ -48,74 +94,97 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Good morning ☀️',
-                        style: GoogleFonts.nunito(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w700,
-                          color: AppColors.textMuted,
-                        ),
-                      ),
-                      GestureDetector(
-                        onLongPress: () {
-                          _nicknameController.text =
-                              user?.displayName ?? 'Aisha';
-                          setState(() => _isEditingNickname = true);
-                        },
-                        child: Text(
-                          '${user?.displayName ?? 'Aisha'} 👋',
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Good morning ☀️',
                           style: GoogleFonts.nunito(
-                            fontSize: 24,
-                            fontWeight: FontWeight.w900,
-                            color: AppColors.textDark,
+                            fontSize: 13,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.textMuted,
                           ),
                         ),
-                      ),
-                      if (_isEditingNickname)
-                        Padding(
-                          padding: const EdgeInsets.only(top: 8),
-                          child: SizedBox(
-                            width: 220,
+                        GestureDetector(
+                          onLongPress: () {
+                            _nicknameController.text = _displayName;
+                            setState(() => _isEditingNickname = true);
+                          },
+                          child: Text(
+                            '$_displayName 👋',
+                            style: GoogleFonts.nunito(
+                              fontSize: 24,
+                              fontWeight: FontWeight.w900,
+                              color: AppColors.textDark,
+                            ),
+                          ),
+                        ),
+                        if (_isEditingNickname)
+                          Padding(
+                            padding: const EdgeInsets.only(top: 8),
                             child: Row(
                               children: [
                                 Expanded(
-                                  child: TextField(
-                                    controller: _nicknameController,
-                                    decoration: InputDecoration(
-                                      hintText: 'Enter nickname',
-                                      border: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(8),
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                      color: Colors.white,
+                                      borderRadius: BorderRadius.circular(12),
+                                      border: Border.all(color: AppColors.border, width: 1.5),
+                                    ),
+                                    child: TextField(
+                                      controller: _nicknameController,
+                                      autofocus: true,
+                                      style: GoogleFonts.nunito(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w700,
+                                        color: AppColors.textDark,
                                       ),
-                                      contentPadding:
-                                          const EdgeInsets.symmetric(
-                                              horizontal: 8, vertical: 4),
+                                      decoration: InputDecoration(
+                                        hintText: 'Enter nickname',
+                                        hintStyle: GoogleFonts.nunito(
+                                          fontSize: 14,
+                                          color: AppColors.textMuted,
+                                        ),
+                                        border: InputBorder.none,
+                                        contentPadding: const EdgeInsets.symmetric(
+                                            horizontal: 12, vertical: 8),
+                                      ),
+                                      onSubmitted: _saveNickname,
                                     ),
                                   ),
                                 ),
                                 const SizedBox(width: 8),
                                 GestureDetector(
-                                  onTap: () {
-                                    setState(() => _isEditingNickname = false);
-                                    NotificationService.showSuccess(context, 'Nickname saved!');
-                                  },
+                                  onTap: () => _saveNickname(_nicknameController.text.trim()),
                                   child: Container(
-                                    padding: const EdgeInsets.all(8),
+                                    padding: const EdgeInsets.all(10),
                                     decoration: BoxDecoration(
                                       color: AppColors.primaryRose,
-                                      borderRadius: BorderRadius.circular(8),
+                                      borderRadius: BorderRadius.circular(12),
                                     ),
                                     child: const Icon(Icons.check,
-                                        color: Colors.white, size: 16),
+                                        color: Colors.white, size: 20),
+                                  ),
+                                ),
+                                const SizedBox(width: 4),
+                                GestureDetector(
+                                  onTap: () => setState(() => _isEditingNickname = false),
+                                  child: Container(
+                                    padding: const EdgeInsets.all(10),
+                                    decoration: BoxDecoration(
+                                      color: AppColors.textMuted.withOpacity(0.2),
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    child: const Icon(Icons.close,
+                                        color: AppColors.textDark, size: 20),
                                   ),
                                 ),
                               ],
                             ),
                           ),
-                        ),
-                    ],
+                      ],
+                    ),
                   ),
                   GestureDetector(
                     onTap: () => context.go('/profile'),
@@ -287,103 +356,97 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           ],
         );
       default:
-        return const SizedBox();
+        return const SizedBox.shrink();
     }
   }
 
-  Widget _buildPillsRow(
-      Map<String, dynamic> pill1, Map<String, dynamic> pill2) {
+  Widget _buildPillsRow(Map<String, dynamic> left, Map<String, dynamic> right) {
     return Row(
       children: [
-        _buildStatPill(pill1['value'], pill1['label'], color: pill1['color']),
-        const SizedBox(width: 8),
-        _buildStatPill(pill2['value'], pill2['label'], color: pill2['color']),
+        Expanded(child: _buildPill(left)),
+        const SizedBox(width: 12),
+        Expanded(child: _buildPill(right)),
       ],
     );
   }
 
-  Widget _buildStatPill(String value, String label, {Color? color}) {
-    return Expanded(
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 12),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(18),
-          border: Border.all(color: AppColors.border, width: 1.5),
-        ),
-        child: Column(
-          children: [
-            Text(
-              value,
-              style: GoogleFonts.nunito(
-                fontSize: 18,
-                fontWeight: FontWeight.w900,
-                color: color ?? AppColors.primaryRose,
-              ),
+  Widget _buildPill(Map<String, dynamic> data) {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: AppColors.border, width: 1.5),
+      ),
+      child: Column(
+        children: [
+          Text(
+            data['value'],
+            style: GoogleFonts.nunito(
+              fontSize: 18,
+              fontWeight: FontWeight.w900,
+              color: data['color'],
             ),
-            const SizedBox(height: 2),
-            Text(
-              label,
-              style: GoogleFonts.nunito(
-                fontSize: 10,
-                fontWeight: FontWeight.w700,
-                color: AppColors.textMuted,
-                letterSpacing: 0.3,
-              ),
+          ),
+          Text(
+            data['label'],
+            style: GoogleFonts.nunito(
+              fontSize: 11,
+              fontWeight: FontWeight.w700,
+              color: AppColors.textMuted,
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
 
   Widget _buildBabyCard() {
     return Container(
-      padding: const EdgeInsets.all(18),
+      width: double.infinity,
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(22),
+        borderRadius: BorderRadius.circular(24),
         border: Border.all(color: AppColors.border, width: 1.5),
-        boxShadow: [
-          BoxShadow(
-            color: Color(0xFF4A70B0).withOpacity(0.08),
-            offset: const Offset(0, 4),
-            blurRadius: 16,
-          ),
-        ],
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Row(
         children: [
-          Text(
-            '👶 Baby Updates',
-            style: GoogleFonts.nunito(
-              fontSize: 13,
-              fontWeight: FontWeight.w900,
-              color: Color(0xFF4A70B0),
-              letterSpacing: 0.2,
+          Container(
+            width: 60,
+            height: 60,
+            decoration: BoxDecoration(
+              color: const Color(0xFFF0F4FF),
+              borderRadius: BorderRadius.circular(18),
+            ),
+            alignment: Alignment.center,
+            child: const Text('👶', style: TextStyle(fontSize: 32)),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Baby is the size of a...',
+                  style: GoogleFonts.nunito(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.textMuted,
+                  ),
+                ),
+                Text(
+                  'Large Eggplant 🍆',
+                  style: GoogleFonts.nunito(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w900,
+                    color: const Color(0xFF4A70B0),
+                  ),
+                ),
+              ],
             ),
           ),
-          const SizedBox(height: 10),
-          Text(
-            'Week 24: Your baby is about the size of a mango 🥭',
-            style: GoogleFonts.nunito(
-              fontSize: 12,
-              fontWeight: FontWeight.w700,
-              color: AppColors.textDark,
-              height: 1.4,
-            ),
-          ),
-          const SizedBox(height: 12),
-          Text(
-            'Developments: Hearing is fully developed. Baby can hear your voice and heartbeat.',
-            style: GoogleFonts.nunito(
-              fontSize: 11,
-              fontWeight: FontWeight.w600,
-              color: AppColors.textMid,
-              height: 1.3,
-            ),
-          ),
+          const Icon(Icons.chevron_right, color: AppColors.textMuted),
         ],
       ),
     );
@@ -391,69 +454,49 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   Widget _buildFertileBar() {
     return Container(
-      padding: const EdgeInsets.all(16),
+      width: double.infinity,
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(24),
         border: Border.all(color: AppColors.border, width: 1.5),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Fertile Window',
+            'Fertile Window Probability',
             style: GoogleFonts.nunito(
               fontSize: 13,
-              fontWeight: FontWeight.w900,
-              color: Color(0xFF5A8E6A),
-              letterSpacing: 0.2,
+              fontWeight: FontWeight.w800,
+              color: AppColors.textDark,
             ),
           ),
-          SizedBox(height: 12),
+          const SizedBox(height: 12),
           Row(
+            children: List.generate(7, (index) {
+              final isPeak = index == 3;
+              return Expanded(
+                child: Container(
+                  height: 30,
+                  margin: const EdgeInsets.symmetric(horizontal: 2),
+                  decoration: BoxDecoration(
+                    color: isPeak
+                        ? const Color(0xFF5A8E6A)
+                        : const Color(0xFF5A8E6A).withOpacity(0.2 + (index * 0.1)),
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                ),
+              );
+            }),
+          ),
+          const SizedBox(height: 8),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Feb 19 - Feb 23',
-                      style: GoogleFonts.nunito(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w800,
-                        color: AppColors.textDark,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Container(
-                      height: 6,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF5A8E6A).withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(3),
-                      ),
-                      child: FractionallySizedBox(
-                        widthFactor: 0.5,
-                        alignment: Alignment.centerLeft,
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF5A8E6A),
-                            borderRadius: BorderRadius.circular(3),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 12),
-              Text(
-                '50%',
-                style: GoogleFonts.nunito(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w900,
-                  color: Color(0xFF5A8E6A),
-                ),
-              ),
+              Text('Low', style: GoogleFonts.nunito(fontSize: 10, color: AppColors.textMuted)),
+              Text('Peak', style: GoogleFonts.nunito(fontSize: 10, color: const Color(0xFF5A8E6A), fontWeight: FontWeight.w900)),
+              Text('Low', style: GoogleFonts.nunito(fontSize: 10, color: AppColors.textMuted)),
             ],
           ),
         ],
@@ -470,77 +513,65 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     int? percentage,
   }) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      width: double.infinity,
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: color.withOpacity(0.08),
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(24),
         border: Border.all(color: color.withOpacity(0.2), width: 1.5),
       ),
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          if (icon != null)
-            Padding(
-              padding: const EdgeInsets.only(right: 12),
-              child: Text(icon, style: GoogleFonts.nunito(fontSize: 32)),
-            ),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: GoogleFonts.nunito(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w900,
-                    color: color,
-                    letterSpacing: 0.2,
-                  ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                title,
+                style: GoogleFonts.nunito(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w800,
+                  color: color,
+                  letterSpacing: 0.5,
                 ),
-                SizedBox(height: 4),
-                Text(
-                  value,
-                  style: GoogleFonts.nunito(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w900,
-                    color: color,
+              ),
+              if (icon != null) Text(icon, style: const TextStyle(fontSize: 16)),
+              if (percentage != null)
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: color.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(10),
                   ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  sub,
-                  style: GoogleFonts.nunito(
-                    fontSize: 10,
-                    fontWeight: FontWeight.w600,
-                    color: color.withOpacity(0.7),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          if (percentage != null)
-            Padding(
-              padding: const EdgeInsets.only(left: 12),
-              child: Column(
-                children: [
-                  Text(
+                  child: Text(
                     '$percentage%',
                     style: GoogleFonts.nunito(
-                      fontSize: 18,
+                      fontSize: 10,
                       fontWeight: FontWeight.w900,
                       color: color,
                     ),
                   ),
-                  Text(
-                    'Confidence',
-                    style: GoogleFonts.nunito(
-                      fontSize: 9,
-                      fontWeight: FontWeight.w700,
-                      color: color.withOpacity(0.7),
-                    ),
-                  ),
-                ],
-              ),
+                ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text(
+            value,
+            style: GoogleFonts.nunito(
+              fontSize: 18,
+              fontWeight: FontWeight.w900,
+              color: AppColors.textDark,
             ),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            sub,
+            style: GoogleFonts.nunito(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: AppColors.textMid,
+            ),
+          ),
         ],
       ),
     );
@@ -548,6 +579,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   Widget _buildSwitchModeCard(String currentMode) {
     return Container(
+      width: double.infinity,
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: Colors.white,
@@ -555,110 +587,75 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         border: Border.all(color: AppColors.border, width: 1.5),
       ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Switch tracker',
+            'Life stage changed?',
             style: GoogleFonts.nunito(
               fontSize: 14,
-              fontWeight: FontWeight.w900,
+              fontWeight: FontWeight.w800,
               color: AppColors.textDark,
-              letterSpacing: 0.2,
             ),
           ),
-          const SizedBox(height: 14),
-          if (currentMode == 'period') ...[
-            _buildSwitchBtn(
-                '🤰 Expecting? → Track Pregnancy', () => _selectMode('preg')),
-            const SizedBox(height: 8),
-            _buildSwitchBtn('🌿 Trying to conceive? → Track Ovulation',
-                () => _selectMode('ovul')),
-          ] else if (currentMode == 'preg') ...[
-            _buildSwitchBtn(
-                '⚠️ Selected pregnancy by mistake? → Period Tracker',
-                () => _selectMode('period'),
-                urgent: true),
-            const SizedBox(height: 8),
-            _buildSwitchBtn('🌿 Not pregnant yet? → Ovulation Tracker',
-                () => _selectMode('ovul')),
-          ] else if (currentMode == 'ovul') ...[
-            _buildSwitchBtn('🎉 Got a positive test? → Pregnancy Tracker',
-                () => _selectMode('preg')),
-            const SizedBox(height: 8),
-            _buildSwitchBtn('🩸 Just track my period → Period Tracker',
-                () => _selectMode('period')),
-          ],
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                child: _buildModeButton(
+                  'period',
+                  '🩸 Period',
+                  currentMode == 'period',
+                  AppColors.primaryRose,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: _buildModeButton(
+                  'preg',
+                  '🤰 Preg',
+                  currentMode == 'preg',
+                  const Color(0xFF4A70B0),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: _buildModeButton(
+                  'ovul',
+                  '🌿 Ovul',
+                  currentMode == 'ovul',
+                  const Color(0xFF5A8E6A),
+                ),
+              ),
+            ],
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildSwitchBtn(String text, VoidCallback onTap,
-      {bool urgent = false}) {
-    return SizedBox(
-      width: double.infinity,
-      child: TextButton(
-        onPressed: onTap,
-        style: TextButton.styleFrom(
-          padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
-          backgroundColor: urgent ? Color(0xFFFFF5F5) : AppColors.background,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(14),
-            side: BorderSide(
-                color: urgent ? const Color(0xFFF0B0B8) : AppColors.border,
-                width: 1.5),
+  Widget _buildModeButton(String mode, String label, bool isActive, Color color) {
+    return GestureDetector(
+      onTap: () {
+        ref.read(modeProvider.notifier).setMode(mode);
+        NotificationService.showSuccess(context, 'Switched to $label mode!');
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 10),
+        decoration: BoxDecoration(
+          color: isActive ? color.withOpacity(0.1) : Colors.white,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(
+            color: isActive ? color : AppColors.border,
+            width: 1.5,
           ),
-          alignment: Alignment.centerLeft,
         ),
+        alignment: Alignment.center,
         child: Text(
-          text,
+          label,
           style: GoogleFonts.nunito(
             fontSize: 12,
             fontWeight: FontWeight.w800,
-            color: urgent ? const Color(0xFFD97B8A) : AppColors.textMid,
+            color: isActive ? color : AppColors.textMid,
           ),
-        ),
-      ),
-    );
-  }
-
-  Future<void> _selectMode(String mode) async {
-    await ref.read(modeProvider.notifier).resetJourney();
-    if (mounted) {
-      context.go('/journey/$mode');
-    }
-  }
-}
-
-class AppFAB extends StatelessWidget {
-  const AppFAB({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 60,
-      height: 60,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        gradient: const LinearGradient(
-          colors: [Color(0xFFF09090), Color(0xFFD97B8A)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFFD97B8A).withOpacity(0.35),
-            offset: const Offset(0, 6),
-            blurRadius: 18,
-          ),
-        ],
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: () => context.go('/log'),
-          customBorder: const CircleBorder(),
-          child: const Icon(Icons.add, color: Colors.white, size: 32),
         ),
       ),
     );
