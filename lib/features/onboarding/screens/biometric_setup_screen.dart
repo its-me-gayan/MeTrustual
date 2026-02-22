@@ -83,16 +83,22 @@ class _BiometricSetupScreenState extends ConsumerState<BiometricSetupScreen> {
     setState(() => _isLoading = true);
 
     try {
+      print('💾 Saving PIN: $_pin');
       final success = await BiometricService.setBiometricPin(_pin);
 
+      print('💾 Save result: $success');
+      
       if (success) {
+        print('✅ PIN saved successfully!');
         if (mounted) {
           context.go("/home");
         }
       } else {
+        print('❌ PIN save failed');
         _showError('Failed to save PIN');
       }
     } catch (e) {
+      print('❌ Exception saving PIN: $e');
       _showError(e.toString());
     } finally {
       setState(() => _isLoading = false);

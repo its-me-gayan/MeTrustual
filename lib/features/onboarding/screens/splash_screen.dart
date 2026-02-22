@@ -66,10 +66,19 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
           final auth = ref.read(firebaseAuthProvider);
           final user = auth.currentUser;
 
+          print('═══════════════════════════════════════════');
+          print('🔍 SPLASH SCREEN NAVIGATION LOGIC');
+          print('═══════════════════════════════════════════');
+          print('✓ user exists: ${user != null}');
+          print('✓ user UID: ${user?.uid}');
+
           if (user != null) {
             final biometricSetUp = await BiometricService.isBiometricSetUp();
+            print('✓ biometricSetUp flag: $biometricSetUp');
+            
             if (biometricSetUp) {
-              // Only go to PIN verification if it's already set up
+              print('➜ Route: /pin-verification (ASK PIN)');
+              print('═══════════════════════════════════════════');
               context.go('/pin-verification');
               return;
             }
@@ -80,12 +89,12 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
           final hasCompleted = ref.read(modeProvider.notifier).hasCompletedJourney;
           
           if (hasCompleted) {
-            // If journey completed but biometric not set up (due to new flow),
-            // we should technically be at home or prompt for it.
-            // For now, go to home.
+            print('➜ Route: /home (journey completed)');
+            print('═══════════════════════════════════════════');
             context.go('/home');
           } else {
-            // If not completed, start from onboarding
+            print('➜ Route: /onboarding (journey not completed)');
+            print('═══════════════════════════════════════════');
             context.go('/onboarding');
           }
         });
