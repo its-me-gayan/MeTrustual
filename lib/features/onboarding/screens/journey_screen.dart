@@ -19,8 +19,10 @@ class JourneyScreen extends ConsumerStatefulWidget {
 class _JourneyScreenState extends ConsumerState<JourneyScreen> {
   int currentStep = 0;
   final Map<String, dynamic> journeyData = {};
-  bool _isLoadingData = false;
+  bool _isLoading = false;
+  bool _stepsLoaded = false;
 
+  late List<Map<String, dynamic>> steps;
   late final Color accentColor;
   late final LinearGradient progressGradient;
 
@@ -29,11 +31,36 @@ class _JourneyScreenState extends ConsumerState<JourneyScreen> {
     super.initState();
     accentColor = _getModeColor(widget.mode);
     progressGradient = _getModeGradient(widget.mode);
-    _loadExistingUserData();
+    _loadJourneyStepsAndData();
   }
 
-  Future<void> _loadExistingUserData() async {
-    setState(() => _isLoadingData = true);
+  Future<void> _loadJourneyStepsAndData() async {
+    setState(() => _isLoading = true);
+    try {
+      // Load journey steps from Firebase using the correct provider
+      final stepsAsyncValue = await ref.read(journeyStepsProvider(widget.mode).future);
+      setState(() {
+        steps = stepsAsyncValue;
+        _stepsLoaded = true;
+      });
+      
+      // Load existing user journey data
+      await _loadExistingData();
+    } catch (e) {
+      debugPrint('Error loading journey steps: $e');
+      // Fallback to hardcoded steps
+      setState(() {
+        steps = _getHardcodedJourneySteps(widget.mode);
+        _stepsLoaded = true;
+      });
+      await _loadExistingData();
+    } finally {
+      setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _loadExistingData() async {
+    setState(() => _isLoading = true);
     try {
       final auth = ref.read(firebaseAuthProvider);
       final firestore = ref.read(firestoreProvider);
@@ -53,9 +80,9 @@ class _JourneyScreenState extends ConsumerState<JourneyScreen> {
         }
       }
     } catch (e) {
-      debugPrint('Error loading existing journey data: $e');
+      debugPrint('Error loading journey data: $e');
     } finally {
-      setState(() => _isLoadingData = false);
+      setState(() => _isLoading = false);
     }
   }
 
@@ -84,6 +111,230 @@ class _JourneyScreenState extends ConsumerState<JourneyScreen> {
     }
   }
 
+  List<Map<String, dynamic>> _getHardcodedJourneySteps(String mode) {
+    if (mode == 'preg') {
+      return [
+        {
+          'icon': '🤰',
+          'q': 'Are you currently pregnant?',
+          'sub':
+              'This helps us set up the right tracker for you. No judgement either way.',
+          'type': 'chips-big-single',
+          'key': 'isPreg',
+          'required': true,
+          'opts': [
+            {'e': '✅', 'l': "Yes, I'm pregnant!", 'v': 'yes'},
+            {'e': '🤔', 'l': 'I think I might be', 'v': 'maybe'},
+            {
+              'e': '🔄',
+              'l': "Actually, I'm not — switch tracker",
+              'v': 'switch',
+              'special': true
+            }
+          ],
+          'warn':
+              'You can switch back to Period or Onboarding tracker anytime from your home screen.'
+        },
+        {
+          'icon': '📅',
+          'q': 'Do you know your due date?',
+          'sub':
+              'If yes, enter it. If not, enter your last period start date and we\'ll calculate.',
+          'type': 'due-date',
+          'key': 'dueDate',
+          'required': false,
+        },
+        {
+          'icon': '👶',
+          'q': 'Is this your first pregnancy?',
+          'sub': 'This personalises your week-by-week tips and what to expect.',
+          'type': 'chips-big-single',
+          'key': 'firstPreg',
+          'required': true,
+          'opts': [
+            {'e': '🌱', 'l': 'Yes — my first!', 'v': 'first'},
+            {'e': '👧', 'l': 'I have one child', 'v': 'second'},
+            {'e': '👨‍👩‍👧‍👦', 'l': 'Two or more children', 'v': 'multiple'}
+          ]
+        },
+        {
+          'icon': '🩺',
+          'q': 'Any conditions to track together?',
+          'sub':
+              'Optional — select any for extra personalised support and reminders.',
+          'type': 'chips-multi',
+          'key': 'conditions',
+          'opts': [
+            {'e': '🩺', 'l': 'Gestational Diabetes'},
+            {'e': '💓', 'l': 'High Blood Pressure'},
+            {'e': '🤢', 'l': 'Severe Morning Sickness'},
+            {'e': '🩸', 'l': 'Anaemia'},
+            {'e': '🧠', 'l': 'Prenatal Anxiety'},
+            {'e': '😴', 'l': 'Sleep Issues'},
+            {'e': '✨', 'l': 'All good — none'}
+          ]
+        },
+        {
+          'icon': '💙',
+          'q': 'What support do you want from us?',
+          'sub':
+              'We\'ll send you the content that matters most. Adjust anytime.',
+          'type': 'chips-multi',
+          'key': 'support',
+          'opts': [
+            {'e': '📋', 'l': 'Weekly baby updates'},
+            {'e': '🩺', 'l': 'Appointment reminders'},
+            {'e': '👶', 'l': 'Kick counter alerts'},
+            {'e': '🌿', 'l': 'Nutrition & wellness tips'},
+            {'e': '🧘', 'l': 'Mental health & mindfulness'},
+            {'e': '📖', 'l': 'Birth & newborn prep'}
+          ]
+        }
+      ];
+    } else if (mode == 'ovul') {
+      return [
+        {
+          'icon': '🌿',
+          'q': 'What\'s your main goal?',
+          'sub':
+              'This shapes your insights, alerts, and what tools we highlight for you.',
+          'type': 'chips-big-single',
+          'key': 'goal',
+          'required': true,
+          'opts': [
+            {'e': '👶', 'l': 'Trying to conceive (TTC)', 'v': 'ttc'},
+            {'e': '🌿', 'l': 'Natural family planning', 'v': 'nfp'},
+            {'e': '🔬', 'l': 'Understanding my body & cycle', 'v': 'understand'}
+          ]
+        },
+        {
+          'icon': '📅',
+          'q': 'When did your last period start?',
+          'sub':
+              'We calculate your fertile window from this. Ovulation is usually ~14 days before your next period.',
+          'type': 'date',
+          'key': 'lastPeriod',
+          'required': true,
+          'skip': 'Skip for now'
+        },
+        {
+          'icon': '🔁',
+          'q': 'How long is your cycle usually?',
+          'sub': 'Knowing this makes ovulation predictions much more accurate.',
+          'type': 'stepper',
+          'key': 'cycleLen',
+          'min': 18,
+          'max': 45,
+          'def': 28,
+          'unit': 'days',
+          'skip': 'Not sure yet'
+        },
+        {
+          'icon': '🌡️',
+          'q': 'What do you currently track?',
+          'sub':
+              'Select all that apply — we\'ll guide you on using each method together.',
+          'type': 'chips-multi',
+          'key': 'methods',
+          'opts': [
+            {'e': '🌡️', 'l': 'BBT (Basal Body Temp)'},
+            {'e': '💊', 'l': 'OPK / LH Test Strips'},
+            {'e': '💧', 'l': 'Cervical Mucus'},
+            {'e': '📅', 'l': 'Period dates only'},
+            {'e': '🩸', 'l': 'Mid-cycle spotting'},
+            {'e': '🆕', 'l': 'Nothing yet — just starting!'}
+          ]
+        },
+        {
+          'icon': '🔔',
+          'q': 'How should we alert you?',
+          'sub': 'We only send what you choose. You can change this anytime.',
+          'type': 'chips-multi',
+          'key': 'alerts',
+          'opts': [
+            {'e': '🟢', 'l': 'Fertile window opens'},
+            {'e': '🎯', 'l': 'Peak ovulation day'},
+            {'e': '📉', 'l': 'Fertile window closing'},
+            {'e': '📅', 'l': 'Period due reminder'},
+            {'e': '🌡️', 'l': 'BBT reminder each morning'},
+            {'e': '💊', 'l': 'OPK test reminder'}
+          ]
+        }
+      ];
+    } else {
+      return [
+        {
+          'icon': '🩸',
+          'q': 'When did your last period start?',
+          'sub':
+              'This helps us predict your next period and fertile window accurately.',
+          'type': 'date',
+          'key': 'lastPeriod',
+          'required': false,
+          'skip': 'Not sure / this is my first time tracking'
+        },
+        {
+          'icon': '📅',
+          'q': 'How long is your cycle usually?',
+          'sub':
+              'Day 1 of one period to Day 1 of the next. Most cycles are 21–35 days.',
+          'type': 'stepper',
+          'key': 'cycleLen',
+          'min': 18,
+          'max': 45,
+          'def': 28,
+          'unit': 'days',
+          'skip': 'Not sure yet — we\'ll learn!'
+        },
+        {
+          'icon': '🗓️',
+          'q': 'How many days does your period last?',
+          'sub': 'Include light spotting days. Most periods last 3–7 days.',
+          'type': 'stepper',
+          'key': 'periodLen',
+          'min': 1,
+          'max': 10,
+          'def': 5,
+          'unit': 'days'
+        },
+        {
+          'icon': '💧',
+          'q': 'How would you describe your usual flow?',
+          'sub':
+              'Helps us give you better predictions and product recommendations.',
+          'type': 'chips-single',
+          'key': 'flow',
+          'required': true,
+          'opts': [
+            {'e': '💧', 'l': 'Light', 'v': 'light'},
+            {'e': '🟠', 'l': 'Medium', 'v': 'medium'},
+            {'e': '🔴', 'l': 'Heavy', 'v': 'heavy'},
+            {'e': '🔀', 'l': 'Varies', 'v': 'varies'}
+          ]
+        },
+        {
+          'icon': '🌀',
+          'q': 'Symptoms you often get?',
+          'sub':
+              'Select all that apply — we\'ll personalise your care tips each phase.',
+          'type': 'chips-multi',
+          'key': 'symptoms',
+          'opts': [
+            {'e': '🌀', 'l': 'Cramps'},
+            {'e': '🤕', 'l': 'Headache'},
+            {'e': '😴', 'l': 'Fatigue'},
+            {'e': '🤢', 'l': 'Nausea'},
+            {'e': '🌊', 'l': 'Bloating'},
+            {'e': '💆', 'l': 'Back Pain'},
+            {'e': '🍫', 'l': 'Cravings'},
+            {'e': '😤', 'l': 'Mood Swings'},
+            {'e': '✨', 'l': 'None of these'}
+          ]
+        }
+      ];
+    }
+  }
+
   Future<void> _saveData() async {
     final auth = ref.read(firebaseAuthProvider);
     final firestore = ref.read(firestoreProvider);
@@ -99,7 +350,9 @@ class _JourneyScreenState extends ConsumerState<JourneyScreen> {
     }
   }
 
-  Future<void> _nextStep(List<Map<String, dynamic>> steps) async {
+  Future<void> _nextStep() async {
+    if (!_stepsLoaded) return;
+    
     final step = steps[currentStep];
     final key = step['key'];
     final isRequired = step['required'] == true;
@@ -121,6 +374,7 @@ class _JourneyScreenState extends ConsumerState<JourneyScreen> {
       final uid = auth.currentUser?.uid;
       
       if (mounted) {
+        // Move biometric setup to the end of the journey
         context.go('/biometric-setup/$uid');
       }
     }
@@ -136,211 +390,196 @@ class _JourneyScreenState extends ConsumerState<JourneyScreen> {
 
   @override
   Widget build(BuildContext context) {
+    if (_isLoading || !_stepsLoaded) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
+    final step = steps[currentStep];
+    final progress = (currentStep + 1) / steps.length;
+    final isSingleChoice = step['type'] == 'chips-big-single' || step['type'] == 'chips-single';
+
     return Scaffold(
-      body: ref.watch(journeyStepsProvider(widget.mode)).when(
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, stackTrace) {
-          debugPrint('Error loading journey steps: $error\n$stackTrace');
-          return Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Icon(Icons.error_outline, size: 64, color: Colors.red),
-                const SizedBox(height: 16),
-                const Text('Failed to load journey steps'),
-                const SizedBox(height: 8),
-                Text(
-                  error.toString(),
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(fontSize: 12, color: Colors.grey),
-                ),
-                const SizedBox(height: 24),
-                ElevatedButton(
-                  onPressed: () => context.go('/mode-selection'),
-                  child: const Text('Go Back'),
-                ),
-              ],
-            ),
-          );
-        },
-        data: (steps) {
-          if (steps.isEmpty) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Icon(Icons.warning_outline, size: 64, color: Colors.orange),
-                  const SizedBox(height: 16),
-                  const Text('No journey steps found'),
-                  const SizedBox(height: 24),
-                  ElevatedButton(
-                    onPressed: () => context.go('/mode-selection'),
-                    child: const Text('Go Back'),
-                  ),
-                ],
-              ),
-            );
-          }
-
-          final step = steps[currentStep];
-          final progress = (currentStep + 1) / steps.length;
-          final isSingleChoice = step['type'] == 'chips-big-single' || step['type'] == 'chips-single';
-
-          return Container(
-            width: double.infinity,
-            height: double.infinity,
-            decoration: BoxDecoration(gradient: progressGradient),
-            child: SafeArea(
-              child: Column(
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
-                    child: Column(
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            GestureDetector(
-                              onTap: _prevStep,
-                              child: const Icon(Icons.arrow_back_ios, color: Colors.white, size: 20),
-                            ),
-                            Text(
-                              'STEP ${currentStep + 1} OF ${steps.length}',
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 12,
-                                fontWeight: FontWeight.w800,
-                                letterSpacing: 1,
-                              ),
-                            ),
-                            const SizedBox(width: 20),
-                          ],
+      body: Container(
+        width: double.infinity,
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [Color(0xFFFFF8F5), Color(0xFFFEF0F5)],
+          ),
+        ),
+        child: SafeArea(
+          child: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Row(
+                  children: [
+                    GestureDetector(
+                      onTap: _prevStep,
+                      child: Container(
+                        width: 36,
+                        height: 36,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          shape: BoxShape.circle,
+                          border:
+                              Border.all(color: const Color(0xFFFCE8E4), width: 1.5),
                         ),
-                        const SizedBox(height: 12),
-                        ClipRRect(
-                          borderRadius: BorderRadius.circular(8),
-                          child: LinearProgressIndicator(
-                            value: progress,
-                            minHeight: 6,
-                            backgroundColor: Colors.white.withOpacity(0.3),
-                            valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Expanded(
-                    child: SingleChildScrollView(
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 24),
-                        child: Column(
-                          children: [
-                            const SizedBox(height: 24),
-                            Text(
-                              step['icon'],
-                              style: const TextStyle(fontSize: 56),
-                            ),
-                            const SizedBox(height: 20),
-                            Text(
-                              step['q'],
-                              textAlign: TextAlign.center,
-                              style: const TextStyle(
-                                fontSize: 24,
-                                fontWeight: FontWeight.w900,
-                                color: Colors.white,
-                                height: 1.3,
-                              ),
-                            ),
-                            const SizedBox(height: 12),
-                            Text(
-                              step['sub'],
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w500,
-                                color: Colors.white.withOpacity(0.8),
-                                height: 1.4,
-                              ),
-                            ),
-                            if (step['warn'] != null)
-                              Padding(
-                                padding: const EdgeInsets.only(top: 16),
-                                child: Container(
-                                  padding: const EdgeInsets.all(12),
-                                  decoration: BoxDecoration(
-                                    color: Colors.white.withOpacity(0.15),
-                                    borderRadius: BorderRadius.circular(12),
-                                    border: Border.all(
-                                      color: Colors.white.withOpacity(0.3),
-                                      width: 1,
-                                    ),
-                                  ),
-                                  child: Text(
-                                    step['warn'],
-                                    textAlign: TextAlign.center,
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w600,
-                                      color: Colors.white.withOpacity(0.9),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            const SizedBox(height: 32),
-                            _buildStepInput(step),
-                            const SizedBox(height: 32),
-                          ],
-                        ),
+                        child: const Icon(Icons.arrow_back_ios_new,
+                            size: 16, color: AppColors.textDark),
                       ),
                     ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.all(24.0),
-                    child: Column(
-                      children: [
-                        if (step['skip'] != null)
-                          TextButton(
-                            onPressed: () => _nextStep(steps),
-                            child: Text(
-                              step['skip'],
-                              style: const TextStyle(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w800,
-                                color: Color(0xFFD0B0B8),
-                              ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Container(
+                            height: 6,
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFFCE8E4),
+                              borderRadius: BorderRadius.circular(3),
                             ),
-                          ),
-                        const SizedBox(height: 12),
-                        if (!isSingleChoice)
-                          SizedBox(
-                            width: double.infinity,
-                            height: 56,
-                            child: ElevatedButton(
-                              onPressed: () => _nextStep(steps),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: accentColor,
-                                foregroundColor: Colors.white,
-                                elevation: 6,
-                                shadowColor: accentColor.withOpacity(0.35),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(18),
+                            child: FractionallySizedBox(
+                              alignment: Alignment.centerLeft,
+                              widthFactor: progress,
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  gradient: progressGradient,
+                                  borderRadius: BorderRadius.circular(3),
                                 ),
                               ),
-                              child: const Text(
-                                'Continue',
-                                style: TextStyle(
-                                    fontSize: 16, fontWeight: FontWeight.w900),
-                              ),
                             ),
                           ),
-                      ],
+                          const SizedBox(height: 4),
+                          Text(
+                            'STEP ${currentStep + 1} OF ${steps.length}',
+                            style: const TextStyle(
+                              fontSize: 9,
+                              fontWeight: FontWeight.w900,
+                              color: Color(0xFFD0B0B8),
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
-          );
-        },
+              Expanded(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  child: Column(
+                    children: [
+                      const SizedBox(height: 10),
+                      Text(
+                        step['icon'],
+                        style: const TextStyle(fontSize: 48),
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        step['q'],
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.w900,
+                          color: AppColors.textDark,
+                          height: 1.2,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        step['sub'],
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          fontSize: 12.5,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFFB09090),
+                          height: 1.6,
+                        ),
+                      ),
+                      const SizedBox(height: 30),
+                      _buildStepInput(step),
+                      if (step['warn'] != null) ...[
+                        const SizedBox(height: 24),
+                        Container(
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFFFF5F5),
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(
+                                color: const Color(0xFFF0B0B8).withOpacity(0.5)),
+                          ),
+                          child: Row(
+                            children: [
+                              const Icon(Icons.info_outline,
+                                  color: Color(0xFFD97B8A), size: 20),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Text(
+                                  step['warn'],
+                                  style: const TextStyle(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w700,
+                                    color: Color(0xFFD97B8A),
+                                    height: 1.4,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(24.0),
+                child: Column(
+                  children: [
+                    if (step['skip'] != null)
+                      TextButton(
+                        onPressed: _nextStep,
+                        child: Text(
+                          step['skip'],
+                          style: const TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w800,
+                            color: Color(0xFFD0B0B8),
+                          ),
+                        ),
+                      ),
+                    const SizedBox(height: 12),
+                    if (!isSingleChoice)
+                      SizedBox(
+                        width: double.infinity,
+                        height: 56,
+                        child: ElevatedButton(
+                          onPressed: _nextStep,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: accentColor,
+                            foregroundColor: Colors.white,
+                            elevation: 6,
+                            shadowColor: accentColor.withOpacity(0.35),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(18),
+                            ),
+                          ),
+                          child: const Text(
+                            'Continue',
+                            style: TextStyle(
+                                fontSize: 16, fontWeight: FontWeight.w900),
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -361,24 +600,13 @@ class _JourneyScreenState extends ConsumerState<JourneyScreen> {
               padding: const EdgeInsets.only(bottom: 12),
               child: GestureDetector(
                 onTap: () {
-                  if (isSpecial) {
+                  if (opt['v'] == 'switch') {
                     context.go('/mode-selection');
                   } else {
                     setState(() {
                       journeyData[key] = opt['v'];
                     });
-                    // Auto-advance for single choice
-                    if (step['type'] == 'chips-big-single') {
-                      Future.delayed(const Duration(milliseconds: 300), () {
-                        final steps = ref.read(journeyStepsProvider(widget.mode)).maybeWhen(
-                          data: (data) => data,
-                          orElse: () => [],
-                        );
-                        if (steps.isNotEmpty) {
-                          _nextStep(steps);
-                        }
-                      });
-                    }
+                    _nextStep();
                   }
                 },
                 child: Container(
