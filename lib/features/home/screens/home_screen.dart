@@ -50,7 +50,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Good morning ☀️',
+                      Text(
+                        'Good morning ☀️',
                         style: GoogleFonts.nunito(
                           fontSize: 13,
                           fontWeight: FontWeight.w700,
@@ -59,7 +60,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       ),
                       GestureDetector(
                         onLongPress: () {
-                          _nicknameController.text = user?.displayName ?? 'Aisha';
+                          _nicknameController.text =
+                              user?.displayName ?? 'Aisha';
                           setState(() => _isEditingNickname = true);
                         },
                         child: Text(
@@ -291,7 +293,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     }
   }
 
-  Widget _buildPillsRow(Map<String, dynamic> pill1, Map<String, dynamic> pill2) {
+  Widget _buildPillsRow(
+      Map<String, dynamic> pill1, Map<String, dynamic> pill2) {
     return Row(
       children: [
         _buildStatPill(pill1['value'], pill1['label'], color: pill1['color']),
@@ -325,16 +328,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               label,
               style: GoogleFonts.nunito(
                 fontSize: 10,
-                fontWeight: FontWeight.w800,
-                color: AppColors.textMuted,
-                letterSpacing: 0.3,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }e: 10,
                 fontWeight: FontWeight.w700,
                 color: AppColors.textMuted,
                 letterSpacing: 0.3,
@@ -364,7 +357,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('👶 Baby Updates',
+          Text(
+            '👶 Baby Updates',
             style: GoogleFonts.nunito(
               fontSize: 13,
               fontWeight: FontWeight.w900,
@@ -373,7 +367,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             ),
           ),
           const SizedBox(height: 10),
-          Text('Week 24: Your baby is about the size of a mango 🥭',
+          Text(
+            'Week 24: Your baby is about the size of a mango 🥭',
             style: GoogleFonts.nunito(
               fontSize: 12,
               fontWeight: FontWeight.w700,
@@ -382,7 +377,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             ),
           ),
           const SizedBox(height: 12),
-          Text('Developments: Hearing is fully developed. Baby can hear your voice and heartbeat.',
+          Text(
+            'Developments: Hearing is fully developed. Baby can hear your voice and heartbeat.',
             style: GoogleFonts.nunito(
               fontSize: 11,
               fontWeight: FontWeight.w600,
@@ -406,7 +402,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Fertile Window',
+          Text(
+            'Fertile Window',
             style: GoogleFonts.nunito(
               fontSize: 13,
               fontWeight: FontWeight.w900,
@@ -421,7 +418,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Feb 19 - Feb 23',
+                    Text(
+                      'Feb 19 - Feb 23',
                       style: GoogleFonts.nunito(
                         fontSize: 12,
                         fontWeight: FontWeight.w800,
@@ -450,7 +448,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 ),
               ),
               const SizedBox(width: 12),
-              Text('50%',
+              Text(
+                '50%',
                 style: GoogleFonts.nunito(
                   fontSize: 16,
                   fontWeight: FontWeight.w900,
@@ -560,7 +559,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Switch tracker',
+          Text(
+            'Switch tracker',
             style: GoogleFonts.nunito(
               fontSize: 14,
               fontWeight: FontWeight.w900,
@@ -603,8 +603,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         onPressed: onTap,
         style: TextButton.styleFrom(
           padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
-          backgroundColor:
-              urgent ? Color(0xFFFFF5F5) : AppColors.background,
+          backgroundColor: urgent ? Color(0xFFFFF5F5) : AppColors.background,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(14),
             side: BorderSide(
@@ -626,7 +625,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   Future<void> _selectMode(String mode) async {
-    // Reset journey completion so user can go through the new mode's journey
     await ref.read(modeProvider.notifier).resetJourney();
     if (mounted) {
       context.go('/journey/$mode');
