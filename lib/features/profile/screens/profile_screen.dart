@@ -12,6 +12,7 @@ import '../../../core/services/biometric_service.dart';
 import '../../../core/services/backup_service.dart';
 import '../../../models/user_profile_model.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({super.key});
@@ -41,8 +42,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           decoration: InputDecoration(
             labelText: 'Display Name',
             labelStyle: GoogleFonts.nunito(color: AppColors.textMid),
-            focusedBorder: UnderlineInputBorder(
-                borderSide: BorderSide(color: themeColor)),
+            focusedBorder:
+                UnderlineInputBorder(borderSide: BorderSide(color: themeColor)),
           ),
           autofocus: true,
         ),
@@ -116,8 +117,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   title: Text(lang['name']!,
                       style: GoogleFonts.nunito(fontWeight: FontWeight.w700)),
                   trailing: context.locale.languageCode == lang['code']
-                      ? Icon(Icons.check_circle,
-                          color: themeColor)
+                      ? Icon(Icons.check_circle, color: themeColor)
                       : null,
                   onTap: () {
                     context.setLocale(Locale(lang['code']!));
@@ -337,7 +337,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                             children: [
                               IconButton(
                                 icon: const Icon(Icons.arrow_back_ios,
-                                  color: AppColors.textDark, size: 20),
+                                    color: AppColors.textDark, size: 20),
                                 onPressed: () => context.go('/home'),
                               ),
                               Text(
@@ -350,8 +350,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                     width: 16,
                                     height: 16,
                                     child: CircularProgressIndicator(
-                                        strokeWidth: 2,
-                                        color: themeColor)),
+                                        strokeWidth: 2, color: themeColor)),
                               ]
                             ],
                           ),
@@ -404,8 +403,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                           _buildSectionTitle('DANGER ZONE'),
                           _buildSettingsCard([
                             if (isPremium)
-                              _buildSettingsTile(Icons.star_border,
-                                  'Cancel Premium Membership', _handleCancelPremium,
+                              _buildSettingsTile(
+                                  Icons.star_border,
+                                  'Cancel Premium Membership',
+                                  _handleCancelPremium,
                                   color: Colors.redAccent),
                             _buildSettingsTile(
                                 Icons.logout, 'Sign Out', _handleSignOut,
@@ -537,15 +538,14 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       decoration: BoxDecoration(
         color: Color(0xFFFFF9F9),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-            color: themeColor.withOpacity(0.3), width: 1.5),
+        border: Border.all(color: themeColor.withOpacity(0.3), width: 1.5),
       ),
       child: Row(
         children: [
           Container(
             padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-                color: themeColor, shape: BoxShape.circle),
+            decoration:
+                BoxDecoration(color: themeColor, shape: BoxShape.circle),
             child: const Icon(Icons.star, color: Colors.white, size: 24),
           ),
           const SizedBox(width: 16),
