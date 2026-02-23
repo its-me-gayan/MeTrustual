@@ -165,7 +165,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                   ),
                                 ),
                                 const SizedBox(width: 8),
-                                // ✅ Confirm button — mode color
                                 GestureDetector(
                                   onTap: () => _saveNickname(
                                       _nicknameController.text.trim()),
@@ -639,41 +638,5 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   Future<void> _selectMode(String mode) async {
     await ref.read(modeProvider.notifier).resetJourney();
     if (mounted) context.go('/journey/$mode');
-  }
-}
-
-// ── AppFAB — mode-aware color ─────────────────────────────────
-class AppFAB extends ConsumerWidget {
-  const AppFAB({super.key});
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final currentMode = ref.watch(modeProvider);
-    final color = modeColor(currentMode);
-
-    return Container(
-      width: 60,
-      height: 60,
-      margin: const EdgeInsets.only(bottom: 10),
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        color: color,
-        boxShadow: [
-          BoxShadow(
-            color: color.withOpacity(0.35),
-            blurRadius: 15,
-            offset: const Offset(0, 8),
-          ),
-        ],
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: () => context.go('/log'),
-          customBorder: const CircleBorder(),
-          child: const Icon(Icons.add, color: Colors.white, size: 32),
-        ),
-      ),
-    );
   }
 }

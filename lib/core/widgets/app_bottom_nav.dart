@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../theme/app_colors.dart';
+import '../providers/mode_provider.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class AppBottomNav extends StatelessWidget {
   final int activeIndex;
-
   const AppBottomNav({super.key, required this.activeIndex});
 
   @override
@@ -21,8 +22,9 @@ class AppBottomNav extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
           _buildNavItem(context, '🏠', 'Home', activeIndex == 0, '/home'),
-          _buildNavItem(context, '✨', 'Insights', activeIndex == 1, '/insights'),
-          const SizedBox(width: 52), // Space for FAB
+          _buildNavItem(
+              context, '✨', 'Insights', activeIndex == 1, '/insights'),
+          const SizedBox(width: 52),
           _buildNavItem(context, '📖', 'Learn', activeIndex == 2, '/education'),
           _buildNavItem(context, '🌿', 'Care', activeIndex == 3, '/care'),
         ],
@@ -30,7 +32,8 @@ class AppBottomNav extends StatelessWidget {
     );
   }
 
-  Widget _buildNavItem(BuildContext context, String icon, String label, bool isActive, String route) {
+  Widget _buildNavItem(BuildContext context, String icon, String label,
+      bool isActive, String route) {
     return GestureDetector(
       onTap: () => context.go(route),
       child: Column(
@@ -59,11 +62,19 @@ class AppBottomNav extends StatelessWidget {
   }
 }
 
-class AppFAB extends StatelessWidget {
+class AppFAB extends ConsumerWidget {
   const AppFAB({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final currentMode = ref.watch(modeProvider);
+
+    final Color fabColor = switch (currentMode) {
+      'preg' => const Color(0xFF4A70B0),
+      'ovul' => const Color(0xFF5A8E6A),
+      _ => AppColors.primaryRose,
+    };
+
     return GestureDetector(
       onTap: () => context.go('/log'),
       child: Container(
@@ -71,11 +82,12 @@ class AppFAB extends StatelessWidget {
         height: 52,
         decoration: BoxDecoration(
           shape: BoxShape.circle,
-          gradient: AppColors.primaryGradient,
+          gradient: currentMode == 'period' ? AppColors.primaryGradient : null,
+          color: currentMode == 'period' ? null : fabColor,
           border: Border.all(color: Colors.white, width: 3),
           boxShadow: [
             BoxShadow(
-              color: AppColors.primaryRose.withOpacity(0.45),
+              color: fabColor.withOpacity(0.45),
               offset: const Offset(0, 6),
               blurRadius: 20,
             ),

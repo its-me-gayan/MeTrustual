@@ -431,6 +431,66 @@ class _PinVerificationScreenState extends ConsumerState<PinVerificationScreen>
     );
   }
 
+  void _showVerifyingOverlay() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      useRootNavigator: true, // ← ADD THIS
+      barrierColor: Colors.black.withOpacity(0.35),
+      builder: (context) => PopScope(
+        canPop: false,
+        child: Center(
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 36, vertical: 28),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(28),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFFD97B8A).withOpacity(0.18),
+                  blurRadius: 30,
+                  offset: const Offset(0, 10),
+                ),
+              ],
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                SizedBox(
+                  width: 48,
+                  height: 48,
+                  child: CircularProgressIndicator(
+                    valueColor: AlwaysStoppedAnimation<Color>(
+                      const Color(0xFFD97B8A),
+                    ),
+                    strokeWidth: 3,
+                  ),
+                ),
+                const SizedBox(height: 20),
+                Text(
+                  'Verifying...',
+                  style: GoogleFonts.nunito(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w800,
+                    color: const Color(0xFF3D2828),
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'Just a moment 🔐',
+                  style: GoogleFonts.nunito(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: const Color(0xFFB09090),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
   // ─────────────────────────────────────────────────────────────
   //  LOGIC — untouched from original
   // ─────────────────────────────────────────────────────────────
@@ -439,34 +499,46 @@ class _PinVerificationScreenState extends ConsumerState<PinVerificationScreen>
     if (_pin.length != 4) return;
 
     setState(() => _isLoading = true);
+
+    // Wait for frame to complete then show overlay
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _showVerifyingOverlay();
+    });
+
+    // Small delay to ensure overlay is visible before heavy work starts
+    await Future.delayed(const Duration(milliseconds: 100));
+
     final security = ref.read(securityProvider.notifier);
 
     try {
       final verified = await security.verifyPinWithCloudFallback(_pin);
 
-      if (verified) {
-        if (mounted) {
-          NotificationService.showSuccess(
-              context, 'PIN verified successfully!');
+      if (mounted) {
+        Navigator.of(context, rootNavigator: true)
+            .pop(); // ← rootNavigator: true
+      }
 
-          Future.delayed(const Duration(milliseconds: 500), () {
-            if (mounted) {
-              if (widget.onSuccess != null) {
-                widget.onSuccess!();
-              } else {
-                context.go('/home');
-              }
-            }
-          });
+      if (verified) {
+        await Future.delayed(const Duration(milliseconds: 300));
+        if (mounted) {
+          if (widget.onSuccess != null) {
+            widget.onSuccess!();
+          } else {
+            context.go('/home');
+          }
         }
       } else {
-        setState(() {
-          _pin = '';
-          _pinController.clear();
-        });
+        if (mounted) {
+          setState(() {
+            _pin = '';
+            _pinController.clear();
+          });
+        }
       }
     } catch (e) {
       if (mounted) {
+        Navigator.of(context, rootNavigator: true)
+            .pop(); // ← rootNavigator: true
         NotificationService.showError(context, 'Error: ${e.toString()}');
       }
     } finally {
