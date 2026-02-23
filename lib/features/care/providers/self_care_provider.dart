@@ -57,15 +57,19 @@ final phasesForModeProvider = StreamProvider<List<Map<String, dynamic>>>((ref) {
   return firestore
       .collection('config')
       .doc('self_care')
-      .collection(currentMode)
-      .orderBy('order', descending: false)
       .snapshots()
       .map((snapshot) {
-    return snapshot.docs.map((doc) {
+    if (!snapshot.exists) return [];
+    final data = snapshot.data();
+    if (data == null || !data.containsKey(currentMode)) return [];
+    
+    final List<dynamic> phases = data[currentMode] as List<dynamic>;
+    return phases.map((p) {
+      final map = p as Map<String, dynamic>;
       return {
-        'key': doc.id,
-        'emoji': doc.data()['emoji'] as String? ?? '',
-        'label': doc.data()['label'] as String? ?? '',
+        'key': map['key'] as String? ?? '',
+        'emoji': map['emoji'] as String? ?? '',
+        'label': map['label'] as String? ?? '',
       };
     }).toList();
   });

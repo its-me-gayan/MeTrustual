@@ -29,8 +29,8 @@ class _EducationScreenState extends ConsumerState<EducationScreen> {
     _Category('🌸 Puberty', 'puberty'),
     _Category('🧼 Hygiene', 'hygiene'),
     _Category('❌ Myths', 'myths'),
-    _Category('💊 Pain', 'pain'),
-    _Category('🏥 Doctor', 'doctor'),
+    _Category('💊 Period Pain', 'period_pain'),
+    _Category('🏥 Sexual Health', 'sexual_health'),
   ];
 
   int _selectedIndex = 0; // 0 = All
@@ -49,6 +49,7 @@ class _EducationScreenState extends ConsumerState<EducationScreen> {
   bool _matchesFilter(Map<String, dynamic> article) {
     final category = _categories[_selectedIndex];
     final tag = (article['tag'] ?? '').toString().toLowerCase();
+    final tagLabel = (article['tag_label'] ?? '').toString().toLowerCase();
     final title = (article['title'] ?? '').toString().toLowerCase();
     final query = _searchQuery.toLowerCase();
 
@@ -58,7 +59,10 @@ class _EducationScreenState extends ConsumerState<EducationScreen> {
     }
 
     // Search filter
-    if (query.isNotEmpty && !title.contains(query) && !tag.contains(query)) {
+    if (query.isNotEmpty && 
+        !title.contains(query) && 
+        !tag.contains(query) && 
+        !tagLabel.contains(query)) {
       return false;
     }
 
@@ -109,10 +113,10 @@ class _EducationScreenState extends ConsumerState<EducationScreen> {
                       final article = entry.value;
                       final card = _buildArticleCard(
                         article['icon'] ?? '📖',
-                        article['tag'] ?? 'Info',
+                        article['tag_label'] ?? 'Info',
                         article['title'] ?? 'Untitled',
-                        article['meta'] ?? '',
-                        _getColorFromHex(article['tagColor'] ?? '#F7A8B8'),
+                        article['duration'] ?? '',
+                        _getColorFromHex(article['tag_color'] ?? '#F7A8B8'),
                       );
 
                       // Lock articles after the first two — same rule as original
