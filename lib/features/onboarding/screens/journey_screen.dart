@@ -69,6 +69,7 @@ class _JourneyScreenState extends ConsumerState<JourneyScreen> {
                   .map((e) => Map<String, dynamic>.from(e)))
           : await ref.read(journeyStepsProvider(widget.mode).future);
 
+      if (!mounted) return;
       setState(() {
         steps = loadedSteps;
         journeyData.addAll(userSelections); // pre-fill with saved data
@@ -80,6 +81,7 @@ class _JourneyScreenState extends ConsumerState<JourneyScreen> {
       try {
         final fallbackSteps =
             await ref.read(journeyStepsProvider(widget.mode).future);
+        if (!mounted) return;
         setState(() {
           steps = fallbackSteps;
           _stepsLoaded = true;
@@ -88,7 +90,7 @@ class _JourneyScreenState extends ConsumerState<JourneyScreen> {
         debugPrint('Fallback also failed: $e2');
       }
     } finally {
-      setState(() => _isLoading = false);
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
@@ -106,6 +108,7 @@ class _JourneyScreenState extends ConsumerState<JourneyScreen> {
             .collection('journey')
             .doc(widget.mode)
             .get();
+        if (!mounted) return;
         if (doc.exists) {
           debugPrint(doc.data().toString());
           debugPrint(
@@ -121,7 +124,7 @@ class _JourneyScreenState extends ConsumerState<JourneyScreen> {
     } catch (e) {
       debugPrint('Error loading journey data: $e');
     } finally {
-      setState(() => _isLoading = false);
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
@@ -189,18 +192,20 @@ class _JourneyScreenState extends ConsumerState<JourneyScreen> {
     }
 
     await _saveData();
+    if (!mounted) return; // ✅ Guard after first await
+
     if (currentStep < steps.length - 1) {
       setState(() => currentStep++);
     } else {
       await ref.read(modeProvider.notifier).setMode(widget.mode);
+      if (!mounted) return; // ✅ Guard after second await
+
       await ref.read(modeProvider.notifier).completeJourney();
+      if (!mounted) return; // ✅ Guard after third await
 
       final auth = ref.read(firebaseAuthProvider);
       final uid = auth.currentUser?.uid;
-
-      if (mounted) {
-        context.go('/biometric-setup/$uid');
-      }
+      context.go('/biometric-setup/$uid');
     }
   }
 
@@ -542,7 +547,7 @@ class _JourneyScreenState extends ConsumerState<JourneyScreen> {
               firstDate: DateTime(2020),
               lastDate: DateTime(2030),
             );
-            if (picked != null) {
+            if (picked != null && mounted) {
               setState(() {
                 journeyData[key] = Timestamp.fromDate(picked);
               });
