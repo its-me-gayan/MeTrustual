@@ -111,7 +111,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
         ),
         child: Scaffold(
           body: Container(
-            decoration: BoxDecoration(
+            decoration: const BoxDecoration(
               gradient: LinearGradient(
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
@@ -126,10 +126,10 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
             ),
             child: Stack(
               children: [
-                // Floating Petals
+                // ── Floating Flower Petals ──
                 ..._petals.map((petal) => FloatingPetal(petal: petal)),
 
-                // Ripple Rings
+                // ── Ripple Rings ──
                 Center(
                   child: Stack(
                     alignment: Alignment.center,
@@ -139,116 +139,139 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                   ),
                 ),
 
-                // Center Content
+                // ── Centre Content ──
                 Center(
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      // Logo Circle
+                      // ── Flower Logo ──
                       ScaleTransition(
                         scale: Tween<double>(begin: 1.0, end: 1.07).animate(
                           CurvedAnimation(
-                              parent: _logoController, curve: Curves.easeInOut),
+                            parent: _logoController,
+                            curve: Curves.easeInOut,
+                          ),
                         ),
                         child: Container(
                           width: 100,
                           height: 100,
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            gradient: LinearGradient(
+                            // Warm peach-to-lavender: matches the Soluna brand
+                            gradient: const LinearGradient(
                               colors: [Color(0xFFFDE8C8), Color(0xFFF0D8F4)],
                               begin: Alignment.topLeft,
                               end: Alignment.bottomRight,
                             ),
                             boxShadow: [
+                              // Halo ring
                               BoxShadow(
                                 color: const Color(0xFFFDE8C8).withOpacity(0.4),
                                 blurRadius: 0,
                                 spreadRadius: 10,
                               ),
+                              // Warm drop shadow
                               BoxShadow(
-                                color: const Color(0xFFC97B3A).withOpacity(0.25),
+                                color:
+                                    const Color(0xFFD97B8A).withOpacity(0.22),
                                 blurRadius: 36,
                                 offset: const Offset(0, 12),
                               ),
                             ],
                           ),
                           child: RotationTransition(
+                            // Gentle sway
                             turns: Tween<double>(begin: -0.014, end: 0.014)
                                 .animate(
                               CurvedAnimation(
-                                  parent: _logoController,
-                                  curve: Curves.easeInOut),
-                            ),
-                            child: Center(
-                              child: Text(
-                                '☀️',
-                                style: GoogleFonts.nunito(fontSize: 45),
+                                parent: _logoController,
+                                curve: Curves.easeInOut,
                               ),
+                            ),
+                            child: const Center(
+                              // 🌸 FLOWER — kept as requested
+                              child: Text('🌸', style: TextStyle(fontSize: 45)),
                             ),
                           ),
                         ),
                       ),
+
                       const SizedBox(height: 14),
-                      // App Name
+
+                      // ── App Name + Tagline ──
                       SlideTransition(
                         position: Tween<Offset>(
-                                begin: const Offset(0, 0.5), end: Offset.zero)
-                            .animate(
+                          begin: const Offset(0, 0.5),
+                          end: Offset.zero,
+                        ).animate(
                           CurvedAnimation(
-                              parent: _slideController,
-                              curve: const Cubic(0.2, 0.8, 0.4, 1.0)),
+                            parent: _slideController,
+                            curve: const Cubic(0.2, 0.8, 0.4, 1.0),
+                          ),
                         ),
                         child: FadeTransition(
                           opacity: _slideController,
                           child: Column(
                             children: [
+                              // "Sol" in warm amber  |  "una" in rose pink
                               RichText(
                                 text: TextSpan(
                                   style: GoogleFonts.nunito(
                                     fontSize: 29,
                                     fontWeight: FontWeight.w900,
-                                    color: Color(0xFF3D2828),
                                     letterSpacing: -0.5,
                                   ),
                                   children: [
-                                    TextSpan(text: 'Sol'),
                                     TextSpan(
-                                      text: 'ana',
+                                      text: 'Sol',
                                       style: GoogleFonts.nunito(
-                                        color: Color(0xFFC97B3A),
-                                        fontStyle: FontStyle.normal,
+                                        // Amber gold — the "sun" half
+                                        color: const Color(0xFFC97B3A),
+                                        fontWeight: FontWeight.w900,
+                                      ),
+                                    ),
+                                    TextSpan(
+                                      text: 'una',
+                                      style: GoogleFonts.nunito(
+                                        // Rose pink — the "moon" half
+                                        color: const Color(0xFFD97B8A),
+                                        fontWeight: FontWeight.w900,
                                       ),
                                     ),
                                   ],
                                 ),
                               ),
+
+                              const SizedBox(height: 4),
+
                               Text(
-                                'your light. your rhythm. ✨',
+                                'your light. your rhythm. 🌕',
                                 style: GoogleFonts.nunito(
                                   fontSize: 12,
                                   fontWeight: FontWeight.w700,
-                                  color: Color(0xFFB0909A),
+                                  color: const Color(0xFFB0909A),
                                 ),
                               ),
                             ],
                           ),
                         ),
                       ),
+
                       const SizedBox(height: 28),
-                      // Loading Bar
+
+                      // ── Loading Bar ──
                       FadeTransition(
                         opacity: CurvedAnimation(
                           parent: _slideController,
                           curve: const Interval(0.5, 1.0),
                         ),
-                          child: Container(
-                            width: 100,
-                            height: 4,
-                            decoration: BoxDecoration(
-                              color: Color(0xFFD97B8A).withOpacity(0.12),
-                              borderRadius: BorderRadius.circular(2),
-                            ),
+                        child: Container(
+                          width: 100,
+                          height: 4,
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFD97B8A).withOpacity(0.12),
+                            borderRadius: BorderRadius.circular(2),
+                          ),
                           child: AnimatedBuilder(
                             animation: _barController,
                             builder: (context, child) {
@@ -258,11 +281,12 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                                 child: Container(
                                   decoration: BoxDecoration(
                                     borderRadius: BorderRadius.circular(2),
-                                  gradient: const LinearGradient(
+                                    // Sol gold → Luna rose → Moon mist
+                                    gradient: const LinearGradient(
                                       colors: [
-                                      Color(0xFFF0C080),
-                                      Color(0xFFD97B8A),
-                                      Color(0xFF9070C0),
+                                        Color(0xFFF0C080), // Sol gold
+                                        Color(0xFFD97B8A), // Luna rose
+                                        Color(0xFF9070C0), // Moon mist
                                       ],
                                     ),
                                   ),
@@ -284,15 +308,23 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
   }
 }
 
+// ═══════════════════════════════════════
+//  PETAL MODEL — flower emojis only 🌸
+// ═══════════════════════════════════════
 class PetalModel {
   final double left = math.Random().nextDouble() * 100;
   final double size = 12 + math.Random().nextDouble() * 14;
   final Duration duration =
       Duration(milliseconds: 4000 + math.Random().nextInt(3000));
   final Duration delay = Duration(milliseconds: math.Random().nextInt(3000));
-  final String emoji = ['✨', '⭐', '💫', '🌟'][math.Random().nextInt(4)];
+
+  // Flower petals only — matching the website and onboarding
+  final String emoji = ['🌸', '✿', '🌺', '✾', '🌸'][math.Random().nextInt(5)];
 }
 
+// ═══════════════════════════════════════
+//  FLOATING PETAL WIDGET
+// ═══════════════════════════════════════
 class FloatingPetal extends StatefulWidget {
   final PetalModel petal;
   const FloatingPetal({super.key, required this.petal});
@@ -337,8 +369,10 @@ class _FloatingPetalState extends State<FloatingPetal>
             opacity: opacity.clamp(0.0, 1.0),
             child: Transform.rotate(
               angle: progress * math.pi * 2.2,
-              child: Text(widget.petal.emoji,
-                  style: GoogleFonts.nunito(fontSize: widget.petal.size)),
+              child: Text(
+                widget.petal.emoji,
+                style: TextStyle(fontSize: widget.petal.size),
+              ),
             ),
           ),
         );
@@ -347,6 +381,9 @@ class _FloatingPetalState extends State<FloatingPetal>
   }
 }
 
+// ═══════════════════════════════════════
+//  RIPPLE RING WIDGET
+// ═══════════════════════════════════════
 class RippleRing extends StatefulWidget {
   final double delay;
   const RippleRing({super.key, required this.delay});
@@ -363,10 +400,15 @@ class _RippleRingState extends State<RippleRing>
   void initState() {
     super.initState();
     _controller = AnimationController(
-        vsync: this, duration: const Duration(milliseconds: 2800));
-    Future.delayed(Duration(milliseconds: (widget.delay * 1000).toInt()), () {
-      if (mounted) _controller.repeat();
-    });
+      vsync: this,
+      duration: const Duration(milliseconds: 2800),
+    );
+    Future.delayed(
+      Duration(milliseconds: (widget.delay * 1000).toInt()),
+      () {
+        if (mounted) _controller.repeat();
+      },
+    );
   }
 
   @override
@@ -391,7 +433,10 @@ class _RippleRingState extends State<RippleRing>
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 border: Border.all(
-                    color: Color(0xFFD97B8A).withOpacity(0.15), width: 1.5),
+                  // Rose pink ripple — matches the logo halo
+                  color: const Color(0xFFD97B8A).withOpacity(0.15),
+                  width: 1.5,
+                ),
               ),
             ),
           ),
