@@ -6,14 +6,36 @@ import '../../../core/providers/mode_provider.dart';
 final phaseDataProvider = StreamProvider.family<Map<String, String>, String>((ref, phase) {
   final firestore = ref.watch(firestoreProvider);
   final currentMode = ref.watch(modeProvider);
+  
+  final collectionName = currentMode == 'preg' 
+      ? 'pregnancy' 
+      : currentMode == 'ovul' 
+          ? 'fertility' 
+          : 'period';
 
   return firestore
       .collection('config')
       .doc('self_care')
-      .collection(currentMode)
+      .collection(collectionName)
       .doc(phase)
       .snapshots()
-      .map((snapshot) {
+      .asyncMap((snapshot) async {
+    if (!snapshot.exists && collectionName != currentMode) {
+      final altDoc = await firestore
+          .collection('config')
+          .doc('self_care')
+          .collection(currentMode)
+          .doc(phase)
+          .get();
+      if (altDoc.exists) {
+        return {
+          'badge': altDoc.data()?['badge'] as String? ?? '',
+          'hero_e': altDoc.data()?['hero_e'] as String? ?? '',
+          'hero_t': altDoc.data()?['hero_t'] as String? ?? '',
+          'hero_d': altDoc.data()?['hero_d'] as String? ?? '',
+        };
+      }
+    }
     if (!snapshot.exists) return {};
     return {
       'badge': snapshot.data()?['badge'] as String? ?? '',
@@ -29,16 +51,38 @@ final ritualListProvider = StreamProvider.family<List<Map<String, String>>, Stri
   final firestore = ref.watch(firestoreProvider);
   final currentMode = ref.watch(modeProvider);
 
+  final collectionName = currentMode == 'preg' 
+      ? 'pregnancy' 
+      : currentMode == 'ovul' 
+          ? 'fertility' 
+          : 'period';
+
   return firestore
       .collection('config')
       .doc('self_care')
-      .collection(currentMode)
+      .collection(collectionName)
       .doc(phase)
       .collection('rituals')
       .orderBy('order', descending: false)
       .snapshots()
-      .map((snapshot) {
-    return snapshot.docs.map((doc) {
+      .asyncMap((snapshot) async {
+    List<QueryDocumentSnapshot<Map<String, dynamic>>> docs = snapshot.docs;
+    
+    if (docs.isEmpty && collectionName != currentMode) {
+      final altSnapshot = await firestore
+          .collection('config')
+          .doc('self_care')
+          .collection(currentMode)
+          .doc(phase)
+          .collection('rituals')
+          .orderBy('order', descending: false)
+          .get();
+      if (altSnapshot.docs.isNotEmpty) {
+        docs = altSnapshot.docs;
+      }
+    }
+    
+    return docs.map((doc) {
       return {
         'e': doc.data()['emoji'] as String? ?? '',
         't': doc.data()['title'] as String? ?? '',
@@ -54,22 +98,40 @@ final phasesForModeProvider = StreamProvider<List<Map<String, dynamic>>>((ref) {
   final firestore = ref.watch(firestoreProvider);
   final currentMode = ref.watch(modeProvider);
 
+  // Map 'preg' to 'pregnancy' and 'ovul' to 'fertility' if needed
+  final collectionName = currentMode == 'preg' 
+      ? 'pregnancy' 
+      : currentMode == 'ovul' 
+          ? 'fertility' 
+          : 'period';
+
   return firestore
       .collection('config')
       .doc('self_care')
+      .collection(collectionName)
+      .orderBy('order', descending: false)
       .snapshots()
-      .map((snapshot) {
-    if (!snapshot.exists) return [];
-    final data = snapshot.data();
-    if (data == null || !data.containsKey(currentMode)) return [];
+      .asyncMap((snapshot) async {
+    List<QueryDocumentSnapshot<Map<String, dynamic>>> docs = snapshot.docs;
+
+    if (docs.isEmpty && collectionName != currentMode) {
+      // Fallback: try original mode name if collectionName differs
+      final altSnapshot = await firestore
+          .collection('config')
+          .doc('self_care')
+          .collection(currentMode)
+          .orderBy('order', descending: false)
+          .get();
+      if (altSnapshot.docs.isNotEmpty) {
+        docs = altSnapshot.docs;
+      }
+    }
     
-    final List<dynamic> phases = data[currentMode] as List<dynamic>;
-    return phases.map((p) {
-      final map = p as Map<String, dynamic>;
+    return docs.map((doc) {
       return {
-        'key': map['key'] as String? ?? '',
-        'emoji': map['emoji'] as String? ?? '',
-        'label': map['label'] as String? ?? '',
+        'key': doc.id,
+        'emoji': doc.data()['emoji'] as String? ?? '',
+        'label': doc.data()['label'] as String? ?? '',
       };
     }).toList();
   });
