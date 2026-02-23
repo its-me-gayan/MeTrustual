@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../../core/theme/app_colors.dart';
+// import '../../../core/theme/app_colors.dart';
 import '../../../core/services/biometric_service.dart';
 import '../../../core/widgets/custom_pin_input.dart';
 import '../../../core/providers/security_provider.dart';
@@ -491,6 +491,7 @@ class _PinVerificationScreenState extends ConsumerState<PinVerificationScreen>
       ),
     );
   }
+
   // ─────────────────────────────────────────────────────────────
   //  LOGIC — untouched from original
   // ─────────────────────────────────────────────────────────────
@@ -546,137 +547,276 @@ class _PinVerificationScreenState extends ConsumerState<PinVerificationScreen>
     }
   }
 
+  // ─────────────────────────────────────────────────────────────
+  //  FORGOT PIN — splits on user type
+  //    • Premium (non-anonymous): masked email display + confirm
+  //    • Anonymous             : email text-field entry
+  // ─────────────────────────────────────────────────────────────
+
+  /// Returns a masked version of [email], e.g. "jane@example.com" → "j***@example.com"
+  String _maskEmail(String email) {
+    final parts = email.split('@');
+    if (parts.length != 2) return email;
+    final local = parts[0];
+    final domain = parts[1];
+    final visible = local.isNotEmpty ? local[0] : '';
+    return '$visible***@$domain';
+  }
+
   Future<void> _handleForgotPin() async {
     final auth = ref.read(firebaseAuthProvider);
-    final emailController = TextEditingController();
+    final isPremium =
+        auth.currentUser != null && !auth.currentUser!.isAnonymous;
 
-    if (mounted) {
-      showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-          backgroundColor: const Color(0xFFFFF8F5),
-          title: Column(
-            children: [
-              const Text('🔑', style: TextStyle(fontSize: 28)),
-              const SizedBox(height: 8),
-              Text(
-                'Reset PIN',
-                style: GoogleFonts.nunito(
-                  fontWeight: FontWeight.w900,
-                  fontSize: 18,
-                  color: const Color(0xFF3D2828),
-                ),
-              ),
-            ],
-          ),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                'Enter your email to receive a temporary PIN.',
-                textAlign: TextAlign.center,
-                style: GoogleFonts.nunito(
-                  fontWeight: FontWeight.w500,
-                  fontSize: 13,
-                  color: const Color(0xFF8A6870),
-                ),
-              ),
-              const SizedBox(height: 16),
-              TextField(
-                controller: emailController,
-                keyboardType: TextInputType.emailAddress,
-                style: GoogleFonts.nunito(
-                    fontSize: 14, color: const Color(0xFF3D2828)),
-                decoration: InputDecoration(
-                  hintText: 'your@email.com',
-                  hintStyle: GoogleFonts.nunito(
-                      color: const Color(0xFFD0B0B8), fontSize: 13),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(14),
-                    borderSide: const BorderSide(color: Color(0xFFFCE8E4)),
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(14),
-                    borderSide: const BorderSide(color: Color(0xFFFCE8E4)),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(14),
-                    borderSide: const BorderSide(color: Color(0xFFD97B8A)),
-                  ),
-                  filled: true,
-                  fillColor: Colors.white,
-                  contentPadding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                ),
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: Text(
-                'Cancel',
-                style: GoogleFonts.nunito(
-                  color: const Color(0xFFB09090),
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ),
-            Container(
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [Color(0xFFF09090), Color(0xFFD97B8A)],
-                ),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: TextButton(
-                onPressed: () async {
-                  final email = emailController.text.trim();
-                  if (email.isEmpty) return;
+    if (isPremium) {
+      // ── Premium path: we already have the email in Firebase ──
+      _showForgotPinPremiumDialog(auth.currentUser!.email!);
+    } else {
+      // ── Anonymous path: ask the user to enter their email ──
+      _showForgotPinAnonymousDialog();
+    }
+  }
 
-                  Navigator.pop(context);
-                  setState(() => _isLoading = true);
-
-                  try {
-                    final targetEmail = (auth.currentUser != null &&
-                            !auth.currentUser!.isAnonymous)
-                        ? auth.currentUser!.email!
-                        : email;
-
-                    // Sends temp PIN — same logic as original
-                    await BiometricService.setBiometricPin("1234");
-
-                    if (mounted) {
-                      NotificationService.showSuccess(
-                        context,
-                        'Temporary PIN sent to $targetEmail! Check your inbox.',
-                      );
-                    }
-                  } catch (e) {
-                    if (mounted) {
-                      NotificationService.showError(
-                          context, 'Error: ${e.toString()}');
-                    }
-                  } finally {
-                    if (mounted) setState(() => _isLoading = false);
-                  }
-                },
-                child: Text(
-                  'Send PIN',
-                  style: GoogleFonts.nunito(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w900,
-                    fontSize: 14,
-                  ),
-                ),
+  /// Dialog for premium users — shows masked email, single confirm button.
+  void _showForgotPinPremiumDialog(String email) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        backgroundColor: const Color(0xFFFFF8F5),
+        title: Column(
+          children: [
+            const Text('🔑', style: TextStyle(fontSize: 28)),
+            const SizedBox(height: 8),
+            Text(
+              'Reset PIN',
+              style: GoogleFonts.nunito(
+                fontWeight: FontWeight.w900,
+                fontSize: 18,
+                color: const Color(0xFF3D2828),
               ),
             ),
           ],
         ),
-      );
-    }
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              'We\'ll send a temporary PIN to your email on file.',
+              textAlign: TextAlign.center,
+              style: GoogleFonts.nunito(
+                fontWeight: FontWeight.w500,
+                fontSize: 13,
+                color: const Color(0xFF8A6870),
+              ),
+            ),
+            const SizedBox(height: 16),
+            // Masked email pill
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(color: const Color(0xFFFCE8E4)),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Text('✉️', style: TextStyle(fontSize: 15)),
+                  const SizedBox(width: 8),
+                  Text(
+                    _maskEmail(email),
+                    style: GoogleFonts.nunito(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w700,
+                      color: const Color(0xFF3D2828),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(
+              'Cancel',
+              style: GoogleFonts.nunito(
+                color: const Color(0xFFB09090),
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+          Container(
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [Color(0xFFF09090), Color(0xFFD97B8A)],
+              ),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: TextButton(
+              onPressed: () async {
+                Navigator.pop(context);
+                setState(() => _isLoading = true);
+
+                try {
+                  // TODO: replace placeholder with real email-send logic
+                  await BiometricService.setBiometricPin("1234");
+
+                  if (mounted) {
+                    NotificationService.showSuccess(
+                      context,
+                      'Temporary PIN sent to ${_maskEmail(email)}! Check your inbox.',
+                    );
+                  }
+                } catch (e) {
+                  if (mounted) {
+                    NotificationService.showError(
+                        context, 'Error: ${e.toString()}');
+                  }
+                } finally {
+                  if (mounted) setState(() => _isLoading = false);
+                }
+              },
+              child: Text(
+                'Send PIN',
+                style: GoogleFonts.nunito(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w900,
+                  fontSize: 14,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Dialog for anonymous users — they must provide their email manually.
+  void _showForgotPinAnonymousDialog() {
+    final emailController = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        backgroundColor: const Color(0xFFFFF8F5),
+        title: Column(
+          children: [
+            const Text('🔑', style: TextStyle(fontSize: 28)),
+            const SizedBox(height: 8),
+            Text(
+              'Reset PIN',
+              style: GoogleFonts.nunito(
+                fontWeight: FontWeight.w900,
+                fontSize: 18,
+                color: const Color(0xFF3D2828),
+              ),
+            ),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              'Enter your email to receive a temporary PIN.',
+              textAlign: TextAlign.center,
+              style: GoogleFonts.nunito(
+                fontWeight: FontWeight.w500,
+                fontSize: 13,
+                color: const Color(0xFF8A6870),
+              ),
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: emailController,
+              keyboardType: TextInputType.emailAddress,
+              style: GoogleFonts.nunito(
+                  fontSize: 14, color: const Color(0xFF3D2828)),
+              decoration: InputDecoration(
+                hintText: 'your@email.com',
+                hintStyle: GoogleFonts.nunito(
+                    color: const Color(0xFFD0B0B8), fontSize: 13),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(14),
+                  borderSide: const BorderSide(color: Color(0xFFFCE8E4)),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(14),
+                  borderSide: const BorderSide(color: Color(0xFFFCE8E4)),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(14),
+                  borderSide: const BorderSide(color: Color(0xFFD97B8A)),
+                ),
+                filled: true,
+                fillColor: Colors.white,
+                contentPadding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(
+              'Cancel',
+              style: GoogleFonts.nunito(
+                color: const Color(0xFFB09090),
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+          Container(
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [Color(0xFFF09090), Color(0xFFD97B8A)],
+              ),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: TextButton(
+              onPressed: () async {
+                final email = emailController.text.trim();
+                if (email.isEmpty) return;
+
+                Navigator.pop(context);
+                setState(() => _isLoading = true);
+
+                try {
+                  // TODO: replace placeholder with real email-send logic
+                  await BiometricService.setBiometricPin("1234");
+
+                  if (mounted) {
+                    NotificationService.showSuccess(
+                      context,
+                      'Temporary PIN sent to $email! Check your inbox.',
+                    );
+                  }
+                } catch (e) {
+                  if (mounted) {
+                    NotificationService.showError(
+                        context, 'Error: ${e.toString()}');
+                  }
+                } finally {
+                  if (mounted) setState(() => _isLoading = false);
+                }
+              },
+              child: Text(
+                'Send PIN',
+                style: GoogleFonts.nunito(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w900,
+                  fontSize: 14,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
 

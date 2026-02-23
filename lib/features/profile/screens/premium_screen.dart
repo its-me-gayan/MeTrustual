@@ -1,14 +1,33 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import '../../../core/theme/app_colors.dart';
-import '../../../core/providers/firebase_providers.dart';
-import '../../../core/providers/mode_provider.dart';
-import '../../../core/services/notification_service.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:go_router/go_router.dart';
+import '../../../core/providers/premium_provider.dart';
+import '../../../core/providers/mode_provider.dart';
+import '../../../core/theme/app_colors.dart';
 
+// ── Plan enum ───────────────────────────────────────────────
+enum PremiumPlan { monthly, yearly, lifetime }
+
+final _selectedPlanProvider =
+    StateProvider<PremiumPlan>((ref) => PremiumPlan.yearly);
+
+// ── Feature model ────────────────────────────────────────────
+class _FeatureItem {
+  final String icon;
+  final String label;
+  final String desc;
+  final List<Color> iconBg;
+  const _FeatureItem({
+    required this.icon,
+    required this.label,
+    required this.desc,
+    required this.iconBg,
+  });
+}
+
+// ── Screen ───────────────────────────────────────────────────
 class PremiumScreen extends ConsumerStatefulWidget {
   const PremiumScreen({super.key});
 
@@ -16,513 +35,730 @@ class PremiumScreen extends ConsumerStatefulWidget {
   ConsumerState<PremiumScreen> createState() => _PremiumScreenState();
 }
 
-class _PremiumScreenState extends ConsumerState<PremiumScreen> {
+class _PremiumScreenState extends ConsumerState<PremiumScreen>
+    with TickerProviderStateMixin {
+  // Animations
+  late final AnimationController _fadeCtrl;
+  late final AnimationController _floatCtrl;
+  late final Animation<double> _fadeAnim;
+  late final Animation<double> _floatAnim;
+
   bool _isLoading = false;
-  String _selectedPlan = 'annual';
 
-  void _showError(String message) {
-    NotificationService.showError(context, message);
+  // Design tokens — matching Soluna palette exactly
+  static const _pink = Color(0xFFD97B8A);
+  static const _pinkLight = Color(0xFFF09090);
+  static const _pinkSoft = Color(0xFFFCE8E4);
+  static const _textDark = Color(0xFF3D2828);
+  static const _textMid = Color(0xFFB09090);
+  static const _textSub = Color(0xFFC0A0A8);
+  static const _green = Color(0xFF5A8E6A);
+  static const _orange = Color(0xFFC97B3A);
+
+  // Features list
+  static const _features = [
+    _FeatureItem(
+      icon: '📊',
+      label: 'Advanced Cycle Insights',
+      desc: 'Predictions, trends & phase guidance',
+      iconBg: [Color(0xFFFCE8E8), Color(0xFFFDD0D8)],
+    ),
+    _FeatureItem(
+      icon: '🌙',
+      label: 'Full Ritual Library',
+      desc: '50+ guided self-care rituals',
+      iconBg: [Color(0xFFF0E8FC), Color(0xFFE8D8F8)],
+    ),
+    _FeatureItem(
+      icon: '📖',
+      label: 'All Education Articles',
+      desc: 'Expert-reviewed health content',
+      iconBg: [Color(0xFFE8F8EC), Color(0xFFD8F0E0)],
+    ),
+    _FeatureItem(
+      icon: '🤰',
+      label: 'Pregnancy & Fertility Mode',
+      desc: 'Dedicated tracking & tools',
+      iconBg: [Color(0xFFFEF4E4), Color(0xFFFDE8C4)],
+    ),
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    _fadeCtrl = AnimationController(
+        vsync: this, duration: const Duration(milliseconds: 500));
+    _floatCtrl =
+        AnimationController(vsync: this, duration: const Duration(seconds: 3))
+          ..repeat(reverse: true);
+    _fadeAnim = CurvedAnimation(parent: _fadeCtrl, curve: Curves.easeOut);
+    _floatAnim = CurvedAnimation(parent: _floatCtrl, curve: Curves.easeInOut);
+    _fadeCtrl.forward();
   }
 
-  Future<void> _handleSubscribe() async {
-    final auth = ref.read(firebaseAuthProvider);
-    final user = auth.currentUser;
-
-    if (user == null || user.isAnonymous) {
-      await _showSignUpSheet();
-    } else {
-      await _processMockPayment(user.uid);
-    }
+  @override
+  void dispose() {
+    _fadeCtrl.dispose();
+    _floatCtrl.dispose();
+    super.dispose();
   }
 
-  Future<void> _showSignUpSheet() async {
-    final emailController = TextEditingController();
-    final passwordController = TextEditingController();
-    bool isSheetLoading = false;
-    final currentMode = ref.read(modeProvider);
-    final themeColor = AppColors.getModeColor(currentMode, soft: true);
-
-    await showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => StatefulBuilder(
-        builder: (context, setSheetState) => Container(
-          decoration: BoxDecoration(color: Color(0xFFFFF8F5),
-            borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
-          ),
-          padding: EdgeInsets.only(
-            bottom: MediaQuery.of(context).viewInsets.bottom + 32,
-            left: 24,
-            right: 24,
-            top: 32,
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 40,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: AppColors.border,
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-              const SizedBox(height: 24),
-              RichText(
-                textAlign: TextAlign.center,
-                text:  TextSpan(
-                  style: GoogleFonts.nunito(
-                    fontSize: 24,
-                    fontWeight: FontWeight.w900,
-                    color: AppColors.textDark,
-                    // fontFamily: 'Nunito',
-                  ),
-                  children: [
-                    TextSpan(text: 'Create your '),
-                    TextSpan(
-                      text: 'account',
-                      style: GoogleFonts.nunito(
-                          color: themeColor,
-                          fontStyle: FontStyle.italic),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text('Secure your data and unlock all features.',
-                style: GoogleFonts.nunito(
-                    color: AppColors.textMid,
-                    fontWeight: FontWeight.w600,
-                    fontSize: 13),
-              ),
-              const SizedBox(height: 32),
-              _buildTextField(
-                  emailController, 'Email Address', Icons.email_outlined),
-              const SizedBox(height: 16),
-              _buildTextField(
-                  passwordController, 'Password', Icons.lock_outline,
-                  isObscure: true),
-              const SizedBox(height: 32),
-              SizedBox(
-                width: double.infinity,
-                height: 56,
-                child: ElevatedButton(
-                  onPressed: isSheetLoading
-                      ? null
-                      : () async {
-                          if (emailController.text.isEmpty ||
-                              passwordController.text.isEmpty) {
-                            _showError('Please fill in all fields');
-                            return;
-                          }
-                          setSheetState(() => isSheetLoading = true);
-                          try {
-                            final auth = ref.read(firebaseAuthProvider);
-                            final currentUser = auth.currentUser;
-
-                            if (currentUser != null &&
-                                currentUser.isAnonymous) {
-                              final credential = EmailAuthProvider.credential(
-                                  email: emailController.text,
-                                  password: passwordController.text);
-                              await currentUser.linkWithCredential(credential);
-                            } else {
-                              await auth.createUserWithEmailAndPassword(
-                                  email: emailController.text,
-                                  password: passwordController.text);
-                            }
-
-                            if (context.mounted) Navigator.pop(context);
-                            final newUser = auth.currentUser;
-                            if (newUser != null) {
-                              await _processMockPayment(newUser.uid);
-                            }
-                          } catch (e) {
-                            _showError(e.toString());
-                          } finally {
-                            setSheetState(() => isSheetLoading = false);
-                          }
-                        },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: themeColor,
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(20)),
-                    elevation: 0,
-                  ),
-                  child: isSheetLoading
-                      ? SizedBox(width: 24,
-                          height: 24,
-                          child: CircularProgressIndicator(
-                              color: Colors.white, strokeWidth: 2))
-                      : Text('Create Account & Continue',
-                          style: GoogleFonts.nunito(
-                              color: Colors.white,
-                              fontWeight: FontWeight.w900,
-                              fontSize: 16)),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildTextField(
-      TextEditingController controller, String hint, IconData icon,
-      {bool isObscure = false}) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: AppColors.border, width: 2),
-      ),
-      child: TextField(
-        controller: controller,
-        obscureText: isObscure,
-        style: GoogleFonts.nunito(
-            fontWeight: FontWeight.w700, color: AppColors.textDark),
-        decoration: InputDecoration(
-          hintText: hint,
-          hintStyle: GoogleFonts.nunito(
-              color: AppColors.textMuted, fontWeight: FontWeight.w600),
-          prefixIcon: Icon(icon, color: AppColors.textMuted, size: 20),
-          border: InputBorder.none,
-          contentPadding:
-              const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-        ),
-      ),
-    );
-  }
-
-  Future<void> _processMockPayment(String uid) async {
+  // ── Purchase ────────────────────────────────────────────────
+  Future<void> _handlePurchase() async {
     setState(() => _isLoading = true);
-    await Future.delayed(const Duration(seconds: 2));
-
+    HapticFeedback.mediumImpact();
     try {
-      final firestore = ref.read(firestoreProvider);
-      await firestore.collection('users').doc(uid).set({
-        'isPremium': true,
-        'subscriptionPlan': _selectedPlan,
-        'subscriptionDate': FieldValue.serverTimestamp(),
-      }, SetOptions(merge: true));
-
-      if (mounted) {
-        _showSuccessDialog();
-      }
+      final plan = ref.read(_selectedPlanProvider);
+      // TODO: wire to RevenueCat via premiumProvider, e.g.:
+      // await ref.read(premiumProvider.notifier).purchase(plan);
+      await Future.delayed(const Duration(seconds: 2)); // placeholder
+      if (mounted) context.pop();
     } catch (e) {
-      _showError(e.toString());
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text('Purchase failed. Please try again.',
+              style: GoogleFonts.nunito(fontWeight: FontWeight.w700)),
+          backgroundColor: _pink,
+          behavior: SnackBarBehavior.floating,
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        ));
+      }
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
   }
 
-  void _showSuccessDialog() {
-    final currentMode = ref.read(modeProvider);
-    final themeColor = AppColors.getModeColor(currentMode, soft: true);
+  Future<void> _handleRestore() async {
+    HapticFeedback.lightImpact();
+    // TODO: await ref.read(premiumProvider.notifier).restorePurchases();
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: Text('Checking for existing purchases…',
+          style: GoogleFonts.nunito(fontWeight: FontWeight.w700)),
+      backgroundColor: _green,
+      behavior: SnackBarBehavior.floating,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+    ));
+  }
 
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => Dialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(32)),
-        backgroundColor: Color(0xFFFFF8F5),
-        child: Padding(
-          padding: const EdgeInsets.all(32.0),
-          child: Column(
+  // ── Build ────────────────────────────────────────────────────
+  @override
+  Widget build(BuildContext context) {
+    final plan = ref.watch(_selectedPlanProvider);
+
+    return Scaffold(
+      backgroundColor: const Color(0xFFFFF4F0),
+      body: FadeTransition(
+        opacity: _fadeAnim,
+        child: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                Color(0xFFFFF4F0),
+                Color(0xFFFDE8F0),
+                Color(0xFFEDE8FC),
+                Color(0xFFE8EEFF),
+              ],
+              stops: [0.0, 0.4, 0.75, 1.0],
+            ),
+          ),
+          child: SafeArea(
+            child: Stack(
+              children: [
+                // ── Floating deco emojis ──
+                _FloatingDeco(
+                    emoji: '🌸',
+                    topFraction: 0.06,
+                    leftFraction: 0.06,
+                    anim: _floatAnim,
+                    delay: 0.0),
+                _FloatingDeco(
+                    emoji: '✨',
+                    topFraction: 0.11,
+                    rightFraction: 0.08,
+                    anim: _floatAnim,
+                    delay: 0.35),
+                _FloatingDeco(
+                    emoji: '🌿',
+                    topFraction: 0.54,
+                    leftFraction: 0.04,
+                    anim: _floatAnim,
+                    delay: 0.65),
+                _FloatingDeco(
+                    emoji: '💫',
+                    topFraction: 0.60,
+                    rightFraction: 0.05,
+                    anim: _floatAnim,
+                    delay: 0.20),
+
+                // ── Scrollable content ──
+                SingleChildScrollView(
+                  physics: const BouncingScrollPhysics(),
+                  padding: const EdgeInsets.fromLTRB(22, 16, 22, 32),
+                  child: Column(
+                    children: [
+                      _buildHero(),
+                      const SizedBox(height: 16),
+                      _buildFeatures(),
+                      const SizedBox(height: 14),
+                      _buildPlanSelector(plan),
+                      const SizedBox(height: 12),
+                      _buildTrustStrip(),
+                      const SizedBox(height: 14),
+                      _buildCTA(plan),
+                    ],
+                  ),
+                ),
+
+                // ── Close button ──
+                Positioned(
+                  top: 12,
+                  right: 14,
+                  child: GestureDetector(
+                    onTap: () => context.pop(),
+                    child: Container(
+                      width: 32,
+                      height: 32,
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.72),
+                        shape: BoxShape.circle,
+                        border: Border.all(color: _pink.withOpacity(0.22)),
+                      ),
+                      child: Center(
+                        child: Text('✕',
+                            style: GoogleFonts.nunito(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w900,
+                                color: _textSub)),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  // ── Hero section ─────────────────────────────────────────────
+  Widget _buildHero() {
+    return Column(
+      children: [
+        const SizedBox(height: 8),
+        // Premium badge
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 5),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(colors: [
+              _pink.withOpacity(0.12),
+              const Color(0xFFA078DC).withOpacity(0.10),
+            ]),
+            border: Border.all(color: _pink.withOpacity(0.22)),
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Container(
-                padding: const EdgeInsets.all(20),
-                decoration: const BoxDecoration(
-                    color: Color(0xFFE8F5E9), shape: BoxShape.circle),
-                child:
-                    const Icon(Icons.star, color: Color(0xFF4CAF50), size: 40),
-              ),
-              const SizedBox(height: 24),
-              Text('You\'re Premium!',
-                  style: GoogleFonts.nunito(
-                      fontSize: 24,
-                      fontWeight: FontWeight.w900,
-                      color: AppColors.textDark)),
-              const SizedBox(height: 8),
-              Text('Welcome to the family. Your journey just got even better.',
-                textAlign: TextAlign.center,
+              const Text('✨', style: TextStyle(fontSize: 11)),
+              const SizedBox(width: 5),
+              Text(
+                'SOLUNA PREMIUM',
                 style: GoogleFonts.nunito(
-                    fontWeight: FontWeight.w600, color: AppColors.textMid),
-              ),
-              const SizedBox(height: 32),
-              SizedBox(
-                width: double.infinity,
-                height: 56,
-                child: ElevatedButton(
-                  onPressed: () {
-                    Navigator.pop(context);
-                    context.go('/home');
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: themeColor,
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(20)),
-                    elevation: 0,
-                  ),
-                  child: Text('Start Exploring',
-                      style: GoogleFonts.nunito(
-                          color: Colors.white, fontWeight: FontWeight.w900)),
+                  fontSize: 10,
+                  fontWeight: FontWeight.w900,
+                  color: _pink,
+                  letterSpacing: 0.8,
                 ),
               ),
             ],
           ),
         ),
-      ),
+        const SizedBox(height: 14),
+
+        // Breathing logo
+        AnimatedBuilder(
+          animation: _floatAnim,
+          builder: (_, __) => Transform.scale(
+            scale: 1.0 + _floatAnim.value * 0.06,
+            child: Container(
+              width: 76,
+              height: 76,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: const LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [Color(0xFFFDE8C8), Color(0xFFF0D8F4)],
+                ),
+                boxShadow: [
+                  BoxShadow(
+                      color: _orange.withOpacity(0.20),
+                      blurRadius: 28,
+                      spreadRadius: 8),
+                  BoxShadow(
+                      color: const Color(0xFFFDE8C8).withOpacity(0.4),
+                      blurRadius: 0,
+                      spreadRadius: 8),
+                ],
+              ),
+              child: const Center(
+                  child: Text('🌸', style: TextStyle(fontSize: 32))),
+            ),
+          ),
+        ),
+        const SizedBox(height: 14),
+
+        // Title
+        RichText(
+          textAlign: TextAlign.center,
+          text: TextSpan(
+            style: GoogleFonts.nunito(
+                fontSize: 22,
+                fontWeight: FontWeight.w900,
+                color: _textDark,
+                height: 1.25),
+            children: const [
+              TextSpan(text: 'Your body deserves\n'),
+              TextSpan(text: 'full care', style: TextStyle(color: _orange)),
+            ],
+          ),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          'Unlock everything Soluna has to offer —\nyour complete wellness companion.',
+          textAlign: TextAlign.center,
+          style: GoogleFonts.nunito(
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+              color: _textMid,
+              height: 1.6),
+        ),
+      ],
     );
   }
 
-  @override
-  Widget build(BuildContext context) {
-    final currentMode = ref.watch(modeProvider);
-    final themeColor = AppColors.getModeColor(currentMode, soft: true);
-
-    return Scaffold(
-      backgroundColor: Color(0xFFFFF8F5),
-      body: Stack(
-        children: [
-          SingleChildScrollView(
-            child: Column(
-              children: [
-                _buildHeader(themeColor),
-                Padding(
+  // ── Features list ────────────────────────────────────────────
+  Widget _buildFeatures() {
+    return Column(
+      children: _features
+          .map((f) => Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                child: Container(
                   padding:
-                      const EdgeInsets.symmetric(horizontal: 22, vertical: 32),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                      const EdgeInsets.symmetric(horizontal: 13, vertical: 11),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.72),
+                    border: Border.all(
+                        color: const Color(0xFFFFD0D0).withOpacity(0.35)),
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  child: Row(
                     children: [
-                      _buildFeatureItem('📊', 'Advanced Insights',
-                          'Deep dive into your cycle and health patterns.'),
-                      _buildFeatureItem('☁️', 'Secure Cloud Sync',
-                          'Sync your data safely across all your devices.'),
-                      _buildFeatureItem('📖', 'Expert Library',
-                          'Unlimited access to expert-reviewed health guides.'),
-                      _buildFeatureItem('🔔', 'Smart Reminders',
-                          'Personalized alerts tailored to your unique cycle.'),
-                      const SizedBox(height: 40),
-                      Text('Select a plan',
-                          style: GoogleFonts.nunito(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w900,
-                              color: AppColors.textDark)),
-                      const SizedBox(height: 16),
-                      _buildPlanCard('annual', 'Annual', '\$49.99',
-                          'Best Value • \$4.16/mo', themeColor),
-                      const SizedBox(height: 12),
-                      _buildPlanCard(
-                          'monthly', 'Monthly', '\$9.99', 'Cancel anytime', themeColor),
-                      const SizedBox(height: 120),
+                      // Icon
+                      Container(
+                        width: 34,
+                        height: 34,
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                              colors: f.iconBg,
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Center(
+                            child: Text(f.icon,
+                                style: const TextStyle(fontSize: 16))),
+                      ),
+                      const SizedBox(width: 10),
+                      // Text
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(f.label,
+                                style: GoogleFonts.nunito(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w800,
+                                    color: _textDark)),
+                            const SizedBox(height: 1),
+                            Text(f.desc,
+                                style: GoogleFonts.nunito(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w600,
+                                    color: _textSub)),
+                          ],
+                        ),
+                      ),
+                      // Tick
+                      Container(
+                        width: 20,
+                        height: 20,
+                        decoration: const BoxDecoration(
+                          shape: BoxShape.circle,
+                          gradient: LinearGradient(colors: [_pinkLight, _pink]),
+                        ),
+                        child: const Center(
+                          child: Text('✓',
+                              style: TextStyle(
+                                  fontSize: 10,
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w900)),
+                        ),
+                      ),
                     ],
                   ),
                 ),
-              ],
-            ),
-          ),
-          Positioned(
-            bottom: 32,
-            left: 22,
-            right: 22,
-            child: SizedBox(
-              height: 60,
-              child: ElevatedButton(
-                onPressed: _isLoading ? null : _handleSubscribe,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: themeColor,
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(22)),
-                  elevation: 8,
-                  shadowColor: themeColor.withOpacity(0.4),
-                ),
-                child: _isLoading
-                    ? const SizedBox(
-                        width: 24,
-                        height: 24,
-                        child: CircularProgressIndicator(
-                            color: Colors.white, strokeWidth: 2))
-                    : Text('Unlock Premium Now',
-                        style: GoogleFonts.nunito(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w900,
-                            color: Colors.white)),
-              ),
-            ),
-          ),
-          SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.only(left: 10, top: 10),
-              child: IconButton(
-                icon: const Icon(Icons.arrow_back_ios_new,
-                    color: AppColors.textDark, size: 20),
-                onPressed: () => Navigator.pop(context),
-              ),
-            ),
-          ),
-        ],
-      ),
+              ))
+          .toList(),
     );
   }
 
-  Widget _buildHeader(Color themeColor) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.fromLTRB(22, 80, 22, 40),
-      decoration: BoxDecoration(color: Colors.white,
-        borderRadius: BorderRadius.vertical(bottom: Radius.circular(40)),
-        boxShadow: [
-          BoxShadow(
-              color: Color(0xFFFCE8E4), blurRadius: 20, offset: Offset(0, 10))
-        ],
-      ),
-      child: Column(
+  // ── Plan selector ────────────────────────────────────────────
+  Widget _buildPlanSelector(PremiumPlan selected) {
+    return Row(
+      children: [
+        _PlanCard(
+          plan: PremiumPlan.monthly,
+          selected: selected,
+          period: 'Monthly',
+          price: '4.99',
+          unit: '/ month',
+          onTap: (p) => ref.read(_selectedPlanProvider.notifier).state = p,
+        ),
+        const SizedBox(width: 8),
+        _PlanCard(
+          plan: PremiumPlan.yearly,
+          selected: selected,
+          period: 'Yearly',
+          price: '2.99',
+          unit: '/ month',
+          badge: 'Best Value',
+          savingLabel: 'Save 40%',
+          onTap: (p) => ref.read(_selectedPlanProvider.notifier).state = p,
+        ),
+        const SizedBox(width: 8),
+        _PlanCard(
+          plan: PremiumPlan.lifetime,
+          selected: selected,
+          period: 'Lifetime',
+          price: '\$29',
+          unit: 'one time',
+          onTap: (p) => ref.read(_selectedPlanProvider.notifier).state = p,
+        ),
+      ],
+    );
+  }
+
+  // ── Trust strip ──────────────────────────────────────────────
+  Widget _buildTrustStrip() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        _trustItem('🔒', 'Secure'),
+        const SizedBox(width: 14),
+        _trustItem('↩️', 'Cancel anytime'),
+        const SizedBox(width: 14),
+        _trustItem('🛡️', 'Private'),
+      ],
+    );
+  }
+
+  Widget _trustItem(String emoji, String label) => Row(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-                color: themeColor.withOpacity(0.1),
-                shape: BoxShape.circle),
-            child: Text('✨', style: GoogleFonts.nunito(fontSize: 32)),
-          ),
-          const SizedBox(height: 20),
-          RichText(
-            textAlign: TextAlign.center,
-            text:  TextSpan(
+          Text(emoji, style: const TextStyle(fontSize: 13)),
+          const SizedBox(width: 4),
+          Text(label,
               style: GoogleFonts.nunito(
-                  fontSize: 28,
-                  fontWeight: FontWeight.w900,
-                  color: AppColors.textDark,
-                  // fontFamily: 'Nunito'
-                  ),
-              children: [
-                TextSpan(text: 'MeTrustual '),
-                TextSpan(
-                    text: 'Premium',
-                    style: GoogleFonts.nunito(
-                        color: themeColor,
-                        fontStyle: FontStyle.italic)),
+                  fontSize: 11, fontWeight: FontWeight.w800, color: _textSub)),
+        ],
+      );
+
+  // ── CTA section ──────────────────────────────────────────────
+  Widget _buildCTA(PremiumPlan plan) {
+    final isLifetime = plan == PremiumPlan.lifetime;
+    final btnLabel =
+        isLifetime ? 'Get Lifetime Access 💫' : 'Start 3-Day Free Trial 🌸';
+    final trialNote = isLifetime
+        ? 'One-time payment. Yours forever.'
+        : 'Free for 3 days, then \$35.99 / year. Cancel anytime.';
+
+    return Column(
+      children: [
+        // Main button
+        GestureDetector(
+          onTap: _isLoading ? null : _handlePurchase,
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 150),
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(vertical: 17),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [_pinkLight, _pink, Color(0xFFC070A8)],
+                begin: Alignment.centerLeft,
+                end: Alignment.centerRight,
+              ),
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: [
+                BoxShadow(
+                    color: _pink.withOpacity(0.40),
+                    blurRadius: 22,
+                    offset: const Offset(0, 8))
               ],
             ),
+            child: Center(
+              child: _isLoading
+                  ? const SizedBox(
+                      width: 22,
+                      height: 22,
+                      child: CircularProgressIndicator(
+                          color: Colors.white, strokeWidth: 2.5))
+                  : Text(btnLabel,
+                      style: GoogleFonts.nunito(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w900,
+                          color: Colors.white,
+                          letterSpacing: 0.2)),
+            ),
           ),
-          const SizedBox(height: 8),
-          Text('Experience the full power of personalized health.',
+        ),
+        const SizedBox(height: 10),
+
+        // Trial note
+        Text(trialNote,
             textAlign: TextAlign.center,
             style: GoogleFonts.nunito(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-                color: AppColors.textMid),
-          ),
-        ],
-      ),
-    );
-  }
+                fontSize: 11, fontWeight: FontWeight.w700, color: _textSub)),
+        const SizedBox(height: 12),
 
-  Widget _buildFeatureItem(String emoji, String title, String desc) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 24),
-      child: Row(
-        children: [
-          Container(
-            width: 48,
-            height: 48,
-            decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: AppColors.border, width: 1.5)),
-            alignment: Alignment.center,
-            child: Text(emoji, style: GoogleFonts.nunito(fontSize: 24)),
-          ),
-          SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(title,
-                    style: GoogleFonts.nunito(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w900,
-                        color: AppColors.textDark)),
-                Text(desc,
-                    style: GoogleFonts.nunito(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.textMid)),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildPlanCard(String id, String title, String price, String sub, Color themeColor) {
-    final isSelected = _selectedPlan == id;
-    return GestureDetector(
-      onTap: () => setState(() => _selectedPlan = id),
-      child: Container(
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          color: isSelected ? Colors.white : Colors.transparent,
-          borderRadius: BorderRadius.circular(22),
-          border: Border.all(
-              color: isSelected ? themeColor : AppColors.border,
-              width: 2),
-          boxShadow: isSelected
-              ? [
-                  BoxShadow(
-                      color: themeColor.withOpacity(0.1),
-                      blurRadius: 10,
-                      offset: Offset(0, 4))
-                ]
-              : null,
-        ),
-        child: Row(
+        // Links row
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
+            _textLink('Restore Purchase', _handleRestore),
             Container(
-              width: 24,
-              height: 24,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(
-                    color: isSelected
-                        ? themeColor
-                        : AppColors.textMuted,
-                    width: 2),
-                color: isSelected ? themeColor : Colors.transparent,
+                margin: const EdgeInsets.symmetric(horizontal: 10),
+                width: 3,
+                height: 3,
+                decoration: BoxDecoration(
+                    color: _textSub.withOpacity(0.4), shape: BoxShape.circle)),
+            _textLink('Privacy Policy', () {}),
+            Container(
+                margin: const EdgeInsets.symmetric(horizontal: 10),
+                width: 3,
+                height: 3,
+                decoration: BoxDecoration(
+                    color: _textSub.withOpacity(0.4), shape: BoxShape.circle)),
+            _textLink('Terms', () {}),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _textLink(String label, VoidCallback onTap) => GestureDetector(
+        onTap: onTap,
+        child: Text(label,
+            style: GoogleFonts.nunito(
+                fontSize: 11,
+                fontWeight: FontWeight.w700,
+                color: _textSub,
+                decoration: TextDecoration.underline,
+                decorationColor: _textSub.withOpacity(0.5))),
+      );
+}
+
+// ── Floating deco widget ─────────────────────────────────────
+class _FloatingDeco extends StatelessWidget {
+  final String emoji;
+  final double topFraction;
+  final double? leftFraction;
+  final double? rightFraction;
+  final Animation<double> anim;
+  final double delay; // 0.0–1.0 phase offset
+
+  const _FloatingDeco({
+    required this.emoji,
+    required this.topFraction,
+    this.leftFraction,
+    this.rightFraction,
+    required this.anim,
+    required this.delay,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final h = MediaQuery.of(context).size.height;
+    final w = MediaQuery.of(context).size.width;
+    return Positioned(
+      top: h * topFraction,
+      left: leftFraction != null ? w * leftFraction! : null,
+      right: rightFraction != null ? w * rightFraction! : null,
+      child: IgnorePointer(
+        child: AnimatedBuilder(
+          animation: anim,
+          builder: (_, __) {
+            // Phase shift using sine trick
+            final phase = (anim.value + delay) % 1.0;
+            final offset = (phase < 0.5 ? phase : 1.0 - phase) * 2; // 0→1→0
+            return Transform.translate(
+              offset: Offset(0, -8 * offset),
+              child: Opacity(
+                opacity: 0.18,
+                child: Text(emoji, style: const TextStyle(fontSize: 22)),
               ),
-              child: isSelected
-                  ? const Icon(Icons.check, color: Colors.white, size: 14)
-                  : null,
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+            );
+          },
+        ),
+      ),
+    );
+  }
+}
+
+// ── Plan card widget ─────────────────────────────────────────
+class _PlanCard extends StatelessWidget {
+  final PremiumPlan plan;
+  final PremiumPlan selected;
+  final String period;
+  final String price;
+  final String unit;
+  final String? badge;
+  final String? savingLabel;
+  final ValueChanged<PremiumPlan> onTap;
+
+  static const _pink = Color(0xFFD97B8A);
+  static const _pinkLight = Color(0xFFF09090);
+  static const _pinkSoft = Color(0xFFFCE8E4);
+  static const _textDark = Color(0xFF3D2828);
+  static const _textSub = Color(0xFFC0A0A8);
+  static const _green = Color(0xFF5A8E6A);
+
+  const _PlanCard({
+    required this.plan,
+    required this.selected,
+    required this.period,
+    required this.price,
+    required this.unit,
+    this.badge,
+    this.savingLabel,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final isSelected = plan == selected;
+    return Expanded(
+      child: GestureDetector(
+        onTap: () {
+          HapticFeedback.selectionClick();
+          onTap(plan);
+        },
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          curve: Curves.easeOut,
+          padding: EdgeInsets.fromLTRB(8, badge != null ? 18 : 14, 8, 14),
+          decoration: BoxDecoration(
+            color: isSelected ? Colors.white : Colors.white.withOpacity(0.8),
+            border: Border.all(
+                color: isSelected ? _pink : _pinkSoft,
+                width: isSelected ? 2.0 : 1.5),
+            borderRadius: BorderRadius.circular(20),
+            boxShadow: isSelected
+                ? [
+                    BoxShadow(
+                        color: _pink.withOpacity(0.22),
+                        blurRadius: 18,
+                        offset: const Offset(0, 6))
+                  ]
+                : [],
+          ),
+          transform: Matrix4.translationValues(0, isSelected ? -3 : 0, 0),
+          child: Stack(
+            clipBehavior: Clip.none,
+            children: [
+              // Content
+              Column(
                 children: [
-                  Text(title,
+                  Text(period,
                       style: GoogleFonts.nunito(
-                          fontSize: 16,
+                          fontSize: 10,
+                          fontWeight: FontWeight.w800,
+                          color: _textSub,
+                          letterSpacing: 0.4)),
+                  const SizedBox(height: 4),
+                  // Price
+                  RichText(
+                    text: TextSpan(
+                      style: GoogleFonts.nunito(
+                          fontSize: 22,
                           fontWeight: FontWeight.w900,
-                          color: AppColors.textDark)),
-                  Text(sub,
+                          color: isSelected ? _pink : _textDark),
+                      children: [
+                        if (!price.startsWith('\$'))
+                          TextSpan(
+                              text: '\$',
+                              style: TextStyle(
+                                  fontSize: 12,
+                                  color: isSelected ? _pink : _textDark)),
+                        TextSpan(text: price.replaceAll('\$', '')),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(unit,
                       style: GoogleFonts.nunito(
-                          fontSize: 12,
+                          fontSize: 10,
                           fontWeight: FontWeight.w700,
-                          color: AppColors.textMuted)),
+                          color: _textSub)),
+                  if (savingLabel != null) ...[
+                    const SizedBox(height: 5),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 7, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: _green.withOpacity(0.12),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(savingLabel!,
+                          style: GoogleFonts.nunito(
+                              fontSize: 9,
+                              fontWeight: FontWeight.w900,
+                              color: _green)),
+                    ),
+                  ],
                 ],
               ),
-            ),
-            Text(price,
-                style: GoogleFonts.nunito(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w900,
-                    color: AppColors.textDark)),
-          ],
+              // Badge chip
+              if (badge != null)
+                Positioned(
+                  top: -26,
+                  left: 0,
+                  right: 0,
+                  child: Center(
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 3),
+                      decoration: BoxDecoration(
+                        gradient:
+                            const LinearGradient(colors: [_pinkLight, _pink]),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Text(badge!,
+                          style: GoogleFonts.nunito(
+                              fontSize: 8,
+                              fontWeight: FontWeight.w900,
+                              color: Colors.white,
+                              letterSpacing: 0.3)),
+                    ),
+                  ),
+                ),
+            ],
+          ),
         ),
       ),
     );
