@@ -54,6 +54,8 @@ dependencies:
   collection: ^1.18.0
   freezed_annotation: ^2.4.4
   json_annotation: ^4.9.0
+  # HTTP
+  http: ^1.1.0
 
 dev_dependencies:
   flutter_test:

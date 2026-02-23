@@ -4,8 +4,10 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/providers/mode_provider.dart';
 import '../../../core/widgets/app_bottom_nav.dart';
+import '../../../core/services/affirmation_service.dart';
 import 'package:go_router/go_router.dart';
 import 'dart:async';
+import '../providers/self_care_provider.dart';
 
 class SelfCareScreen extends ConsumerStatefulWidget {
   const SelfCareScreen({super.key});
@@ -17,7 +19,10 @@ class SelfCareScreen extends ConsumerStatefulWidget {
 class _SelfCareScreenState extends ConsumerState<SelfCareScreen> {
   int _affIdx = 0;
   String? _selectedPhase;
+  String _aiAffirmation = '';
+  bool _loadingAffirmation = false;
 
+  // Fallback affirmations for when AI is unavailable
   final Map<String, List<String>> _allAffirmations = {
     'period': [
       'My body is wise and worthy of rest.',
@@ -46,8 +51,46 @@ class _SelfCareScreenState extends ConsumerState<SelfCareScreen> {
   };
 
   @override
+  void initState() {
+    super.initState();
+    _loadAffirmation();
+  }
+
+  Future<void> _loadAffirmation() async {
+    final currentMode = ref.read(modeProvider);
+    final phase = _selectedPhase ?? _getDefaultPhase(currentMode);
+    
+    setState(() {
+      _loadingAffirmation = true;
+    });
+
+    try {
+      final affirmation = await AffirmationService.getAffirmationOfTheDay(
+        profile: currentMode,
+        phase: phase,
+      );
+      
+      if (mounted) {
+        setState(() {
+          _aiAffirmation = affirmation;
+          _loadingAffirmation = false;
+        });
+      }
+    } catch (e) {
+      print('Error loading affirmation: $e');
+      if (mounted) {
+        setState(() {
+          _loadingAffirmation = false;
+        });
+      }
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     final currentMode = ref.watch(modeProvider);
+    final phasesAsync = ref.watch(phasesForModeProvider);
+    
     final color = currentMode == 'preg'
         ? const Color(0xFF4A70B0)
         : currentMode == 'ovul'
@@ -88,11 +131,15 @@ class _SelfCareScreenState extends ConsumerState<SelfCareScreen> {
                 ),
               ),
               const SizedBox(height: 24),
-              _buildPhaseStrip(currentMode, color),
+              phasesAsync.when(
+                data: (phases) => _buildPhaseStrip(phases, color),
+                loading: () => _buildPhaseStripSkeleton(),
+                error: (_, __) => _buildPhaseStripFallback(currentMode, color),
+              ),
               const SizedBox(height: 24),
               _buildCareHero(currentMode, color, _selectedPhase!),
               const SizedBox(height: 24),
-              _buildAffirmationCard(currentMode),
+              _buildAffirmationCard(currentMode, color),
               const SizedBox(height: 24),
               _buildBreatheCard(color),
               const SizedBox(height: 24),
@@ -118,7 +165,7 @@ class _SelfCareScreenState extends ConsumerState<SelfCareScreen> {
                 ),
               ),
               const SizedBox(height: 12),
-              ..._buildRituals(currentMode, color, _selectedPhase!),
+              _buildRitualsSection(currentMode, color, _selectedPhase!),
               const SizedBox(height: 32),
               Center(
                 child: Text(
@@ -163,33 +210,12 @@ class _SelfCareScreenState extends ConsumerState<SelfCareScreen> {
   }
 
   String _getDefaultPhase(String currentMode) {
-    if (currentMode == 'period') return 'Follicular';
-    if (currentMode == 'preg') return '2nd Trim';
-    return 'Pre-Ovul';
+    if (currentMode == 'period') return 'Menstrual';
+    if (currentMode == 'preg') return '1st Trim';
+    return 'Early';
   }
 
-  Widget _buildPhaseStrip(String currentMode, Color color) {
-    final List<Map<String, dynamic>> phases = currentMode == 'period'
-        ? [
-            {'e': '🩸', 'l': 'Menstrual', 'key': 'Menstrual'},
-            {'e': '🌱', 'l': 'Follicular', 'key': 'Follicular'},
-            {'e': '✨', 'l': 'Ovulatory', 'key': 'Ovulatory'},
-            {'e': '🌙', 'l': 'Luteal', 'key': 'Luteal'}
-          ]
-        : currentMode == 'preg'
-            ? [
-                {'e': '💙', 'l': '1st Trim', 'key': '1st Trim'},
-                {'e': '🌸', 'l': '2nd Trim', 'key': '2nd Trim'},
-                {'e': '🌟', 'l': '3rd Trim', 'key': '3rd Trim'},
-                {'e': '👼', 'l': 'Newborn', 'key': 'Newborn'}
-              ]
-            : [
-                {'e': '📅', 'l': 'Early', 'key': 'Early'},
-                {'e': '🌱', 'l': 'Pre-Ovul', 'key': 'Pre-Ovul'},
-                {'e': '🎯', 'l': 'Peak', 'key': 'Peak'},
-                {'e': '📉', 'l': 'Post-Ovul', 'key': 'Post-Ovul'}
-              ];
-
+  Widget _buildPhaseStrip(List<Map<String, dynamic>> phases, Color color) {
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       child: Row(
@@ -200,6 +226,7 @@ class _SelfCareScreenState extends ConsumerState<SelfCareScreen> {
               setState(() {
                 _selectedPhase = p['key'];
               });
+              _loadAffirmation();
             },
             child: Container(
               margin: const EdgeInsets.only(right: 10),
@@ -214,10 +241,10 @@ class _SelfCareScreenState extends ConsumerState<SelfCareScreen> {
               ),
               child: Row(
                 children: [
-                  Text(p['e'], style: const TextStyle(fontSize: 16)),
+                  Text(p['emoji'], style: const TextStyle(fontSize: 16)),
                   const SizedBox(width: 6),
                   Text(
-                    p['l'],
+                    p['label'],
                     style: GoogleFonts.nunito(
                       fontSize: 12,
                       fontWeight: FontWeight.w800,
@@ -233,8 +260,67 @@ class _SelfCareScreenState extends ConsumerState<SelfCareScreen> {
     );
   }
 
+  Widget _buildPhaseStripSkeleton() {
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Row(
+        children: List.generate(4, (index) {
+          return Container(
+            margin: const EdgeInsets.only(right: 10),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            decoration: BoxDecoration(
+              color: Colors.grey[200],
+              borderRadius: BorderRadius.circular(20),
+            ),
+            width: 120,
+            height: 36,
+          );
+        }),
+      ),
+    );
+  }
+
+  Widget _buildPhaseStripFallback(String currentMode, Color color) {
+    final List<Map<String, dynamic>> phases = currentMode == 'period'
+        ? [
+            {'emoji': '🩸', 'label': 'Menstrual', 'key': 'Menstrual'},
+            {'emoji': '🌱', 'label': 'Follicular', 'key': 'Follicular'},
+            {'emoji': '✨', 'label': 'Ovulatory', 'key': 'Ovulatory'},
+            {'emoji': '🌙', 'label': 'Luteal', 'key': 'Luteal'}
+          ]
+        : currentMode == 'preg'
+            ? [
+                {'emoji': '💙', 'label': '1st Trim', 'key': '1st Trim'},
+                {'emoji': '🌸', 'label': '2nd Trim', 'key': '2nd Trim'},
+                {'emoji': '🌟', 'label': '3rd Trim', 'key': '3rd Trim'},
+                {'emoji': '👼', 'label': 'Newborn', 'key': 'Newborn'}
+              ]
+            : [
+                {'emoji': '📅', 'label': 'Early', 'key': 'Early'},
+                {'emoji': '🌱', 'label': 'Pre-Ovul', 'key': 'Pre-Ovul'},
+                {'emoji': '🎯', 'label': 'Peak', 'key': 'Peak'},
+                {'emoji': '📉', 'label': 'Post-Ovul', 'key': 'Post-Ovul'}
+              ];
+
+    return _buildPhaseStrip(phases, color);
+  }
+
   Widget _buildCareHero(String currentMode, Color color, String selectedPhase) {
-    final data = _getPhaseData(currentMode, selectedPhase);
+    final phaseDataAsync = ref.watch(phaseDataProvider(selectedPhase));
+
+    return phaseDataAsync.when(
+      data: (data) {
+        if (data.isEmpty) {
+          return _buildCareHeroFallback(currentMode, color, selectedPhase);
+        }
+        return _buildCareHeroContent(data, color);
+      },
+      loading: () => _buildCareHeroSkeleton(color),
+      error: (_, __) => _buildCareHeroFallback(currentMode, color, selectedPhase),
+    );
+  }
+
+  Widget _buildCareHeroContent(Map<String, String> data, Color color) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(24),
@@ -256,7 +342,7 @@ class _SelfCareScreenState extends ConsumerState<SelfCareScreen> {
               borderRadius: BorderRadius.circular(20),
             ),
             child: Text(
-              data['badge']!,
+              data['badge'] ?? '',
               style: GoogleFonts.nunito(
                 fontSize: 10,
                 fontWeight: FontWeight.w900,
@@ -266,10 +352,10 @@ class _SelfCareScreenState extends ConsumerState<SelfCareScreen> {
             ),
           ),
           const SizedBox(height: 16),
-          Text(data['hero_e']!, style: const TextStyle(fontSize: 48)),
+          Text(data['hero_e'] ?? '', style: const TextStyle(fontSize: 48)),
           const SizedBox(height: 12),
           Text(
-            data['hero_t']!,
+            data['hero_t'] ?? '',
             style: GoogleFonts.nunito(
               fontSize: 18,
               fontWeight: FontWeight.w900,
@@ -278,7 +364,7 @@ class _SelfCareScreenState extends ConsumerState<SelfCareScreen> {
           ),
           const SizedBox(height: 6),
           Text(
-            data['hero_d']!,
+            data['hero_d'] ?? '',
             textAlign: TextAlign.center,
             style: GoogleFonts.nunito(
               fontSize: 12,
@@ -291,13 +377,9 @@ class _SelfCareScreenState extends ConsumerState<SelfCareScreen> {
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
-              onPressed: () => _startRitual(currentMode, selectedPhase),
+              onPressed: () => _startRitual(_selectedPhase!),
               style: ElevatedButton.styleFrom(
                 backgroundColor: color,
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(18),
-                ),
                 padding: const EdgeInsets.symmetric(vertical: 15),
                 elevation: 0,
               ),
@@ -315,24 +397,93 @@ class _SelfCareScreenState extends ConsumerState<SelfCareScreen> {
     );
   }
 
-  void _startRitual(String mode, String phase) {
-    final rituals = _getRitualListForPhase(mode, phase);
-    final color = mode == 'preg'
-        ? const Color(0xFF4A70B0)
-        : mode == 'ovul'
-            ? const Color(0xFF5A8E6A)
-            : AppColors.primaryRose;
-
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => RitualOverlay(rituals: rituals, color: color),
+  Widget _buildCareHeroSkeleton(Color color) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: Colors.grey[100],
+        borderRadius: BorderRadius.circular(28),
+      ),
+      child: Column(
+        children: [
+          Container(
+            width: 100,
+            height: 20,
+            decoration: BoxDecoration(
+              color: Colors.grey[300],
+              borderRadius: BorderRadius.circular(10),
+            ),
+          ),
+          const SizedBox(height: 16),
+          Container(
+            width: 60,
+            height: 60,
+            decoration: BoxDecoration(
+              color: Colors.grey[300],
+              shape: BoxShape.circle,
+            ),
+          ),
+          const SizedBox(height: 16),
+          Container(
+            width: 150,
+            height: 24,
+            decoration: BoxDecoration(
+              color: Colors.grey[300],
+              borderRadius: BorderRadius.circular(12),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
-  Widget _buildAffirmationCard(String currentMode) {
-    final list = _allAffirmations[currentMode] ?? _allAffirmations['period']!;
+  Widget _buildCareHeroFallback(String currentMode, Color color, String selectedPhase) {
+    final data = _getPhaseDataFallback(currentMode, selectedPhase);
+    return _buildCareHeroContent(data, color);
+  }
+
+  void _startRitual(String phase) {
+    final currentMode = ref.read(modeProvider);
+    final ritualsAsync = ref.read(ritualListProvider(phase));
+    final color = currentMode == 'preg'
+        ? const Color(0xFF4A70B0)
+        : currentMode == 'ovul'
+            ? const Color(0xFF5A8E6A)
+            : AppColors.primaryRose;
+
+    ritualsAsync.when(
+      data: (rituals) {
+        if (rituals.isNotEmpty) {
+          showModalBottomSheet(
+            context: context,
+            isScrollControlled: true,
+            backgroundColor: Colors.transparent,
+            builder: (context) => RitualOverlay(rituals: rituals, color: color),
+          );
+        }
+      },
+      loading: () {
+        // Show loading indicator
+      },
+      error: (_, __) {
+        // Fall back to hardcoded rituals
+        final fallbackRituals = _getRitualListForPhaseFallback(currentMode, phase);
+        showModalBottomSheet(
+          context: context,
+          isScrollControlled: true,
+          backgroundColor: Colors.transparent,
+          builder: (context) => RitualOverlay(rituals: fallbackRituals, color: color),
+        );
+      },
+    );
+  }
+
+  Widget _buildAffirmationCard(String currentMode, Color color) {
+    final displayAffirmation = _aiAffirmation.isNotEmpty
+        ? _aiAffirmation
+        : _allAffirmations[currentMode]?[_affIdx] ?? _allAffirmations['period']![_affIdx];
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(20),
@@ -357,17 +508,23 @@ class _SelfCareScreenState extends ConsumerState<SelfCareScreen> {
               GestureDetector(
                 onTap: () {
                   setState(() {
-                    _affIdx = (_affIdx + 1) % list.length;
+                    _affIdx = (_affIdx + 1) % (_allAffirmations[currentMode]?.length ?? 6);
                   });
                 },
-                child: const Icon(Icons.refresh,
-                    size: 16, color: AppColors.textMuted),
+                child: _loadingAffirmation
+                    ? const SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : const Icon(Icons.refresh,
+                        size: 16, color: AppColors.textMuted),
               ),
             ],
           ),
           const SizedBox(height: 16),
           Text(
-            list[_affIdx],
+            displayAffirmation,
             textAlign: TextAlign.center,
             style: GoogleFonts.nunito(
               fontSize: 18,
@@ -480,66 +637,152 @@ class _SelfCareScreenState extends ConsumerState<SelfCareScreen> {
     );
   }
 
-  List<Widget> _buildRituals(String mode, Color color, String phase) {
-    final rituals = _getRitualListForPhase(mode, phase);
-    return rituals.map((r) {
-      return Container(
-        margin: const EdgeInsets.only(bottom: 10),
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: AppColors.border, width: 1.5),
-        ),
-        child: Row(
-          children: [
-            Text(r['e']!, style: const TextStyle(fontSize: 24)),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+  Widget _buildRitualsSection(String currentMode, Color color, String phase) {
+    final ritualsAsync = ref.watch(ritualListProvider(phase));
+
+    return ritualsAsync.when(
+      data: (rituals) {
+        if (rituals.isEmpty) {
+          return _buildRitualsFallback(currentMode, color, phase);
+        }
+        return Column(
+          children: rituals.map((r) {
+            return Container(
+              margin: const EdgeInsets.only(bottom: 10),
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: AppColors.border, width: 1.5),
+              ),
+              child: Row(
                 children: [
-                  Text(
-                    r['t']!,
-                    style: GoogleFonts.nunito(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w900,
-                      color: AppColors.textDark,
+                  Text(r['e']!, style: const TextStyle(fontSize: 24)),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          r['t']!,
+                          style: GoogleFonts.nunito(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w900,
+                            color: AppColors.textDark,
+                          ),
+                        ),
+                        Text(
+                          r['s']!,
+                          style: GoogleFonts.nunito(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.textMuted,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                  Text(
-                    r['s']!,
-                    style: GoogleFonts.nunito(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.textMuted,
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: color.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text(
+                      r['dur']!,
+                      style: GoogleFonts.nunito(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w900,
+                        color: color,
+                      ),
                     ),
                   ),
                 ],
               ),
+            );
+          }).toList(),
+        );
+      },
+      loading: () => Column(
+        children: List.generate(3, (index) {
+          return Container(
+            margin: const EdgeInsets.only(bottom: 10),
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.grey[100],
+              borderRadius: BorderRadius.circular(20),
             ),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              decoration: BoxDecoration(
-                color: color.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Text(
-                r['dur']!,
-                style: GoogleFonts.nunito(
-                  fontSize: 10,
-                  fontWeight: FontWeight.w900,
-                  color: color,
-                ),
-              ),
-            ),
-          ],
-        ),
-      );
-    }).toList();
+            height: 60,
+          );
+        }),
+      ),
+      error: (_, __) => _buildRitualsFallback(currentMode, color, phase),
+    );
   }
 
-  Map<String, String> _getPhaseData(String mode, String phase) {
+  Widget _buildRitualsFallback(String currentMode, Color color, String phase) {
+    final rituals = _getRitualListForPhaseFallback(currentMode, phase);
+    return Column(
+      children: rituals.map((r) {
+        return Container(
+          margin: const EdgeInsets.only(bottom: 10),
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: AppColors.border, width: 1.5),
+          ),
+          child: Row(
+            children: [
+              Text(r['e']!, style: const TextStyle(fontSize: 24)),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      r['t']!,
+                      style: GoogleFonts.nunito(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w900,
+                        color: AppColors.textDark,
+                      ),
+                    ),
+                    Text(
+                      r['s']!,
+                      style: GoogleFonts.nunito(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.textMuted,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: color.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  r['dur']!,
+                  style: GoogleFonts.nunito(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w900,
+                    color: color,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      }).toList(),
+    );
+  }
+
+  // Fallback data methods
+  Map<String, String> _getPhaseDataFallback(String mode, String phase) {
     if (mode == 'period') {
       switch (phase) {
         case 'Menstrual':
@@ -649,7 +892,7 @@ class _SelfCareScreenState extends ConsumerState<SelfCareScreen> {
     return {'badge': '', 'hero_e': '', 'hero_t': '', 'hero_d': ''};
   }
 
-  List<Map<String, String>> _getRitualListForPhase(String mode, String phase) {
+  List<Map<String, String>> _getRitualListForPhaseFallback(String mode, String phase) {
     if (mode == 'period') {
       switch (phase) {
         case 'Menstrual':
@@ -762,8 +1005,8 @@ class _SelfCareScreenState extends ConsumerState<SelfCareScreen> {
             {
               'e': '😴',
               't': 'Mid-day Power Nap',
-              's': 'Listen to your body\'s fatigue',
-              'dur': '20 min'
+              's': 'Combat fatigue with 20–30 min rest',
+              'dur': '30 min'
             },
           ];
         case '2nd Trim':
@@ -771,18 +1014,18 @@ class _SelfCareScreenState extends ConsumerState<SelfCareScreen> {
             {
               'e': '🧘',
               't': 'Prenatal Yoga',
-              's': 'Stay flexible and relieve pressure',
-              'dur': '15 min'
+              's': 'Strengthen and prepare your body',
+              'dur': '20 min'
             },
             {
-              'e': '🧴',
-              't': 'Belly Oil Ritual',
-              's': 'Connect with baby & skin care',
-              'dur': '5 min'
+              'e': '🤰',
+              't': 'Belly Massage',
+              's': 'Soothe skin and connect with baby',
+              'dur': '10 min'
             },
             {
-              'e': '🥗',
-              't': 'Iron-Rich Lunch',
+              'e': '🍎',
+              't': 'Iron-Rich Snack',
               's': 'Support blood volume increase',
               'dur': 'Daily'
             },
@@ -791,13 +1034,13 @@ class _SelfCareScreenState extends ConsumerState<SelfCareScreen> {
           return [
             {
               'e': '🚶',
-              't': 'Pelvic Tilt Exercises',
-              's': 'Prepare for baby\'s descent',
-              'dur': '10 min'
+              't': 'Pelvic Floor Walks',
+              's': 'Prepare for labor with gentle movement',
+              'dur': '15 min'
             },
             {
-              'e': '🫖',
-              't': 'Red Raspberry Leaf Tea',
+              'e': '🌿',
+              't': 'Perineal Massage',
               's': 'Tone the uterus for labor',
               'dur': '5 min'
             },
@@ -1142,157 +1385,48 @@ class _RitualOverlayState extends State<RitualOverlay> {
                       alignment: Alignment.center,
                       children: [
                         SizedBox(
-                          width: 130,
-                          height: 130,
+                          width: 120,
+                          height: 120,
                           child: CircularProgressIndicator(
                             value: _timerSec / _durToSec(r['dur']!),
-                            strokeWidth: 7,
+                            strokeWidth: 6,
+                            valueColor: AlwaysStoppedAnimation<Color>(widget.color),
                             backgroundColor: widget.color.withOpacity(0.1),
-                            valueColor: AlwaysStoppedAnimation(widget.color),
                           ),
                         ),
-                        Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(
-                              _fmtTime(_timerSec),
-                              style: GoogleFonts.nunito(
-                                fontSize: 28,
-                                fontWeight: FontWeight.w900,
-                                color: AppColors.textDark,
-                              ),
-                            ),
-                            Text(
-                              'MINUTES',
-                              style: GoogleFonts.nunito(
-                                fontSize: 10,
-                                fontWeight: FontWeight.w800,
-                                color: AppColors.textMuted,
-                                letterSpacing: 0.5,
-                              ),
-                            ),
-                          ],
+                        Text(
+                          _fmtTime(_timerSec),
+                          style: GoogleFonts.nunito(
+                            fontSize: 36,
+                            fontWeight: FontWeight.w900,
+                            color: widget.color,
+                          ),
                         ),
                       ],
                     ),
-                  const SizedBox(height: 40),
-                  Column(
-                    children: widget.rituals.asMap().entries.map((entry) {
-                      final idx = entry.key;
-                      final ri = entry.value;
-                      final isDone = _completed.contains(idx);
-                      return Container(
-                        margin: const EdgeInsets.only(bottom: 7),
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 13, vertical: 10),
-                        decoration: BoxDecoration(
-                          color: isDone
-                              ? Colors.white.withOpacity(0.5)
-                              : Colors.white,
-                          border: Border.all(
-                            color: isDone
-                                ? Colors.green.withOpacity(0.3)
-                                : widget.color.withOpacity(0.1),
-                            width: 1.5,
-                          ),
-                          borderRadius: BorderRadius.circular(13),
-                        ),
-                        child: Row(
-                          children: [
-                            Container(
-                              width: 22,
-                              height: 22,
-                              decoration: BoxDecoration(
-                                color:
-                                    isDone ? Colors.green : Colors.transparent,
-                                border: Border.all(
-                                  color: isDone
-                                      ? Colors.green
-                                      : widget.color.withOpacity(0.3),
-                                  width: 2,
-                                ),
-                                borderRadius: BorderRadius.circular(7),
-                              ),
-                              child: isDone
-                                  ? const Icon(Icons.check,
-                                      size: 14, color: Colors.white)
-                                  : null,
-                            ),
-                            const SizedBox(width: 10),
-                            Expanded(
-                              child: Text(
-                                ri['t']!,
-                                style: GoogleFonts.nunito(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w700,
-                                  color: isDone
-                                      ? Colors.green
-                                      : AppColors.textDark,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      );
-                    }).toList(),
-                  ),
                 ],
               ),
             ),
           ),
           Padding(
-            padding: const EdgeInsets.fromLTRB(20, 12, 20, 22),
-            child: Row(
-              children: [
-                Expanded(
-                  child: OutlinedButton(
-                    onPressed: _advance,
-                    style: OutlinedButton.styleFrom(
-                      side: BorderSide(
-                        color: widget.color.withOpacity(0.1),
-                        width: 1.5,
-                      ),
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16)),
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                    ),
-                    child: Text(
-                      'Skip →',
-                      style: GoogleFonts.nunito(
-                        fontWeight: FontWeight.w800,
-                        fontSize: 13,
-                        color: AppColors.textMuted,
-                      ),
-                    ),
+            padding: const EdgeInsets.fromLTRB(20, 10, 20, 30),
+            child: SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: _next,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: widget.color,
+                  padding: const EdgeInsets.symmetric(vertical: 15),
+                  elevation: 0,
+                ),
+                child: Text(
+                  _timerRunning ? 'Running...' : 'Next',
+                  style: GoogleFonts.nunito(
+                    fontWeight: FontWeight.w900,
+                    fontSize: 14,
                   ),
                 ),
-                const SizedBox(width: 10),
-                Expanded(
-                  flex: 2,
-                  child: ElevatedButton(
-                    onPressed: _next,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: widget.color,
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16)),
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      elevation: 0,
-                    ),
-                    child: Text(
-                      hasTimer && !_timerRunning
-                          ? 'Start timer ▶'
-                          : _currentIndex == widget.rituals.length - 1
-                              ? 'Finish session 🌸'
-                              : 'Next step →',
-                      style: GoogleFonts.nunito(
-                        fontWeight: FontWeight.w900,
-                        fontSize: 14,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
+              ),
             ),
           ),
         ],
