@@ -108,15 +108,16 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen>
     setState(() => _isLoading = true);
     HapticFeedback.mediumImpact();
     try {
-      final plan = ref.read(_selectedPlanProvider);
-      // TODO: wire to RevenueCat via premiumProvider, e.g.:
-      // await ref.read(premiumProvider.notifier).purchase(plan);
-      await Future.delayed(const Duration(seconds: 2)); // placeholder
-      if (mounted) context.pop();
+      // Until we integrate RevenueCat, we redirect to signup
+      // final plan = ref.read(_selectedPlanProvider);
+      await Future.delayed(const Duration(milliseconds: 500));
+      if (mounted) {
+        context.push('/signup?premium=true');
+      }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text('Purchase failed. Please try again.',
+          content: Text('Action failed. Please try again.',
               style: GoogleFonts.nunito(fontWeight: FontWeight.w700)),
           backgroundColor: _pink,
           behavior: SnackBarBehavior.floating,

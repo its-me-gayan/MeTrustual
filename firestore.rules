@@ -12,6 +12,12 @@ service cloud.firestore {
       return request.auth.uid == userId;
     }
 
+    // Helper function to check if the user is premium
+    function isPremium() {
+      return isAuthenticated() && 
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isPremium == true;
+    }
+
     // User Document: Only the owner can read/write
     match /users/{userId} {
       allow read: if isAuthenticated() && isOwner(userId);
@@ -51,9 +57,9 @@ service cloud.firestore {
       allow update, delete: if isAuthenticated() && resource.data.authorId == request.auth.uid;
     }
 
-    // Educational Content: Read-only for authenticated users
+    // Educational Content: Read-only for premium users
     match /education/{articleId} {
-      allow read: if isAuthenticated();
+      allow read: if isPremium();
       allow write: if false; // Only admin via Firebase Console/Admin SDK
     }
 

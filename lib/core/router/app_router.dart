@@ -6,6 +6,7 @@ import '../../features/onboarding/screens/mode_selection_screen.dart';
 import '../../features/onboarding/screens/journey_screen.dart';
 import '../../features/onboarding/screens/pin_verification_screen.dart';
 import '../../features/onboarding/screens/login_screen.dart';
+import '../../features/onboarding/screens/signup_screen.dart';
 import '../../features/home/screens/home_screen.dart';
 import '../../features/logging/screens/log_screen.dart';
 import '../../features/insights/screens/insights_screen.dart';
@@ -29,6 +30,13 @@ final GoRouter appRouter = GoRouter(
     GoRoute(
       path: '/login',
       builder: (context, state) => const LoginScreen(),
+    ),
+    GoRoute(
+      path: '/signup',
+      builder: (context, state) {
+        final isPremium = state.uri.queryParameters['premium'] == 'true';
+        return SignupScreen(isPremiumFlow: isPremium);
+      },
     ),
     GoRoute(
       path: '/biometric-setup/:uid',

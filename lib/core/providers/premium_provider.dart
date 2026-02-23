@@ -10,5 +10,9 @@ final premiumStatusProvider = StreamProvider<bool>((ref) {
       .collection('users')
       .doc(user.uid)
       .snapshots()
-      .map((snapshot) => snapshot.exists && (snapshot.data()?['isPremium'] ?? false));
+      .map((snapshot) {
+        if (!snapshot.exists) return false;
+        final data = snapshot.data();
+        return data != null && (data['isPremium'] == true);
+      });
 });
