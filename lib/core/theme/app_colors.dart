@@ -13,12 +13,27 @@ class AppColors {
   static const Color sageGreen = Color(0xFF6A9E6A);
   static const Color lavender = Color(0xFFA880C8);
 
-  // Mode-specific colors
+  // Mode-specific colors (Original Darker)
   static const Color periodRose = Color(0xFFD97B8A);
   static const Color pregBlue = Color(0xFF4A70B0);
   static const Color ovulGreen = Color(0xFF5A8E6A);
 
-  static Color getModeColor(String mode) {
+  // Softer Mode-specific colors (New Soft Variants)
+  static const Color softPeriodRose = Color(0xFFE59CA8);
+  static const Color softPregBlue = Color(0xFF7B99CB);
+  static const Color softOvulGreen = Color(0xFF88AF93);
+
+  static Color getModeColor(String mode, {bool soft = false}) {
+    if (soft) {
+      switch (mode) {
+        case 'preg':
+          return softPregBlue;
+        case 'ovul':
+          return softOvulGreen;
+        default:
+          return softPeriodRose;
+      }
+    }
     switch (mode) {
       case 'preg':
         return pregBlue;

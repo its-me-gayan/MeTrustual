@@ -22,7 +22,7 @@ class PremiumGate extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final isPremium = ref.watch(premiumStatusProvider).value ?? false;
     final currentMode = ref.watch(modeProvider);
-    final themeColor = AppColors.getModeColor(currentMode);
+    final themeColor = AppColors.getModeColor(currentMode, soft: true);
 
     if (isPremium) return child;
 

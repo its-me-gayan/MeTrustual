@@ -28,7 +28,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
     final nameController = TextEditingController(text: profile.displayName);
     final currentMode = ref.read(modeProvider);
-    final themeColor = AppColors.getModeColor(currentMode);
+    final themeColor = AppColors.getModeColor(currentMode, soft: true);
 
     final result = await showDialog<String>(
       context: context,
@@ -93,7 +93,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     ];
 
     final currentMode = ref.read(modeProvider);
-    final themeColor = AppColors.getModeColor(currentMode);
+    final themeColor = AppColors.getModeColor(currentMode, soft: true);
 
     await showModalBottomSheet(
       context: context,
@@ -249,7 +249,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     final user = auth.currentUser;
     final firestore = ref.watch(firestoreProvider);
     final currentMode = ref.watch(modeProvider);
-    final themeColor = AppColors.getModeColor(currentMode);
+    final themeColor = AppColors.getModeColor(currentMode, soft: true);
 
     return Scaffold(
       body: SafeArea(

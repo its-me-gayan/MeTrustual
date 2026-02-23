@@ -40,7 +40,7 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen> {
     final passwordController = TextEditingController();
     bool isSheetLoading = false;
     final currentMode = ref.read(modeProvider);
-    final themeColor = AppColors.getModeColor(currentMode);
+    final themeColor = AppColors.getModeColor(currentMode, soft: true);
 
     await showModalBottomSheet(
       context: context,
@@ -220,7 +220,7 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen> {
 
   void _showSuccessDialog() {
     final currentMode = ref.read(modeProvider);
-    final themeColor = AppColors.getModeColor(currentMode);
+    final themeColor = AppColors.getModeColor(currentMode, soft: true);
 
     showDialog(
       context: context,
@@ -282,7 +282,7 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen> {
   @override
   Widget build(BuildContext context) {
     final currentMode = ref.watch(modeProvider);
-    final themeColor = AppColors.getModeColor(currentMode);
+    final themeColor = AppColors.getModeColor(currentMode, soft: true);
 
     return Scaffold(
       backgroundColor: Color(0xFFFFF8F5),
