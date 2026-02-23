@@ -162,6 +162,54 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     }
   }
 
+  Future<void> _handleCancelPremium() async {
+    final auth = ref.read(firebaseAuthProvider);
+    final user = auth.currentUser;
+    final firestore = ref.read(firestoreProvider);
+
+    if (user == null) return;
+
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Cancel Premium Membership',
+            style: GoogleFonts.nunito(fontWeight: FontWeight.w900)),
+        content: const Text(
+            'Are you sure you want to cancel your premium membership? You will lose access to all premium features.'),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: Text('Keep Premium',
+                  style: GoogleFonts.nunito(color: AppColors.textMid))),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: Text('Yes, Cancel',
+                style: GoogleFonts.nunito(
+                    color: Colors.redAccent, fontWeight: FontWeight.w800)),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm == true) {
+      setState(() => _isLoading = true);
+      try {
+        await firestore.collection('users').doc(user.uid).update({
+          'isPremium': false,
+          'cancelledAt': FieldValue.serverTimestamp(),
+        });
+        if (mounted) {
+          NotificationService.showSuccess(
+              context, 'Premium membership cancelled.');
+        }
+      } catch (e) {
+        if (mounted) NotificationService.showError(context, e.toString());
+      } finally {
+        if (mounted) setState(() => _isLoading = false);
+      }
+    }
+  }
+
   Future<void> _handleDeleteData() async {
     final auth = ref.read(firebaseAuthProvider);
     final user = auth.currentUser;
@@ -356,9 +404,12 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                           _buildSectionTitle('DANGER ZONE'),
                           _buildSettingsCard([
                             if (isPremium)
-                              _buildSettingsTile(
-                                  Icons.logout, 'Sign Out', _handleSignOut,
+                              _buildSettingsTile(Icons.star_border,
+                                  'Cancel Premium Membership', _handleCancelPremium,
                                   color: Colors.redAccent),
+                            _buildSettingsTile(
+                                Icons.logout, 'Sign Out', _handleSignOut,
+                                color: Colors.redAccent),
                             _buildSettingsTile(Icons.delete_forever_outlined,
                                 'Delete All Data', _handleDeleteData,
                                 color: Colors.redAccent),
