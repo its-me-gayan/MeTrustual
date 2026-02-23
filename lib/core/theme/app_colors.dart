@@ -18,20 +18,25 @@ class AppColors {
   static const Color pregBlue = Color(0xFF4A70B0);
   static const Color ovulGreen = Color(0xFF5A8E6A);
 
-  // Softer Mode-specific colors (New Soft Variants)
+  // Softer Mode-specific colors (Previous Very Soft Variants)
   static const Color softPeriodRose = Color(0xFFE59CA8);
   static const Color softPregBlue = Color(0xFF7B99CB);
   static const Color softOvulGreen = Color(0xFF88AF93);
+
+  // Medium-Soft Mode-specific colors (Balanced Variants)
+  static const Color mediumPeriodRose = Color(0xFFE08B99); // Balanced between D97B8A and E59CA8
+  static const Color mediumPregBlue = Color(0xFF6284BD);   // Balanced between 4A70B0 and 7B99CB
+  static const Color mediumOvulGreen = Color(0xFF719E7E);  // Balanced between 5A8E6A and 88AF93
 
   static Color getModeColor(String mode, {bool soft = false}) {
     if (soft) {
       switch (mode) {
         case 'preg':
-          return softPregBlue;
+          return mediumPregBlue;
         case 'ovul':
-          return softOvulGreen;
+          return mediumOvulGreen;
         default:
-          return softPeriodRose;
+          return mediumPeriodRose;
       }
     }
     switch (mode) {
