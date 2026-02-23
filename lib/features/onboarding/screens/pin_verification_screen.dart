@@ -1,13 +1,27 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-// import '../../../core/theme/app_colors.dart';
-import '../../../core/services/biometric_service.dart';
-import '../../../core/widgets/custom_pin_input.dart';
+import 'package:google_fonts/google_fonts.dart';
+
+import '../../../core/providers/firebase_providers.dart';
 import '../../../core/providers/security_provider.dart';
 import '../../../core/services/notification_service.dart';
-import '../../../core/providers/firebase_providers.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'pin_constants.dart';
+import 'pin_widgets.dart';
+import 'forgot_pin_overlay.dart';
+
+// ═══════════════════════════════════════════════════════
+//  PIN VERIFICATION SCREEN
+//
+//  Full-screen gradient PIN entry with:
+//    • Animated breathing logo
+//    • Ambient pulsing rings
+//    • Floating petal decorations
+//    • Custom circular numpad
+//    • Animated dot indicators (fill, shake-on-error)
+//    • Lockout countdown box
+//    • "Forgot PIN?" → ForgotPinOverlay bottom sheet
+// ═══════════════════════════════════════════════════════
 
 class PinVerificationScreen extends ConsumerStatefulWidget {
   final VoidCallback? onSuccess;
@@ -25,499 +39,89 @@ class PinVerificationScreen extends ConsumerStatefulWidget {
 }
 
 class _PinVerificationScreenState extends ConsumerState<PinVerificationScreen>
-    with SingleTickerProviderStateMixin {
-  String _pin = '';
+    with TickerProviderStateMixin {
+  // ── PIN state ────────────────────────────────────────
+  final List<String> _entered = [];
   bool _isLoading = false;
-  final TextEditingController _pinController = TextEditingController();
+  bool _dotsError = false;
 
-  // Subtle logo pulse — reuses the same breath animation as splash
-  late AnimationController _logoController;
+  // ── Animation controllers ─────────────────────────
+  late AnimationController _logoController; // breathe
+  late AnimationController _dotShakeCtrl; // shake on wrong PIN
+  late Animation<double> _dotShakeAnim;
 
   @override
   void initState() {
     super.initState();
+
     _logoController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 2500),
+      duration: const Duration(milliseconds: 2800),
     )..repeat(reverse: true);
+
+    _dotShakeCtrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 400),
+    );
+    _dotShakeAnim = Tween<double>(begin: 0, end: 1).animate(
+      CurvedAnimation(parent: _dotShakeCtrl, curve: Curves.elasticIn),
+    );
   }
 
   @override
   void dispose() {
-    _pinController.dispose();
     _logoController.dispose();
+    _dotShakeCtrl.dispose();
     super.dispose();
   }
 
-  // ─────────────────────────────────────────────────────────────
-  //  BUILD
-  // ─────────────────────────────────────────────────────────────
-  @override
-  Widget build(BuildContext context) {
-    final securityState = ref.watch(securityProvider);
-    final auth = ref.watch(firebaseAuthProvider);
-    // ignore: unused_local_variable — kept for parity with original
-    final isAuthenticated =
-        auth.currentUser != null && !auth.currentUser!.isAnonymous;
+  // ─────────────────────────────────────────────────────
+  //  INPUT HANDLERS
+  // ─────────────────────────────────────────────────────
 
-    return Scaffold(
-      backgroundColor: Colors.transparent, // prevent white bleed
-      body: Container(
-        width: double.infinity,
-        // Force the gradient to always fill the full screen height
-        constraints: BoxConstraints(
-          minHeight: MediaQuery.of(context).size.height,
-        ),
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              Color(0xFFFFF4F0),
-              Color(0xFFFDE8F0),
-              Color(0xFFEDE8FC),
-              Color(0xFFE8EEFF),
-            ],
-            stops: [0.0, 0.35, 0.7, 1.0],
-          ),
-        ),
-        child: Stack(
-          children: [
-            // ── Ambient glow orbs (decorative, pointer-events: none) ──
-            Positioned(
-              top: -80,
-              right: -80,
-              child: _GlowOrb(
-                size: 320,
-                color: const Color(0xFFE8A84A),
-                opacity: 0.07,
-              ),
-            ),
-            Positioned(
-              bottom: -60,
-              left: -60,
-              child: _GlowOrb(
-                size: 280,
-                color: const Color(0xFFD97B8A),
-                opacity: 0.08,
-              ),
-            ),
+  void _onKey(String digit) {
+    final security = ref.read(securityProvider);
+    if (security.isLocked || _isLoading) return;
+    if (_entered.length >= 4) return;
 
-            // ── Main content ──
-            SafeArea(
-              child: SingleChildScrollView(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 28, vertical: 20),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    const SizedBox(height: 48),
-
-                    // ── Soluna flower logo ──
-                    _buildLogo(),
-
-                    const SizedBox(height: 28),
-
-                    // ── App wordmark ──
-                    _buildWordmark(),
-
-                    const SizedBox(height: 36),
-
-                    // ── Headline ──
-                    Text(
-                      'Welcome Back',
-                      style: GoogleFonts.nunito(
-                        fontSize: 26,
-                        fontWeight: FontWeight.w900,
-                        color: const Color(0xFF3D2828),
-                        letterSpacing: -0.3,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Enter your 4-digit PIN to unlock',
-                      textAlign: TextAlign.center,
-                      style: GoogleFonts.nunito(
-                        fontSize: 14,
-                        color: const Color(0xFF8A6870),
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-
-                    const SizedBox(height: 40),
-
-                    // ── Locked state OR PIN input ──
-                    if (securityState.isLocked)
-                      _buildLockedCard(securityState)
-                    else ...[
-                      _buildPinSection(securityState),
-                    ],
-
-                    const SizedBox(height: 24),
-
-                    // ── Cancel (optional) ──
-                    if (widget.allowCancel)
-                      TextButton(
-                        onPressed: () => Navigator.pop(context),
-                        child: Text(
-                          'Cancel',
-                          style: GoogleFonts.nunito(
-                            color: const Color(0xFFB09090),
-                            fontWeight: FontWeight.w700,
-                            fontSize: 14,
-                          ),
-                        ),
-                      ),
-
-                    const SizedBox(height: 32),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  // ─────────────────────────────────────────────────────────────
-  //  WIDGETS
-  // ─────────────────────────────────────────────────────────────
-
-  Widget _buildLogo() {
-    return ScaleTransition(
-      scale: Tween<double>(begin: 1.0, end: 1.06).animate(
-        CurvedAnimation(parent: _logoController, curve: Curves.easeInOut),
-      ),
-      child: Container(
-        width: 92,
-        height: 92,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          // Peach → lavender — identical to splash
-          gradient: const LinearGradient(
-            colors: [Color(0xFFFDE8C8), Color(0xFFF0D8F4)],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: const Color(0xFFFDE8C8).withOpacity(0.45),
-              blurRadius: 0,
-              spreadRadius: 10,
-            ),
-            BoxShadow(
-              color: const Color(0xFFD97B8A).withOpacity(0.22),
-              blurRadius: 30,
-              offset: const Offset(0, 10),
-            ),
-          ],
-        ),
-        child: RotationTransition(
-          turns: Tween<double>(begin: -0.012, end: 0.012).animate(
-            CurvedAnimation(parent: _logoController, curve: Curves.easeInOut),
-          ),
-          child: const Center(
-            child: Text('🌸', style: TextStyle(fontSize: 42)),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildWordmark() {
-    return RichText(
-      text: TextSpan(
-        style: GoogleFonts.nunito(
-          fontSize: 22,
-          fontWeight: FontWeight.w900,
-          letterSpacing: -0.4,
-        ),
-        children: const [
-          TextSpan(
-            text: 'Sol',
-            style: TextStyle(color: Color(0xFFC97B3A)), // Amber gold
-          ),
-          TextSpan(
-            text: 'una',
-            style: TextStyle(color: Color(0xFFD97B8A)), // Luna rose
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildLockedCard(dynamic securityState) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(22),
-        border: Border.all(color: Colors.redAccent.withOpacity(0.2)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.redAccent.withOpacity(0.07),
-            blurRadius: 20,
-            offset: const Offset(0, 6),
-          ),
-        ],
-      ),
-      child: Column(
-        children: [
-          const Text('🔒', style: TextStyle(fontSize: 32)),
-          const SizedBox(height: 10),
-          Text(
-            'Too many failed attempts',
-            style: GoogleFonts.nunito(
-              color: Colors.redAccent,
-              fontWeight: FontWeight.w800,
-              fontSize: 14,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            '⏱️ ${securityState.errorMessage}',
-            textAlign: TextAlign.center,
-            style: GoogleFonts.nunito(
-              color: Colors.redAccent.withOpacity(0.8),
-              fontWeight: FontWeight.w600,
-              fontSize: 13,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildPinSection(dynamic securityState) {
-    final bool pinReady = _pin.length == 4 && !_isLoading;
-
-    return Column(
-      children: [
-        // ── PIN input — no card wrapper, sits directly on gradient ──
-        CustomPinInput(
-          label: '',
-          hintText: '• • • •',
-          controller: _pinController,
-          onChanged: (val) {
-            setState(() => _pin = val);
-          },
-        ),
-
-        // ── Error message ──
-        if (securityState.errorMessage != null) ...[
-          const SizedBox(height: 14),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Text('⚠️', style: TextStyle(fontSize: 13)),
-              const SizedBox(width: 6),
-              Text(
-                securityState.errorMessage!,
-                style: GoogleFonts.nunito(
-                  color: Colors.redAccent,
-                  fontWeight: FontWeight.w700,
-                  fontSize: 12,
-                ),
-              ),
-            ],
-          ),
-        ],
-
-        const SizedBox(height: 32),
-
-        // ── Unlock button ──
-        SizedBox(
-          width: double.infinity,
-          height: 58,
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 250),
-            decoration: BoxDecoration(
-              // Active: rose gradient with shadow
-              // Inactive: transparent with a subtle dashed rose border — no ugly flat fill
-              gradient: pinReady
-                  ? const LinearGradient(
-                      colors: [Color(0xFFF09090), Color(0xFFD97B8A)],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    )
-                  : null,
-              color: pinReady ? null : Colors.transparent,
-              borderRadius: BorderRadius.circular(20),
-              border: pinReady
-                  ? null
-                  : Border.all(
-                      color: const Color(0xFFD97B8A).withOpacity(0.3),
-                      width: 1.5,
-                    ),
-              boxShadow: pinReady
-                  ? [
-                      BoxShadow(
-                        color: const Color(0xFFD97B8A).withOpacity(0.38),
-                        offset: const Offset(0, 8),
-                        blurRadius: 22,
-                      ),
-                    ]
-                  : null,
-            ),
-            child: ElevatedButton(
-              onPressed:
-                  (pinReady && !securityState.isLocked) ? _verifyPin : null,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.transparent,
-                disabledBackgroundColor: Colors.transparent,
-                shadowColor: Colors.transparent,
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20)),
-              ),
-              child: _isLoading
-                  ? const SizedBox(
-                      height: 22,
-                      width: 22,
-                      child: CircularProgressIndicator(
-                        valueColor:
-                            AlwaysStoppedAnimation<Color>(Color(0xFFD97B8A)),
-                        strokeWidth: 2.5,
-                      ),
-                    )
-                  : Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          'Unlock',
-                          style: GoogleFonts.nunito(
-                            // Active: white  |  Inactive: rose (readable on transparent)
-                            color: pinReady
-                                ? Colors.white
-                                : const Color(0xFFD97B8A),
-                            fontWeight: FontWeight.w900,
-                            fontSize: 17,
-                            letterSpacing: 0.4,
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        Text(
-                          pinReady ? '🔓' : '🔒',
-                          style: const TextStyle(fontSize: 16),
-                        ),
-                      ],
-                    ),
-            ),
-          ),
-        ),
-
-        const SizedBox(height: 28),
-
-        // ── Forgot PIN — clean text link, no box/pill ──
-        TextButton(
-          onPressed: _handleForgotPin,
-          style: TextButton.styleFrom(
-            splashFactory: NoSplash.splashFactory,
-          ),
-          child: Text(
-            'Forgot PIN?',
-            style: GoogleFonts.nunito(
-              color: const Color(0xFFD97B8A),
-              fontWeight: FontWeight.w700,
-              fontSize: 14,
-              decoration: TextDecoration.underline,
-              decorationColor: const Color(0xFFD97B8A).withOpacity(0.4),
-              decorationThickness: 1.2,
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  void _showVerifyingOverlay() {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      useRootNavigator: true, // ← ADD THIS
-      barrierColor: Colors.black.withOpacity(0.35),
-      builder: (context) => PopScope(
-        canPop: false,
-        child: Center(
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 36, vertical: 28),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(28),
-              boxShadow: [
-                BoxShadow(
-                  color: const Color(0xFFD97B8A).withOpacity(0.18),
-                  blurRadius: 30,
-                  offset: const Offset(0, 10),
-                ),
-              ],
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                SizedBox(
-                  width: 48,
-                  height: 48,
-                  child: CircularProgressIndicator(
-                    valueColor: AlwaysStoppedAnimation<Color>(
-                      const Color(0xFFD97B8A),
-                    ),
-                    strokeWidth: 3,
-                  ),
-                ),
-                const SizedBox(height: 20),
-                Text(
-                  'Verifying...',
-                  style: GoogleFonts.nunito(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w800,
-                    color: const Color(0xFF3D2828),
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  'Just a moment 🔐',
-                  style: GoogleFonts.nunito(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                    color: const Color(0xFFB09090),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  // ─────────────────────────────────────────────────────────────
-  //  LOGIC — untouched from original
-  // ─────────────────────────────────────────────────────────────
-
-  Future<void> _verifyPin() async {
-    if (_pin.length != 4) return;
-
-    setState(() => _isLoading = true);
-
-    // Wait for frame to complete then show overlay
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) _showVerifyingOverlay();
+    setState(() {
+      _dotsError = false;
+      _entered.add(digit);
     });
 
-    // Small delay to ensure overlay is visible before heavy work starts
-    await Future.delayed(const Duration(milliseconds: 100));
+    if (_entered.length == 4) {
+      Future.delayed(const Duration(milliseconds: 120), _verifyPin);
+    }
+  }
 
+  void _onDelete() {
+    if (_entered.isEmpty || _isLoading) return;
+    setState(() {
+      _dotsError = false;
+      _entered.removeLast();
+    });
+  }
+
+  void _onBiometric() {
+    // TODO: hook into BiometricService when ready
+  }
+
+  // ─────────────────────────────────────────────────────
+  //  VERIFY PIN
+  // ─────────────────────────────────────────────────────
+
+  Future<void> _verifyPin() async {
+    final pinStr = _entered.join();
+    if (pinStr.length != 4) return;
+
+    setState(() => _isLoading = true);
     final security = ref.read(securityProvider.notifier);
 
     try {
-      final verified = await security.verifyPinWithCloudFallback(_pin);
+      final verified = await security.verifyPinWithCloudFallback(pinStr);
 
-      if (mounted) {
-        Navigator.of(context, rootNavigator: true)
-            .pop(); // ← rootNavigator: true
-      }
+      if (!mounted) return;
+      setState(() => _isLoading = false);
 
       if (verified) {
         await Future.delayed(const Duration(milliseconds: 300));
@@ -529,323 +133,357 @@ class _PinVerificationScreenState extends ConsumerState<PinVerificationScreen>
           }
         }
       } else {
+        // Shake dots red, then clear
+        setState(() => _dotsError = true);
+        _dotShakeCtrl.forward(from: 0);
+        await Future.delayed(const Duration(milliseconds: 500));
         if (mounted) {
           setState(() {
-            _pin = '';
-            _pinController.clear();
+            _entered.clear();
+            _dotsError = false;
           });
         }
       }
     } catch (e) {
       if (mounted) {
-        Navigator.of(context, rootNavigator: true)
-            .pop(); // ← rootNavigator: true
+        setState(() {
+          _isLoading = false;
+          _entered.clear();
+        });
         NotificationService.showError(context, 'Error: ${e.toString()}');
       }
-    } finally {
-      if (mounted) setState(() => _isLoading = false);
     }
   }
 
-  // ─────────────────────────────────────────────────────────────
-  //  FORGOT PIN — splits on user type
-  //    • Premium (non-anonymous): masked email display + confirm
-  //    • Anonymous             : email text-field entry
-  // ─────────────────────────────────────────────────────────────
+  // ─────────────────────────────────────────────────────
+  //  FORGOT PIN
+  // ─────────────────────────────────────────────────────
 
-  /// Returns a masked version of [email], e.g. "jane@example.com" → "j***@example.com"
-  String _maskEmail(String email) {
-    final parts = email.split('@');
-    if (parts.length != 2) return email;
-    final local = parts[0];
-    final domain = parts[1];
-    final visible = local.isNotEmpty ? local[0] : '';
-    return '$visible***@$domain';
-  }
-
-  Future<void> _handleForgotPin() async {
+  void _handleForgotPin() {
     final auth = ref.read(firebaseAuthProvider);
-    final isPremium =
-        auth.currentUser != null && !auth.currentUser!.isAnonymous;
+    final isAnonymous =
+        auth.currentUser == null || auth.currentUser!.isAnonymous;
 
-    if (isPremium) {
-      // ── Premium path: we already have the email in Firebase ──
-      _showForgotPinPremiumDialog(auth.currentUser!.email!);
-    } else {
-      // ── Anonymous path: ask the user to enter their email ──
-      _showForgotPinAnonymousDialog();
-    }
-  }
-
-  /// Dialog for premium users — shows masked email, single confirm button.
-  void _showForgotPinPremiumDialog(String email) {
-    showDialog(
+    showModalBottomSheet(
       context: context,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-        backgroundColor: const Color(0xFFFFF8F5),
-        title: Column(
-          children: [
-            const Text('🔑', style: TextStyle(fontSize: 28)),
-            const SizedBox(height: 8),
-            Text(
-              'Reset PIN',
-              style: GoogleFonts.nunito(
-                fontWeight: FontWeight.w900,
-                fontSize: 18,
-                color: const Color(0xFF3D2828),
-              ),
-            ),
-          ],
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              'We\'ll send a temporary PIN to your email on file.',
-              textAlign: TextAlign.center,
-              style: GoogleFonts.nunito(
-                fontWeight: FontWeight.w500,
-                fontSize: 13,
-                color: const Color(0xFF8A6870),
-              ),
-            ),
-            const SizedBox(height: 16),
-            // Masked email pill
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(14),
-                border: Border.all(color: const Color(0xFFFCE8E4)),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Text('✉️', style: TextStyle(fontSize: 15)),
-                  const SizedBox(width: 8),
-                  Text(
-                    _maskEmail(email),
-                    style: GoogleFonts.nunito(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w700,
-                      color: const Color(0xFF3D2828),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(
-              'Cancel',
-              style: GoogleFonts.nunito(
-                color: const Color(0xFFB09090),
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-          ),
-          Container(
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [Color(0xFFF09090), Color(0xFFD97B8A)],
-              ),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: TextButton(
-              onPressed: () async {
-                Navigator.pop(context);
-                setState(() => _isLoading = true);
-
-                try {
-                  // TODO: replace placeholder with real email-send logic
-                  await BiometricService.setBiometricPin("1234");
-
-                  if (mounted) {
-                    NotificationService.showSuccess(
-                      context,
-                      'Temporary PIN sent to ${_maskEmail(email)}! Check your inbox.',
-                    );
-                  }
-                } catch (e) {
-                  if (mounted) {
-                    NotificationService.showError(
-                        context, 'Error: ${e.toString()}');
-                  }
-                } finally {
-                  if (mounted) setState(() => _isLoading = false);
-                }
-              },
-              child: Text(
-                'Send PIN',
-                style: GoogleFonts.nunito(
-                  color: Colors.white,
-                  fontWeight: FontWeight.w900,
-                  fontSize: 14,
-                ),
-              ),
-            ),
-          ),
-        ],
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      useRootNavigator: true,
+      builder: (_) => ForgotPinOverlay(
+        isAnonymous: isAnonymous,
+        knownEmail: isAnonymous ? null : auth.currentUser?.email,
       ),
     );
   }
 
-  /// Dialog for anonymous users — they must provide their email manually.
-  void _showForgotPinAnonymousDialog() {
-    final emailController = TextEditingController();
+  // ─────────────────────────────────────────────────────
+  //  BUILD
+  // ─────────────────────────────────────────────────────
 
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-        backgroundColor: const Color(0xFFFFF8F5),
-        title: Column(
+  @override
+  Widget build(BuildContext context) {
+    final securityState = ref.watch(securityProvider);
+
+    return Scaffold(
+      backgroundColor: Colors.transparent,
+      body: Container(
+        width: double.infinity,
+        constraints: BoxConstraints(
+          minHeight: MediaQuery.of(context).size.height,
+        ),
+        decoration: const BoxDecoration(gradient: kPinBackgroundGradient),
+        child: Stack(
           children: [
-            const Text('🔑', style: TextStyle(fontSize: 28)),
-            const SizedBox(height: 8),
-            Text(
-              'Reset PIN',
-              style: GoogleFonts.nunito(
-                fontWeight: FontWeight.w900,
-                fontSize: 18,
-                color: const Color(0xFF3D2828),
+            // ── Ambient glow orbs ──
+            Positioned(
+              top: -80,
+              right: -80,
+              child: GlowOrb(
+                size: 320,
+                color: const Color(0xFFE8A84A),
+                opacity: 0.07,
               ),
             ),
+            Positioned(
+              bottom: -60,
+              left: -60,
+              child: GlowOrb(
+                size: 280,
+                color: PinColors.roseDeep,
+                opacity: 0.08,
+              ),
+            ),
+
+            // ── Floating petals ──
+            FloatingPetal(
+              config: PetalConfig(
+                  left: 0.08,
+                  emoji: '🌸',
+                  size: 16,
+                  duration: 5200,
+                  delay: 300),
+            ),
+            FloatingPetal(
+              config: PetalConfig(
+                  left: 0.25,
+                  emoji: '✿',
+                  size: 13,
+                  duration: 6100,
+                  delay: 1400),
+            ),
+            FloatingPetal(
+              config: PetalConfig(
+                  left: 0.60,
+                  emoji: '🌸',
+                  size: 18,
+                  duration: 4800,
+                  delay: 800),
+            ),
+            FloatingPetal(
+              config: PetalConfig(
+                  left: 0.82,
+                  emoji: '✾',
+                  size: 12,
+                  duration: 5700,
+                  delay: 2000),
+            ),
+
+            // ── Main scrollable content ──
+            SafeArea(
+              child: SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    const SizedBox(height: 52),
+
+                    // Logo
+                    SolunaLogoOrb(controller: _logoController),
+                    const SizedBox(height: 14),
+
+                    // Wordmark
+                    const SolunaWordmark(),
+                    const SizedBox(height: 4),
+
+                    // Subtitle
+                    Text(
+                      securityState.isLocked
+                          ? 'Account temporarily locked'
+                          : 'Enter your 4-digit PIN to unlock',
+                      style: GoogleFonts.nunito(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700,
+                        color: PinColors.textHint,
+                      ),
+                    ),
+
+                    const SizedBox(height: 32),
+
+                    // Lockout box
+                    if (securityState.isLocked)
+                      _LockoutBox(
+                        message: securityState.errorMessage ?? '',
+                      ),
+
+                    // PIN dots
+                    PinDotRow(
+                      filledCount: _entered.length,
+                      isError: _dotsError,
+                      shakeAnimation: _dotShakeAnim,
+                    ),
+
+                    const SizedBox(height: 4),
+
+                    // Error / status message
+                    _StatusMessage(securityState: securityState),
+
+                    const SizedBox(height: 20),
+
+                    // Numpad
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 80),
+                      child: PinNumpad(
+                        onKey: _onKey,
+                        onDelete: _onDelete,
+                        onBiometric: _onBiometric,
+                        disabled: securityState.isLocked || _isLoading,
+                      ),
+                    ),
+
+                    const SizedBox(height: 14),
+
+                    // Forgot PIN link
+                    GestureDetector(
+                      onTap: _handleForgotPin,
+                      child: Text(
+                        'Forgot PIN?',
+                        style: GoogleFonts.nunito(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w700,
+                          color: PinColors.textSubtle,
+                          decoration: TextDecoration.underline,
+                          decorationColor: PinColors.textSubtle,
+                          decorationThickness: 1.2,
+                        ),
+                      ),
+                    ),
+
+                    if (widget.allowCancel) ...[
+                      const SizedBox(height: 12),
+                      TextButton(
+                        onPressed: () => Navigator.pop(context),
+                        child: Text(
+                          'Cancel',
+                          style: GoogleFonts.nunito(
+                            color: PinColors.textMuted,
+                            fontWeight: FontWeight.w700,
+                            fontSize: 14,
+                          ),
+                        ),
+                      ),
+                    ],
+
+                    const SizedBox(height: 40),
+                  ],
+                ),
+              ),
+            ),
+
+            // ── Verifying overlay ──
+            if (_isLoading) const _VerifyingOverlay(),
           ],
         ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              'Enter your email to receive a temporary PIN.',
-              textAlign: TextAlign.center,
-              style: GoogleFonts.nunito(
-                fontWeight: FontWeight.w500,
-                fontSize: 13,
-                color: const Color(0xFF8A6870),
-              ),
-            ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: emailController,
-              keyboardType: TextInputType.emailAddress,
-              style: GoogleFonts.nunito(
-                  fontSize: 14, color: const Color(0xFF3D2828)),
-              decoration: InputDecoration(
-                hintText: 'your@email.com',
-                hintStyle: GoogleFonts.nunito(
-                    color: const Color(0xFFD0B0B8), fontSize: 13),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(14),
-                  borderSide: const BorderSide(color: Color(0xFFFCE8E4)),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(14),
-                  borderSide: const BorderSide(color: Color(0xFFFCE8E4)),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(14),
-                  borderSide: const BorderSide(color: Color(0xFFD97B8A)),
-                ),
-                filled: true,
-                fillColor: Colors.white,
-                contentPadding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(
-              'Cancel',
-              style: GoogleFonts.nunito(
-                color: const Color(0xFFB09090),
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-          ),
-          Container(
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [Color(0xFFF09090), Color(0xFFD97B8A)],
-              ),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: TextButton(
-              onPressed: () async {
-                final email = emailController.text.trim();
-                if (email.isEmpty) return;
-
-                Navigator.pop(context);
-                setState(() => _isLoading = true);
-
-                try {
-                  // TODO: replace placeholder with real email-send logic
-                  await BiometricService.setBiometricPin("1234");
-
-                  if (mounted) {
-                    NotificationService.showSuccess(
-                      context,
-                      'Temporary PIN sent to $email! Check your inbox.',
-                    );
-                  }
-                } catch (e) {
-                  if (mounted) {
-                    NotificationService.showError(
-                        context, 'Error: ${e.toString()}');
-                  }
-                } finally {
-                  if (mounted) setState(() => _isLoading = false);
-                }
-              },
-              child: Text(
-                'Send PIN',
-                style: GoogleFonts.nunito(
-                  color: Colors.white,
-                  fontWeight: FontWeight.w900,
-                  fontSize: 14,
-                ),
-              ),
-            ),
-          ),
-        ],
       ),
     );
   }
 }
 
-// ─────────────────────────────────────────────────────────────
-//  GLOW ORB — decorative ambient blob (same pattern as splash)
-// ─────────────────────────────────────────────────────────────
-class _GlowOrb extends StatelessWidget {
-  final double size;
-  final Color color;
-  final double opacity;
+// ═══════════════════════════════════════════════════════
+//  PRIVATE SCREEN-LOCAL WIDGETS
+// ═══════════════════════════════════════════════════════
 
-  const _GlowOrb({
-    required this.size,
-    required this.color,
-    required this.opacity,
-  });
+/// Shown when the account is locked out after too many failed attempts.
+class _LockoutBox extends StatelessWidget {
+  final String message;
+
+  const _LockoutBox({required this.message});
 
   @override
   Widget build(BuildContext context) {
-    return IgnorePointer(
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(28, 0, 28, 20),
       child: Container(
-        width: size,
-        height: size,
+        padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          gradient: RadialGradient(
-            colors: [
-              color.withOpacity(opacity),
-              color.withOpacity(0.0),
+          color: const Color(0xFFFFF0F0).withOpacity(0.85),
+          border: Border.all(color: PinColors.errorRed.withOpacity(0.2)),
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Column(
+          children: [
+            const Text('🔒', style: TextStyle(fontSize: 28)),
+            const SizedBox(height: 4),
+            Text(
+              'Too many attempts',
+              style: GoogleFonts.nunito(
+                color: PinColors.errorRed,
+                fontWeight: FontWeight.w900,
+                fontSize: 13,
+              ),
+            ),
+            const SizedBox(height: 2),
+            Text(
+              message,
+              textAlign: TextAlign.center,
+              style: GoogleFonts.nunito(
+                color: PinColors.errorRed.withOpacity(0.8),
+                fontWeight: FontWeight.w700,
+                fontSize: 12,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Status / error message beneath the dots.
+class _StatusMessage extends StatelessWidget {
+  final dynamic securityState;
+
+  const _StatusMessage({required this.securityState});
+
+  @override
+  Widget build(BuildContext context) {
+    final msg = securityState.errorMessage as String?;
+    if (msg == null || (securityState.isLocked as bool)) {
+      return const SizedBox(height: 22);
+    }
+    return SizedBox(
+      height: 22,
+      child: Text(
+        '⚠️ $msg',
+        style: GoogleFonts.nunito(
+          fontSize: 12,
+          fontWeight: FontWeight.w700,
+          color: PinColors.errorRed,
+        ),
+      ),
+    );
+  }
+}
+
+/// Semi-transparent overlay shown while the PIN is being verified.
+class _VerifyingOverlay extends StatelessWidget {
+  const _VerifyingOverlay();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      color: Colors.black.withOpacity(0.35),
+      child: Center(
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 36, vertical: 28),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(28),
+            boxShadow: [
+              BoxShadow(
+                color: PinColors.roseDeep.withOpacity(0.18),
+                blurRadius: 30,
+                offset: const Offset(0, 10),
+              ),
+            ],
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const SizedBox(
+                width: 48,
+                height: 48,
+                child: CircularProgressIndicator(
+                  valueColor: AlwaysStoppedAnimation<Color>(PinColors.roseDeep),
+                  strokeWidth: 3,
+                ),
+              ),
+              const SizedBox(height: 20),
+              Text(
+                'Verifying...',
+                style: GoogleFonts.nunito(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w800,
+                  color: PinColors.darkBrown,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                'Just a moment 🔐',
+                style: GoogleFonts.nunito(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: PinColors.textMuted,
+                ),
+              ),
             ],
           ),
         ),
