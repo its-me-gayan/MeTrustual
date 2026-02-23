@@ -14,6 +14,18 @@ import '../../../core/providers/firebase_providers.dart';
 import '../../../core/widgets/app_bottom_nav.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+// ── Mode → theme color (shared helper) ───────────────────────
+Color modeColor(String mode) {
+  switch (mode) {
+    case 'preg':
+      return const Color(0xFF4A70B0);
+    case 'ovul':
+      return const Color(0xFF5A8E6A);
+    default:
+      return AppColors.primaryRose;
+  }
+}
+
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
 
@@ -36,23 +48,20 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final prefs = await SharedPreferences.getInstance();
     final auth = ref.read(firebaseAuthProvider);
     final user = auth.currentUser;
-    
     setState(() {
-      _displayName = prefs.getString('nickname') ?? user?.displayName ?? 'Sweetie';
+      _displayName =
+          prefs.getString('nickname') ?? user?.displayName ?? 'Sweetie';
     });
   }
 
   Future<void> _saveNickname(String newName) async {
     if (newName.isEmpty) newName = 'Sweetie';
-    
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('nickname', newName);
-    
     final auth = ref.read(firebaseAuthProvider);
     final user = auth.currentUser;
     if (user != null) {
       await user.updateDisplayName(newName);
-      
       final firestore = ref.read(firestoreProvider);
       await firestore
           .collection('users')
@@ -61,12 +70,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           .doc('current')
           .update({'displayName': newName});
     }
-    
     setState(() {
       _displayName = newName;
       _isEditingNickname = false;
     });
-    
     if (mounted) {
       NotificationService.showSuccess(context, 'Nickname updated! ✨');
     }
@@ -82,6 +89,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   Widget build(BuildContext context) {
     final homeData = ref.watch(homeDataProvider);
     final currentMode = ref.watch(modeProvider);
+    final themeColor = modeColor(currentMode);
 
     return Scaffold(
       extendBody: true,
@@ -130,7 +138,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                     decoration: BoxDecoration(
                                       color: Colors.white,
                                       borderRadius: BorderRadius.circular(12),
-                                      border: Border.all(color: AppColors.border, width: 1.5),
+                                      border: Border.all(
+                                          color: AppColors.border, width: 1.5),
                                     ),
                                     child: TextField(
                                       controller: _nicknameController,
@@ -147,20 +156,23 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                           color: AppColors.textMuted,
                                         ),
                                         border: InputBorder.none,
-                                        contentPadding: const EdgeInsets.symmetric(
-                                            horizontal: 12, vertical: 8),
+                                        contentPadding:
+                                            const EdgeInsets.symmetric(
+                                                horizontal: 12, vertical: 8),
                                       ),
                                       onSubmitted: _saveNickname,
                                     ),
                                   ),
                                 ),
                                 const SizedBox(width: 8),
+                                // ✅ Confirm button — mode color
                                 GestureDetector(
-                                  onTap: () => _saveNickname(_nicknameController.text.trim()),
+                                  onTap: () => _saveNickname(
+                                      _nicknameController.text.trim()),
                                   child: Container(
                                     padding: const EdgeInsets.all(10),
                                     decoration: BoxDecoration(
-                                      color: AppColors.primaryRose,
+                                      color: themeColor,
                                       borderRadius: BorderRadius.circular(12),
                                     ),
                                     child: const Icon(Icons.check,
@@ -169,11 +181,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                 ),
                                 const SizedBox(width: 4),
                                 GestureDetector(
-                                  onTap: () => setState(() => _isEditingNickname = false),
+                                  onTap: () => setState(
+                                      () => _isEditingNickname = false),
                                   child: Container(
                                     padding: const EdgeInsets.all(10),
                                     decoration: BoxDecoration(
-                                      color: AppColors.textMuted.withOpacity(0.2),
+                                      color:
+                                          AppColors.textMuted.withOpacity(0.2),
                                       borderRadius: BorderRadius.circular(12),
                                     ),
                                     child: const Icon(Icons.close,
@@ -251,9 +265,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         const avgPeriod = 5;
         return Column(
           children: [
-            Center(
-              child: CycleCircle(day: cycleDay, phase: phase),
-            ),
+            Center(child: CycleCircle(day: cycleDay, phase: phase)),
             const SizedBox(height: 16),
             _buildPillsRow(
               {
@@ -423,23 +435,17 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            '👶 Baby Updates',
-            style: GoogleFonts.nunito(
-              fontSize: 14,
-              fontWeight: FontWeight.w900,
-              color: AppColors.textDark,
-            ),
-          ),
+          Text('👶 Baby Updates',
+              style: GoogleFonts.nunito(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w900,
+                  color: AppColors.textDark)),
           const SizedBox(height: 12),
-          Text(
-            'Week 24: Baby is about the size of a papaya!',
-            style: GoogleFonts.nunito(
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
-              color: AppColors.textMid,
-            ),
-          ),
+          Text('Week 24: Baby is about the size of a papaya!',
+              style: GoogleFonts.nunito(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.textMid)),
           const SizedBox(height: 12),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
@@ -447,14 +453,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               color: const Color(0xFF4A70B0).withOpacity(0.08),
               borderRadius: BorderRadius.circular(12),
             ),
-            child: Text(
-              'Baby weight: ~600g • Length: ~30cm',
-              style: GoogleFonts.nunito(
-                fontSize: 11,
-                fontWeight: FontWeight.w700,
-                color: const Color(0xFF4A70B0),
-              ),
-            ),
+            child: Text('Baby weight: ~600g • Length: ~30cm',
+                style: GoogleFonts.nunito(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
+                    color: const Color(0xFF4A70B0))),
           ),
         ],
       ),
@@ -472,14 +475,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            '🌱 Fertile Window',
-            style: GoogleFonts.nunito(
-              fontSize: 14,
-              fontWeight: FontWeight.w900,
-              color: AppColors.textDark,
-            ),
-          ),
+          Text('🌱 Fertile Window',
+              style: GoogleFonts.nunito(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w900,
+                  color: AppColors.textDark)),
           const SizedBox(height: 12),
           ClipRRect(
             borderRadius: BorderRadius.circular(8),
@@ -487,18 +487,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               value: 0.5,
               minHeight: 8,
               backgroundColor: const Color(0xFF5A8E6A).withOpacity(0.1),
-              valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF5A8E6A)),
+              valueColor:
+                  const AlwaysStoppedAnimation<Color>(Color(0xFF5A8E6A)),
             ),
           ),
           const SizedBox(height: 8),
-          Text(
-            'Peak fertility: Today & Tomorrow',
-            style: GoogleFonts.nunito(
-              fontSize: 11,
-              fontWeight: FontWeight.w600,
-              color: AppColors.textMuted,
-            ),
-          ),
+          Text('Peak fertility: Today & Tomorrow',
+              style: GoogleFonts.nunito(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.textMuted)),
         ],
       ),
     );
@@ -526,52 +524,42 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                title,
-                style: GoogleFonts.nunito(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w800,
-                  color: color,
-                  letterSpacing: 0.5,
-                ),
-              ),
-              if (icon != null) Text(icon, style: const TextStyle(fontSize: 16)),
+              Text(title,
+                  style: GoogleFonts.nunito(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w800,
+                      color: color,
+                      letterSpacing: 0.5)),
+              if (icon != null)
+                Text(icon, style: const TextStyle(fontSize: 16)),
               if (percentage != null)
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                   decoration: BoxDecoration(
                     color: color.withOpacity(0.2),
                     borderRadius: BorderRadius.circular(10),
                   ),
-                  child: Text(
-                    '$percentage%',
-                    style: GoogleFonts.nunito(
-                      fontSize: 10,
-                      fontWeight: FontWeight.w900,
-                      color: color,
-                    ),
-                  ),
+                  child: Text('$percentage%',
+                      style: GoogleFonts.nunito(
+                          fontSize: 10,
+                          fontWeight: FontWeight.w900,
+                          color: color)),
                 ),
             ],
           ),
           const SizedBox(height: 8),
-          Text(
-            value,
-            style: GoogleFonts.nunito(
-              fontSize: 18,
-              fontWeight: FontWeight.w900,
-              color: AppColors.textDark,
-            ),
-          ),
+          Text(value,
+              style: GoogleFonts.nunito(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w900,
+                  color: AppColors.textDark)),
           const SizedBox(height: 2),
-          Text(
-            sub,
-            style: GoogleFonts.nunito(
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
-              color: AppColors.textMid,
-            ),
-          ),
+          Text(sub,
+              style: GoogleFonts.nunito(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.textMid)),
         ],
       ),
     );
@@ -588,15 +576,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Switch tracker',
-            style: GoogleFonts.nunito(
-              fontSize: 14,
-              fontWeight: FontWeight.w900,
-              color: AppColors.textDark,
-              letterSpacing: 0.2,
-            ),
-          ),
+          Text('Switch tracker',
+              style: GoogleFonts.nunito(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w900,
+                  color: AppColors.textDark,
+                  letterSpacing: 0.2)),
           const SizedBox(height: 14),
           if (currentMode == 'period') ...[
             _buildSwitchBtn(
@@ -632,7 +617,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         onPressed: onTap,
         style: TextButton.styleFrom(
           padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
-          backgroundColor: urgent ? const Color(0xFFFFF5F5) : AppColors.background,
+          backgroundColor:
+              urgent ? const Color(0xFFFFF5F5) : AppColors.background,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(14),
             side: BorderSide(
@@ -641,41 +627,40 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           ),
           alignment: Alignment.centerLeft,
         ),
-        child: Text(
-          text,
-          style: GoogleFonts.nunito(
-            fontSize: 12,
-            fontWeight: FontWeight.w800,
-            color: urgent ? const Color(0xFFD97B8A) : AppColors.textMid,
-          ),
-        ),
+        child: Text(text,
+            style: GoogleFonts.nunito(
+                fontSize: 12,
+                fontWeight: FontWeight.w800,
+                color: urgent ? const Color(0xFFD97B8A) : AppColors.textMid)),
       ),
     );
   }
 
   Future<void> _selectMode(String mode) async {
     await ref.read(modeProvider.notifier).resetJourney();
-    if (mounted) {
-      context.go('/journey/$mode');
-    }
+    if (mounted) context.go('/journey/$mode');
   }
 }
 
-class AppFAB extends StatelessWidget {
+// ── AppFAB — mode-aware color ─────────────────────────────────
+class AppFAB extends ConsumerWidget {
   const AppFAB({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final currentMode = ref.watch(modeProvider);
+    final color = modeColor(currentMode);
+
     return Container(
       width: 60,
       height: 60,
       margin: const EdgeInsets.only(bottom: 10),
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        color: AppColors.primaryRose,
+        color: color,
         boxShadow: [
           BoxShadow(
-            color: AppColors.primaryRose.withOpacity(0.3),
+            color: color.withOpacity(0.35),
             blurRadius: 15,
             offset: const Offset(0, 8),
           ),
