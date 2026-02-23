@@ -7,6 +7,7 @@ import '../../../core/services/notification_service.dart';
 import '../../../core/services/uuid_persistence_service.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class SignupScreen extends ConsumerStatefulWidget {
   final bool isPremiumFlow;
@@ -56,35 +57,50 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
     try {
       final auth = ref.read(firebaseAuthProvider);
       final firestore = ref.read(firestoreProvider);
+      final currentUser = auth.currentUser;
 
-      // 1. Create the user account
-      final userCredential = await auth.createUserWithEmailAndPassword(
-        email: email,
-        password: password,
-      );
+      UserCredential userCredential;
+
+      // 1. Handle Account Creation / Conversion
+      if (currentUser != null && currentUser.isAnonymous) {
+        // Convert anonymous user to permanent account by linking
+        final credential = EmailAuthProvider.credential(email: email, password: password);
+        userCredential = await currentUser.linkWithCredential(credential);
+      } else {
+        // Create new account if no user or user is already permanent
+        userCredential = await auth.createUserWithEmailAndPassword(
+          email: email,
+          password: password,
+        );
+      }
 
       final user = userCredential.user;
       if (user != null) {
         // 2. Save UUID locally
         await UUIDPersistenceService.saveUUID(user.uid);
+        
+        // 3. Update premium status and user info in Firestore
+        // We use merge: true to preserve any existing data from the anonymous session
+        final userData = {
+          'email': email,
+          'updatedAt': FieldValue.serverTimestamp(),
+        };
 
-        // 3. Update premium status if in premium flow
         if (widget.isPremiumFlow) {
-          await firestore.collection('users').doc(user.uid).set({
-            'isPremium': true,
-            'premiumSince': FieldValue.serverTimestamp(),
-            'email': email,
-          }, SetOptions(merge: true));
+          userData['isPremium'] = true;
+          userData['premiumSince'] = FieldValue.serverTimestamp();
+        } else if (!widget.isPremiumFlow && currentUser == null) {
+          // Only set to false if it's a brand new user and not premium flow
+          userData['isPremium'] = false;
+        }
 
-          if (mounted) {
-            NotificationService.showSuccess(
-                context, 'Premium account created! Welcome to Soluna.');
-          }
-        } else {
-          await firestore.collection('users').doc(user.uid).set({
-            'isPremium': false,
-            'email': email,
-          }, SetOptions(merge: true));
+        await firestore.collection('users').doc(user.uid).set(
+          userData, 
+          SetOptions(merge: true)
+        );
+        
+        if (mounted && widget.isPremiumFlow) {
+          NotificationService.showSuccess(context, 'Premium account activated! Welcome to Soluna.');
         }
 
         if (mounted) {
@@ -122,13 +138,10 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: 20),
-              Text(widget.isPremiumFlow ? '✨' : '🌸',
-                  style: GoogleFonts.nunito(fontSize: 48)),
+              Text(widget.isPremiumFlow ? '✨' : '🌸', style: GoogleFonts.nunito(fontSize: 48)),
               const SizedBox(height: 16),
               Text(
-                widget.isPremiumFlow
-                    ? 'Create Premium Account'
-                    : 'Create Account',
+                widget.isPremiumFlow ? 'Create Premium Account' : 'Create Account',
                 style: Theme.of(context).textTheme.displaySmall?.copyWith(
                       fontWeight: FontWeight.w900,
                       color: AppColors.textDark,
@@ -136,9 +149,9 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
               ),
               const SizedBox(height: 8),
               Text(
-                widget.isPremiumFlow
-                    ? 'Join Soluna Premium to unlock all features'
-                    : 'Sign up to sync your data across devices',
+                widget.isPremiumFlow 
+                  ? 'Join Soluna Premium to unlock all features'
+                  : 'Sign up to sync your data across devices',
                 style: GoogleFonts.nunito(
                   fontSize: 14,
                   color: AppColors.textMid,
@@ -163,8 +176,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                     _obscurePassword ? Icons.visibility_off : Icons.visibility,
                     color: AppColors.textMid,
                   ),
-                  onPressed: () =>
-                      setState(() => _obscurePassword = !_obscurePassword),
+                  onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
                 ),
               ),
               const SizedBox(height: 20),
@@ -195,23 +207,18 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.transparent,
                       shadowColor: Colors.transparent,
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(18)),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
                     ),
                     child: _isLoading
                         ? const SizedBox(
                             height: 20,
                             width: 20,
                             child: CircularProgressIndicator(
-                              valueColor:
-                                  AlwaysStoppedAnimation<Color>(Colors.white),
+                              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                               strokeWidth: 2,
                             ),
                           )
-                        : Text(
-                            widget.isPremiumFlow
-                                ? 'Start Free Trial'
-                                : 'Sign Up',
+                        : Text(widget.isPremiumFlow ? 'Start Free Trial' : 'Sign Up',
                             style: GoogleFonts.nunito(
                               fontSize: 16,
                               fontWeight: FontWeight.w900,
@@ -226,16 +233,12 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text(
-                      'Already have an account?',
-                      style: GoogleFonts.nunito(
-                          color: AppColors.textMid,
-                          fontWeight: FontWeight.w600),
+                    Text('Already have an account?',
+                      style: GoogleFonts.nunito(color: AppColors.textMid, fontWeight: FontWeight.w600),
                     ),
                     TextButton(
                       onPressed: () => context.push('/login'),
-                      child: Text(
-                        'Log In',
+                      child: Text('Log In',
                         style: GoogleFonts.nunito(
                           color: AppColors.primaryRose,
                           fontWeight: FontWeight.w800,
