@@ -7,11 +7,66 @@ import '../../../core/providers/dynamic_content_provider.dart';
 import '../../../core/widgets/app_bottom_nav.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-class EducationScreen extends ConsumerWidget {
+// Category model — maps display label → keyword used to match article tags
+class _Category {
+  final String label;
+  final String filter; // matches against article['tag']
+
+  const _Category(this.label, this.filter);
+}
+
+class EducationScreen extends ConsumerStatefulWidget {
   const EducationScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<EducationScreen> createState() => _EducationScreenState();
+}
+
+class _EducationScreenState extends ConsumerState<EducationScreen> {
+  // ── Category state ──
+  final List<_Category> _categories = const [
+    _Category('All', ''), // empty string = show all
+    _Category('🌸 Puberty', 'puberty'),
+    _Category('🧼 Hygiene', 'hygiene'),
+    _Category('❌ Myths', 'myths'),
+    _Category('💊 Pain', 'pain'),
+    _Category('🏥 Doctor', 'doctor'),
+  ];
+
+  int _selectedIndex = 0; // 0 = All
+
+  // ── Search state ──
+  final TextEditingController _searchController = TextEditingController();
+  String _searchQuery = '';
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  // Returns true if an article matches the current category + search query
+  bool _matchesFilter(Map<String, dynamic> article) {
+    final category = _categories[_selectedIndex];
+    final tag = (article['tag'] ?? '').toString().toLowerCase();
+    final title = (article['title'] ?? '').toString().toLowerCase();
+    final query = _searchQuery.toLowerCase();
+
+    // Category filter — skip when "All"
+    if (category.filter.isNotEmpty && !tag.contains(category.filter)) {
+      return false;
+    }
+
+    // Search filter
+    if (query.isNotEmpty && !title.contains(query) && !tag.contains(query)) {
+      return false;
+    }
+
+    return true;
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final educationAsync = ref.watch(educationContentProvider);
 
     return Scaffold(
@@ -39,8 +94,17 @@ class EducationScreen extends ConsumerWidget {
                           'No articles found. Admin panel coming soon! 🌸'),
                     );
                   }
+
+                  // Apply category + search filter
+                  final filtered =
+                      articles.where((a) => _matchesFilter(a)).toList();
+
+                  if (filtered.isEmpty) {
+                    return _buildEmptyState();
+                  }
+
                   return Column(
-                    children: articles.asMap().entries.map((entry) {
+                    children: filtered.asMap().entries.map((entry) {
                       final index = entry.key;
                       final article = entry.value;
                       final card = _buildArticleCard(
@@ -51,7 +115,7 @@ class EducationScreen extends ConsumerWidget {
                         _getColorFromHex(article['tagColor'] ?? '#F7A8B8'),
                       );
 
-                      // Lock articles after the first two
+                      // Lock articles after the first two — same rule as original
                       if (index >= 2) {
                         return PremiumGate(
                           isOverlay: true,
@@ -63,13 +127,13 @@ class EducationScreen extends ConsumerWidget {
                     }).toList(),
                   );
                 },
-                loading: () => Center(child: CircularProgressIndicator()),
+                loading: () => const Center(child: CircularProgressIndicator()),
                 error: (err, stack) => Text('Error loading education: $err'),
               ),
               const SizedBox(height: 12),
               Center(
                 child: Padding(
-                  padding: EdgeInsets.symmetric(vertical: 12),
+                  padding: const EdgeInsets.symmetric(vertical: 12),
                   child: Text(
                     '🌍 30+ languages supported',
                     style: GoogleFonts.nunito(
@@ -89,20 +153,29 @@ class EducationScreen extends ConsumerWidget {
     );
   }
 
-  Color _getColorFromHex(String hexColor) {
-    hexColor = hexColor.replaceAll('#', '');
-    if (hexColor.length == 6) {
-      hexColor = 'FF$hexColor';
-    }
-    return Color(int.parse(hexColor, radix: 16));
-  }
+  // ─────────────────────────────────────────────────────────────
+  //  WIDGETS
+  // ─────────────────────────────────────────────────────────────
 
   Widget _buildSearchBox() {
     return TextField(
+      controller: _searchController,
+      onChanged: (val) => setState(() => _searchQuery = val),
       decoration: InputDecoration(
-        hintText: 'Search...',
+        hintText: 'Search articles...',
         prefixIcon:
             const Icon(Icons.search, color: AppColors.textMuted, size: 20),
+        // Clear button when there's a query
+        suffixIcon: _searchQuery.isNotEmpty
+            ? GestureDetector(
+                onTap: () {
+                  _searchController.clear();
+                  setState(() => _searchQuery = '');
+                },
+                child: const Icon(Icons.close,
+                    color: AppColors.textMuted, size: 18),
+              )
+            : null,
         filled: true,
         fillColor: Colors.white,
         contentPadding: const EdgeInsets.symmetric(vertical: 12),
@@ -114,46 +187,105 @@ class EducationScreen extends ConsumerWidget {
           borderRadius: BorderRadius.circular(16),
           borderSide: const BorderSide(color: AppColors.border, width: 1.5),
         ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide:
+              const BorderSide(color: AppColors.primaryRose, width: 1.5),
+        ),
       ),
     );
   }
 
   Widget _buildCategoryScroll() {
-    final categories = [
-      'All',
-      '🌸 Puberty',
-      '🧼 Hygiene',
-      '❌ Myths',
-      '💊 Pain',
-      '🏥 Doctor'
-    ];
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       child: Row(
-        children: categories.map((cat) {
-          final isFirst = cat == 'All';
-          return Container(
-            margin: const EdgeInsets.only(right: 8),
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            decoration: BoxDecoration(
-              color: isFirst ? AppColors.primaryRose : Colors.white,
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(
-                  color: isFirst ? AppColors.primaryRose : AppColors.border,
-                  width: 1.5),
-            ),
-            child: Text(
-              cat,
-              style: GoogleFonts.nunito(
-                fontSize: 12,
-                fontWeight: FontWeight.w800,
-                color: isFirst ? Colors.white : AppColors.textDark,
+        children: _categories.asMap().entries.map((entry) {
+          final index = entry.key;
+          final cat = entry.value;
+          final isSelected = index == _selectedIndex;
+
+          return GestureDetector(
+            onTap: () => setState(() => _selectedIndex = index),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              margin: const EdgeInsets.only(right: 8),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              decoration: BoxDecoration(
+                color: isSelected ? AppColors.primaryRose : Colors.white,
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(
+                  color: isSelected ? AppColors.primaryRose : AppColors.border,
+                  width: 1.5,
+                ),
+                // Subtle shadow on active tab
+                boxShadow: isSelected
+                    ? [
+                        BoxShadow(
+                          color: AppColors.primaryRose.withOpacity(0.25),
+                          blurRadius: 8,
+                          offset: const Offset(0, 3),
+                        ),
+                      ]
+                    : null,
+              ),
+              child: Text(
+                cat.label,
+                style: GoogleFonts.nunito(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w800,
+                  color: isSelected ? Colors.white : AppColors.textDark,
+                ),
               ),
             ),
           );
         }).toList(),
       ),
     );
+  }
+
+  // Shown when the active filter returns no results
+  Widget _buildEmptyState() {
+    final cat = _categories[_selectedIndex];
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 40),
+      child: Column(
+        children: [
+          Text(
+            _searchQuery.isNotEmpty ? '🔍' : cat.label.split(' ').first,
+            style: const TextStyle(fontSize: 40),
+          ),
+          const SizedBox(height: 12),
+          Text(
+            _searchQuery.isNotEmpty
+                ? 'No results for "$_searchQuery"'
+                : 'No articles in ${cat.label} yet',
+            textAlign: TextAlign.center,
+            style: GoogleFonts.nunito(
+              fontSize: 14,
+              fontWeight: FontWeight.w700,
+              color: AppColors.textMuted,
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            'Check back soon 🌸',
+            style: GoogleFonts.nunito(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: AppColors.textMuted,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ── Unchanged from original ──
+  Color _getColorFromHex(String hexColor) {
+    hexColor = hexColor.replaceAll('#', '');
+    if (hexColor.length == 6) hexColor = 'FF$hexColor';
+    return Color(int.parse(hexColor, radix: 16));
   }
 
   Widget _buildArticleCard(
@@ -175,9 +307,9 @@ class EducationScreen extends ConsumerWidget {
                 color: AppColors.background,
                 borderRadius: BorderRadius.circular(12)),
             alignment: Alignment.center,
-            child: Text(icon, style: GoogleFonts.nunito(fontSize: 24)),
+            child: Text(icon, style: const TextStyle(fontSize: 24)),
           ),
-          SizedBox(width: 14),
+          const SizedBox(width: 14),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
