@@ -27,6 +27,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     if (profile == null) return;
 
     final nameController = TextEditingController(text: profile.displayName);
+    final currentMode = ref.read(modeProvider);
+    final themeColor = AppColors.getModeColor(currentMode);
 
     final result = await showDialog<String>(
       context: context,
@@ -40,7 +42,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             labelText: 'Display Name',
             labelStyle: GoogleFonts.nunito(color: AppColors.textMid),
             focusedBorder: UnderlineInputBorder(
-                borderSide: BorderSide(color: AppColors.primaryRose)),
+                borderSide: BorderSide(color: themeColor)),
           ),
           autofocus: true,
         ),
@@ -53,7 +55,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             onPressed: () => Navigator.pop(context, nameController.text),
             child: Text('Save',
                 style: GoogleFonts.nunito(
-                    color: AppColors.primaryRose, fontWeight: FontWeight.w800)),
+                    color: themeColor, fontWeight: FontWeight.w800)),
           ),
         ],
       ),
@@ -90,6 +92,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       {'code': 'ar', 'name': 'العربية', 'flag': '🇸🇦'},
     ];
 
+    final currentMode = ref.read(modeProvider);
+    final themeColor = AppColors.getModeColor(currentMode);
+
     await showModalBottomSheet(
       context: context,
       shape: RoundedRectangleBorder(
@@ -111,8 +116,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   title: Text(lang['name']!,
                       style: GoogleFonts.nunito(fontWeight: FontWeight.w700)),
                   trailing: context.locale.languageCode == lang['code']
-                      ? const Icon(Icons.check_circle,
-                          color: AppColors.primaryRose)
+                      ? Icon(Icons.check_circle,
+                          color: themeColor)
                       : null,
                   onTap: () {
                     context.setLocale(Locale(lang['code']!));
@@ -243,6 +248,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     final auth = ref.watch(firebaseAuthProvider);
     final user = auth.currentUser;
     final firestore = ref.watch(firestoreProvider);
+    final currentMode = ref.watch(modeProvider);
+    final themeColor = AppColors.getModeColor(currentMode);
 
     return Scaffold(
       body: SafeArea(
@@ -282,7 +289,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                             children: [
                               IconButton(
                                 icon: const Icon(Icons.arrow_back_ios,
-                                    color: AppColors.textDark, size: 20),
+                                  color: AppColors.textDark, size: 20),
                                 onPressed: () => context.go('/home'),
                               ),
                               Text(
@@ -291,12 +298,12 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                               ),
                               if (_isLoading) ...[
                                 const SizedBox(width: 10),
-                                const SizedBox(
+                                SizedBox(
                                     width: 16,
                                     height: 16,
                                     child: CircularProgressIndicator(
                                         strokeWidth: 2,
-                                        color: AppColors.primaryRose)),
+                                        color: themeColor)),
                               ]
                             ],
                           ),
@@ -305,13 +312,14 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                               profile?.displayName ?? 'Lovely User',
                               user?.isAnonymous == true
                                   ? 'Anonymous Mode'
-                                  : (user?.email ?? 'No Email')),
+                                  : (user?.email ?? 'No Email'),
+                              themeColor),
                           const SizedBox(height: 24),
                           if (!isPremium) ...[
-                            _buildPremiumBanner(),
+                            _buildPremiumBanner(themeColor),
                             const SizedBox(height: 30),
                           ] else ...[
-                            _buildPremiumStatusCard(),
+                            _buildPremiumStatusCard(themeColor),
                             const SizedBox(height: 30),
                           ],
                           _buildSectionTitle('ACCOUNT'),
@@ -375,7 +383,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     );
   }
 
-  Widget _buildProfileHeader(String name, String email) {
+  Widget _buildProfileHeader(String name, String email, Color themeColor) {
     return Center(
       child: Column(
         children: [
@@ -384,11 +392,15 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             height: 80,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              gradient: AppColors.primaryGradient,
+              gradient: LinearGradient(
+                colors: [themeColor.withOpacity(0.7), themeColor],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
               border: Border.all(color: Colors.white, width: 3),
               boxShadow: [
                 BoxShadow(
-                    color: AppColors.primaryRose.withOpacity(0.2),
+                    color: themeColor.withOpacity(0.2),
                     blurRadius: 20,
                     offset: Offset(0, 10)),
               ],
@@ -411,15 +423,19 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     );
   }
 
-  Widget _buildPremiumBanner() {
+  Widget _buildPremiumBanner(Color themeColor) {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        gradient: AppColors.primaryGradient,
+        gradient: LinearGradient(
+          colors: [themeColor.withOpacity(0.7), themeColor],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-              color: AppColors.primaryRose.withOpacity(0.3),
+              color: themeColor.withOpacity(0.3),
               blurRadius: 15,
               offset: Offset(0, 8)),
         ],
@@ -450,7 +466,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             onPressed: () => context.push('/premium'),
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.white,
-              foregroundColor: AppColors.primaryRose,
+              foregroundColor: themeColor,
               elevation: 0,
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12)),
@@ -464,21 +480,21 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     );
   }
 
-  Widget _buildPremiumStatusCard() {
+  Widget _buildPremiumStatusCard(Color themeColor) {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: Color(0xFFFFF9F9),
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-            color: AppColors.primaryRose.withOpacity(0.3), width: 1.5),
+            color: themeColor.withOpacity(0.3), width: 1.5),
       ),
       child: Row(
         children: [
           Container(
             padding: const EdgeInsets.all(10),
-            decoration: const BoxDecoration(
-                color: AppColors.primaryRose, shape: BoxShape.circle),
+            decoration: BoxDecoration(
+                color: themeColor, shape: BoxShape.circle),
             child: const Icon(Icons.star, color: Colors.white, size: 24),
           ),
           const SizedBox(width: 16),

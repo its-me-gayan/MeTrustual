@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../providers/premium_provider.dart';
+import '../providers/mode_provider.dart';
 import '../theme/app_colors.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -20,6 +21,8 @@ class PremiumGate extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isPremium = ref.watch(premiumStatusProvider).value ?? false;
+    final currentMode = ref.watch(modeProvider);
+    final themeColor = AppColors.getModeColor(currentMode);
 
     if (isPremium) return child;
 
@@ -36,7 +39,7 @@ class PremiumGate extends ConsumerWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(Icons.lock_outline, color: AppColors.primaryRose, size: 32),
+              Icon(Icons.lock_outline, color: themeColor, size: 32),
               const SizedBox(height: 8),
               Text(
                 message ?? 'Unlock with Premium',
@@ -58,10 +61,10 @@ class PremiumGate extends ConsumerWidget {
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                 decoration: BoxDecoration(
-                  color: AppColors.primaryRose,
+                  color: themeColor,
                   borderRadius: BorderRadius.circular(25),
                   boxShadow: [
-                    BoxShadow(color: AppColors.primaryRose.withOpacity(0.3), blurRadius: 10, offset: Offset(0, 4)),
+                    BoxShadow(color: themeColor.withOpacity(0.3), blurRadius: 10, offset: Offset(0, 4)),
                   ],
                 ),
                 child: Row(

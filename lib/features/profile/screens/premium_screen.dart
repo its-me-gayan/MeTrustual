@@ -5,6 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/providers/firebase_providers.dart';
+import '../../../core/providers/mode_provider.dart';
 import '../../../core/services/notification_service.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -38,6 +39,8 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen> {
     final emailController = TextEditingController();
     final passwordController = TextEditingController();
     bool isSheetLoading = false;
+    final currentMode = ref.read(modeProvider);
+    final themeColor = AppColors.getModeColor(currentMode);
 
     await showModalBottomSheet(
       context: context,
@@ -80,7 +83,7 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen> {
                     TextSpan(
                       text: 'account',
                       style: GoogleFonts.nunito(
-                          color: AppColors.primaryRose,
+                          color: themeColor,
                           fontStyle: FontStyle.italic),
                     ),
                   ],
@@ -142,7 +145,7 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen> {
                           }
                         },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primaryRose,
+                    backgroundColor: themeColor,
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(20)),
                     elevation: 0,
@@ -216,6 +219,9 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen> {
   }
 
   void _showSuccessDialog() {
+    final currentMode = ref.read(modeProvider);
+    final themeColor = AppColors.getModeColor(currentMode);
+
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -256,7 +262,7 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen> {
                     context.go('/home');
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primaryRose,
+                    backgroundColor: themeColor,
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(20)),
                     elevation: 0,
@@ -275,6 +281,9 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final currentMode = ref.watch(modeProvider);
+    final themeColor = AppColors.getModeColor(currentMode);
+
     return Scaffold(
       backgroundColor: Color(0xFFFFF8F5),
       body: Stack(
@@ -282,7 +291,7 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen> {
           SingleChildScrollView(
             child: Column(
               children: [
-                _buildHeader(),
+                _buildHeader(themeColor),
                 Padding(
                   padding:
                       const EdgeInsets.symmetric(horizontal: 22, vertical: 32),
@@ -305,10 +314,10 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen> {
                               color: AppColors.textDark)),
                       const SizedBox(height: 16),
                       _buildPlanCard('annual', 'Annual', '\$49.99',
-                          'Best Value • \$4.16/mo'),
+                          'Best Value • \$4.16/mo', themeColor),
                       const SizedBox(height: 12),
                       _buildPlanCard(
-                          'monthly', 'Monthly', '\$9.99', 'Cancel anytime'),
+                          'monthly', 'Monthly', '\$9.99', 'Cancel anytime', themeColor),
                       const SizedBox(height: 120),
                     ],
                   ),
@@ -325,11 +334,11 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen> {
               child: ElevatedButton(
                 onPressed: _isLoading ? null : _handleSubscribe,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primaryRose,
+                  backgroundColor: themeColor,
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(22)),
                   elevation: 8,
-                  shadowColor: AppColors.primaryRose.withOpacity(0.4),
+                  shadowColor: themeColor.withOpacity(0.4),
                 ),
                 child: _isLoading
                     ? const SizedBox(
@@ -360,7 +369,7 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen> {
     );
   }
 
-  Widget _buildHeader() {
+  Widget _buildHeader(Color themeColor) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.fromLTRB(22, 80, 22, 40),
@@ -376,7 +385,7 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen> {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-                color: AppColors.primaryRose.withOpacity(0.1),
+                color: themeColor.withOpacity(0.1),
                 shape: BoxShape.circle),
             child: Text('✨', style: GoogleFonts.nunito(fontSize: 32)),
           ),
@@ -395,7 +404,7 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen> {
                 TextSpan(
                     text: 'Premium',
                     style: GoogleFonts.nunito(
-                        color: AppColors.primaryRose,
+                        color: themeColor,
                         fontStyle: FontStyle.italic)),
               ],
             ),
@@ -451,7 +460,7 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen> {
     );
   }
 
-  Widget _buildPlanCard(String id, String title, String price, String sub) {
+  Widget _buildPlanCard(String id, String title, String price, String sub, Color themeColor) {
     final isSelected = _selectedPlan == id;
     return GestureDetector(
       onTap: () => setState(() => _selectedPlan = id),
@@ -461,12 +470,12 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen> {
           color: isSelected ? Colors.white : Colors.transparent,
           borderRadius: BorderRadius.circular(22),
           border: Border.all(
-              color: isSelected ? AppColors.primaryRose : AppColors.border,
+              color: isSelected ? themeColor : AppColors.border,
               width: 2),
           boxShadow: isSelected
               ? [
                   BoxShadow(
-                      color: AppColors.primaryRose.withOpacity(0.1),
+                      color: themeColor.withOpacity(0.1),
                       blurRadius: 10,
                       offset: Offset(0, 4))
                 ]
@@ -481,10 +490,10 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen> {
                 shape: BoxShape.circle,
                 border: Border.all(
                     color: isSelected
-                        ? AppColors.primaryRose
+                        ? themeColor
                         : AppColors.textMuted,
                     width: 2),
-                color: isSelected ? AppColors.primaryRose : Colors.transparent,
+                color: isSelected ? themeColor : Colors.transparent,
               ),
               child: isSelected
                   ? const Icon(Icons.check, color: Colors.white, size: 14)

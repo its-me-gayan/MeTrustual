@@ -12,7 +12,23 @@ class AppColors {
   static const Color textMuted = Color(0xFFD0B0B8);
   static const Color sageGreen = Color(0xFF6A9E6A);
   static const Color lavender = Color(0xFFA880C8);
-  
+
+  // Mode-specific colors
+  static const Color periodRose = Color(0xFFD97B8A);
+  static const Color pregBlue = Color(0xFF4A70B0);
+  static const Color ovulGreen = Color(0xFF5A8E6A);
+
+  static Color getModeColor(String mode) {
+    switch (mode) {
+      case 'preg':
+        return pregBlue;
+      case 'ovul':
+        return ovulGreen;
+      default:
+        return periodRose;
+    }
+  }
+
   // Gradients
   static const LinearGradient primaryGradient = LinearGradient(
     colors: [lightRose, primaryRose],
