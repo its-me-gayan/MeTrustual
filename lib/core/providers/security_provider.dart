@@ -2,10 +2,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:crypto/crypto.dart';
+import 'dart:async';
 import 'dart:convert';
 import '../services/biometric_service.dart';
 import 'firebase_providers.dart';
-import 'app_config_provider.dart'; // 👈 import your new provider
+import 'app_config_provider.dart';
 
 final securityProvider =
     StateNotifierProvider<SecurityNotifier, SecurityState>((ref) {
@@ -21,6 +22,12 @@ class SecurityState {
   final bool isLocked;
   final DateTime? lockUntil;
 
+  // ── True until _initialize() fully completes ────────────────────
+  // The PIN screen must wait for this to flip false before trusting
+  // isLocked. Without it, the provider returns isLocked=false for the
+  // brief async gap on every restart, making lockout bypassable.
+  final bool isInitializing;
+
   SecurityState({
     this.isPinSet = false,
     this.isBiometricAvailable = false,
@@ -29,6 +36,7 @@ class SecurityState {
     this.failedAttempts = 0,
     this.isLocked = false,
     this.lockUntil,
+    this.isInitializing = true, // safe default — locks UI until ready
   });
 
   SecurityState copyWith({
@@ -41,6 +49,7 @@ class SecurityState {
     bool? isLocked,
     DateTime? lockUntil,
     bool clearLockUntil = false,
+    bool? isInitializing,
   }) {
     return SecurityState(
       isPinSet: isPinSet ?? this.isPinSet,
@@ -50,6 +59,7 @@ class SecurityState {
       failedAttempts: failedAttempts ?? this.failedAttempts,
       isLocked: isLocked ?? this.isLocked,
       lockUntil: clearLockUntil ? null : lockUntil ?? this.lockUntil,
+      isInitializing: isInitializing ?? this.isInitializing,
     );
   }
 }
@@ -57,11 +67,11 @@ class SecurityState {
 class SecurityNotifier extends StateNotifier<SecurityState> {
   final Ref _ref;
 
-  // ── SharedPreferences keys ──────────────────────────────────
+  // ── SharedPreferences keys ──────────────────────────────────────
   static const String _prefFailedAttempts = 'sec_failed_attempts';
   static const String _prefLockUntil = 'sec_lock_until';
 
-  // ── Hardcoded fallbacks (used only if Firestore config is unavailable) ──
+  // ── Fallbacks if remote config is unavailable ───────────────────
   static const int _fallbackMaxFailedAttempts = 5;
   static const int _fallbackLockoutDurationMinutes = 15;
 
@@ -69,28 +79,29 @@ class SecurityNotifier extends StateNotifier<SecurityState> {
     _initialize();
   }
 
-  // ── Dynamic config getters ──────────────────────────────────
+  // ── Expose a future so router/splash can await full init ────────
+  // Usage: await ref.read(securityProvider.notifier).initializationComplete;
+  late final Future<void> initializationComplete = _initialize();
 
-  /// Max failed attempts before lockout — pulled from globalAppConfig.
-  /// Falls back to [_fallbackMaxFailedAttempts] if config is unavailable.
+  // ── Dynamic config getters ──────────────────────────────────────
   int get _maxFailedAttempts {
     return _ref.read(appConfigProvider).valueOrNull?.maxFailedAttempts ??
         _fallbackMaxFailedAttempts;
   }
 
-  /// Lockout duration — pulled from globalAppConfig.
-  /// Falls back to [_fallbackLockoutDurationMinutes] if config is unavailable.
   Duration get _lockoutDuration {
     final mins =
         _ref.read(appConfigProvider).valueOrNull?.lockoutDurationMinutes ??
             _fallbackLockoutDurationMinutes;
-    return Duration(minutes: mins);
+    // Guard: a zero/negative value from Remote Config would create an
+    // instantly-expired lockUntil → isLocked=true but lockUntil in the
+    // past → the countdown shows 00:00 and lockout is bypassable.
+    final safeMins = (mins > 0) ? mins : _fallbackLockoutDurationMinutes;
+    return Duration(minutes: safeMins);
   }
 
-  // ── Init — restore lockout state on every app start ────────
+  // ── Init — restore lockout state on every app start ─────────────
   Future<void> _initialize() async {
-    // Warm up the remote config cache first so _maxFailedAttempts and
-    // _lockoutDuration are ready before any PIN verification happens.
     await _ref
         .read(appConfigProvider.future)
         .catchError((_) => const AppConfig());
@@ -98,7 +109,7 @@ class SecurityNotifier extends StateNotifier<SecurityState> {
     final isBioAvailable = await BiometricService.isBiometricAvailable();
     final isPinSet = await BiometricService.isBiometricSetUp();
 
-    // Step 1 — check SharedPreferences first (fast, local)
+    // ── Step 1: SharedPreferences (fast, works offline) ────────────
     final prefs = await SharedPreferences.getInstance();
     final savedAttempts = prefs.getInt(_prefFailedAttempts) ?? 0;
     final lockUntilMs = prefs.getInt(_prefLockUntil);
@@ -111,18 +122,19 @@ class SecurityNotifier extends StateNotifier<SecurityState> {
       lockUntil = DateTime.fromMillisecondsSinceEpoch(lockUntilMs);
       if (DateTime.now().isBefore(lockUntil)) {
         isLocked = true;
-        final remaining = lockUntil.difference(DateTime.now());
-        final mins = remaining.inMinutes;
-        final secs = remaining.inSeconds % 60;
-        errorMessage = 'Try again in ${mins > 0 ? '$mins min' : '${secs}s'}.';
+        errorMessage = _remainingMessage(lockUntil);
       } else {
-        // Expired locally — clear
+        // Expired — clear both stores
         await _clearLockout();
         lockUntil = null;
       }
     }
 
-    // Step 2 — if not locked locally, check Firestore (covers reinstall)
+    // ── Step 2: Firestore (catches reinstall / cleared app data) ───
+    // Reads from the `security` MAP FIELD on the root user document,
+    // which matches the existing Firestore structure:
+    //   users/{uid}.security.failedAttempts
+    //   users/{uid}.security.lockUntil
     if (!isLocked) {
       try {
         final auth = _ref.read(firebaseAuthProvider);
@@ -139,16 +151,11 @@ class SecurityNotifier extends StateNotifier<SecurityState> {
             if (cloudLockUntil != null) {
               final lockDate = cloudLockUntil.toDate();
               if (DateTime.now().isBefore(lockDate)) {
-                // Still locked in cloud — restore
                 isLocked = true;
                 lockUntil = lockDate;
-                final remaining = lockDate.difference(DateTime.now());
-                final mins = remaining.inMinutes;
-                final secs = remaining.inSeconds % 60;
-                errorMessage =
-                    'Try again in ${mins > 0 ? '$mins min' : '${secs}s'}.';
+                errorMessage = _remainingMessage(lockDate);
 
-                // Sync back to local prefs
+                // Mirror to local prefs for next offline launch
                 await prefs.setInt(_prefFailedAttempts, cloudAttempts);
                 await prefs.setInt(
                     _prefLockUntil, lockDate.millisecondsSinceEpoch);
@@ -156,11 +163,13 @@ class SecurityNotifier extends StateNotifier<SecurityState> {
             }
           }
         }
-      } catch (e) {
-        // Silently fail — local state is the fallback
+      } catch (_) {
+        // Network failure — local prefs remain the source of truth
       }
     }
 
+    // ── Flip isInitializing → false atomically with real state ──────
+    // Nothing that reads isLocked is trustworthy before this point.
     state = state.copyWith(
       isBiometricAvailable: isBioAvailable,
       isPinSet: isPinSet,
@@ -168,10 +177,21 @@ class SecurityNotifier extends StateNotifier<SecurityState> {
       isLocked: isLocked,
       lockUntil: lockUntil,
       errorMessage: errorMessage,
+      isInitializing: false, // ← unlocks the UI
     );
   }
 
-  // ── Persist lockout to SharedPreferences + Firestore ───────
+  // ── Helpers ─────────────────────────────────────────────────────
+  String _remainingMessage(DateTime lockUntil) {
+    final remaining = lockUntil.difference(DateTime.now());
+    final mins = remaining.inMinutes;
+    final secs = remaining.inSeconds % 60;
+    return 'Try again in ${mins > 0 ? '$mins min' : '${secs}s'}.';
+  }
+
+  // ── Persist lockout ─────────────────────────────────────────────
+  // Writes to SharedPreferences AND to users/{uid}.security (map field)
+  // — the exact same structure visible in your Firestore console.
   Future<void> _persistLockout(int attempts, DateTime? lockUntil) async {
     // Local
     final prefs = await SharedPreferences.getInstance();
@@ -182,7 +202,7 @@ class SecurityNotifier extends StateNotifier<SecurityState> {
       await prefs.remove(_prefLockUntil);
     }
 
-    // Cloud
+    // Cloud — map field on root user doc (matches existing structure)
     try {
       final auth = _ref.read(firebaseAuthProvider);
       final uid = auth.currentUser?.uid;
@@ -197,12 +217,12 @@ class SecurityNotifier extends StateNotifier<SecurityState> {
           }
         }, SetOptions(merge: true));
       }
-    } catch (e) {
-      // Silently fail
+    } catch (_) {
+      // Local is the fallback
     }
   }
 
-  // ── Clear lockout from SharedPreferences + Firestore ───────
+  // ── Clear lockout ────────────────────────────────────────────────
   Future<void> _clearLockout() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(_prefFailedAttempts);
@@ -221,25 +241,19 @@ class SecurityNotifier extends StateNotifier<SecurityState> {
           }
         }, SetOptions(merge: true));
       }
-    } catch (e) {
-      // Silently fail
-    }
+    } catch (_) {}
   }
 
-  // ── Check if currently locked ───────────────────────────────
+  // ── Check + update lockout ───────────────────────────────────────
   bool _checkAndUpdateLockout() {
     if (state.isLocked && state.lockUntil != null) {
       if (DateTime.now().isBefore(state.lockUntil!)) {
-        final remaining = state.lockUntil!.difference(DateTime.now());
-        final mins = remaining.inMinutes;
-        final secs = remaining.inSeconds % 60;
         state = state.copyWith(
           errorMessage:
-              'Too many failed attempts. Try again in ${mins > 0 ? '$mins min' : '${secs}s'}.',
+              'Too many failed attempts. ${_remainingMessage(state.lockUntil!)}',
         );
         return true;
       } else {
-        // Expired — unlock
         _clearLockout();
         state = state.copyWith(
           isLocked: false,
@@ -253,10 +267,10 @@ class SecurityNotifier extends StateNotifier<SecurityState> {
     return false;
   }
 
-  // ── Handle a failed attempt ─────────────────────────────────
+  // ── Handle failed attempt ────────────────────────────────────────
   Future<void> _handleFailedAttempt() async {
     final newAttempts = state.failedAttempts + 1;
-    final maxAttempts = _maxFailedAttempts; // 👈 dynamic from globalAppConfig
+    final maxAttempts = _maxFailedAttempts;
     final isNowLocked = newAttempts >= maxAttempts;
     final lockUntil = isNowLocked ? DateTime.now().add(_lockoutDuration) : null;
 
@@ -272,11 +286,10 @@ class SecurityNotifier extends StateNotifier<SecurityState> {
     );
   }
 
-  // ── PIN hashing helpers ─────────────────────────────────────
+  // ── PIN hashing ──────────────────────────────────────────────────
   Map<String, String> _generatePinHash(String pin) {
     final salt = _generateSalt();
-    final hash = _hashPin(pin, salt);
-    return {'hash': hash, 'salt': salt};
+    return {'hash': _hashPin(pin, salt), 'salt': salt};
   }
 
   String _generateSalt() => DateTime.now().millisecondsSinceEpoch.toString();
@@ -284,7 +297,7 @@ class SecurityNotifier extends StateNotifier<SecurityState> {
   String _hashPin(String pin, String salt) =>
       sha256.convert(utf8.encode('$pin$salt')).toString();
 
-  // ── Set PIN ─────────────────────────────────────────────────
+  // ── Set PIN ──────────────────────────────────────────────────────
   Future<bool> setPinForNewUser(String pin, String confirmPin) async {
     try {
       if (pin.isEmpty || pin.length < 4) {
@@ -315,6 +328,7 @@ class SecurityNotifier extends StateNotifier<SecurityState> {
     }
   }
 
+  // Writes pinHash + pinSalt to the root user doc (matches original structure)
   Future<void> _syncPinToCloud(String pin, String uid) async {
     try {
       final firestore = _ref.read(firestoreProvider);
@@ -330,12 +344,12 @@ class SecurityNotifier extends StateNotifier<SecurityState> {
     }
   }
 
-  // ── Verify PIN with cloud fallback ──────────────────────────
+  // ── Verify PIN ───────────────────────────────────────────────────
   Future<bool> verifyPinWithCloudFallback(String pin) async {
     try {
       if (_checkAndUpdateLockout()) return false;
 
-      // Local check first
+      // Local first
       final localVerified = await BiometricService.verifyWithPin(pin);
       if (localVerified) {
         await _clearLockout();
@@ -344,7 +358,7 @@ class SecurityNotifier extends StateNotifier<SecurityState> {
         return true;
       }
 
-      // Cloud fallback
+      // Cloud fallback — reads pinHash/pinSalt from root user doc
       final auth = _ref.read(firebaseAuthProvider);
       if (auth.currentUser != null && !auth.currentUser!.isAnonymous) {
         final firestore = _ref.read(firestoreProvider);
@@ -356,13 +370,13 @@ class SecurityNotifier extends StateNotifier<SecurityState> {
         if (doc.exists) {
           final cloudHash = doc.data()?['pinHash'] as String?;
           final cloudSalt = doc.data()?['pinSalt'] as String?;
-          if (cloudHash != null && cloudSalt != null) {
-            if (_hashPin(pin, cloudSalt) == cloudHash) {
-              await _clearLockout();
-              state = state.copyWith(
-                  isVerified: true, failedAttempts: 0, clearError: true);
-              return true;
-            }
+          if (cloudHash != null &&
+              cloudSalt != null &&
+              _hashPin(pin, cloudSalt) == cloudHash) {
+            await _clearLockout();
+            state = state.copyWith(
+                isVerified: true, failedAttempts: 0, clearError: true);
+            return true;
           }
         }
       }
@@ -375,13 +389,12 @@ class SecurityNotifier extends StateNotifier<SecurityState> {
     }
   }
 
-  // ── Local only verify ───────────────────────────────────────
   Future<bool> verifyPinLocally(String pin) async {
     if (_checkAndUpdateLockout()) return false;
     return verifyPinWithCloudFallback(pin);
   }
 
-  // ── Reset PIN ───────────────────────────────────────────────
+  // ── Reset PIN ────────────────────────────────────────────────────
   Future<bool> resetPinForAuthenticatedUser(
       String newPin, String confirmPin) async {
     try {
@@ -412,6 +425,22 @@ class SecurityNotifier extends StateNotifier<SecurityState> {
     } catch (e) {
       state = state.copyWith(errorMessage: 'Error resetting PIN: $e');
       return false;
+    }
+  }
+
+  // ── Called every second by the PIN screen timer ────────────────
+  // If the lockout window has passed, clears state so the UI
+  // re-enables immediately without requiring an app restart.
+  void checkLockoutExpiry() {
+    if (!state.isLocked || state.lockUntil == null) return;
+    if (DateTime.now().isAfter(state.lockUntil!)) {
+      _clearLockout();
+      state = state.copyWith(
+        isLocked: false,
+        failedAttempts: 0,
+        clearLockUntil: true,
+        clearError: true,
+      );
     }
   }
 

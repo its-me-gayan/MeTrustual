@@ -26,6 +26,19 @@ Color modeColor(String mode) {
   }
 }
 
+// ── Shared background gradient (matches PIN screen) ──────────
+const _homeBackgroundGradient = LinearGradient(
+  begin: Alignment.topCenter,
+  end: Alignment.bottomCenter,
+  colors: [
+    Color(0xFFFFF0F5), // soft petal pink at top
+    Color(0xFFFDE8F0), // warm rose mid
+    Color(0xFFFAF0F8), // blush lavender
+    Color(0xFFFFF6F0), // warm cream at bottom
+  ],
+  stops: [0.0, 0.35, 0.65, 1.0],
+);
+
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
 
@@ -92,135 +105,186 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final themeColor = modeColor(currentMode);
 
     return Scaffold(
+      // ── Transparent so our gradient shows through ──
+      backgroundColor: Colors.transparent,
       extendBody: true,
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(22, 20, 22, 120),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+      body: Container(
+        width: double.infinity,
+        constraints: BoxConstraints(
+          minHeight: MediaQuery.of(context).size.height,
+        ),
+        decoration: const BoxDecoration(gradient: _homeBackgroundGradient),
+        child: Stack(
+          children: [
+            // ── Ambient glow orbs (mirrors PIN screen) ──
+            Positioned(
+              top: -60,
+              right: -70,
+              child: _GlowOrb(
+                size: 280,
+                color: const Color(0xFFE8A84A),
+                opacity: 0.05,
+              ),
+            ),
+            Positioned(
+              bottom: 80,
+              left: -60,
+              child: _GlowOrb(
+                size: 260,
+                color: const Color(0xFFD4639A),
+                opacity: 0.06,
+              ),
+            ),
+            Positioned(
+              top: MediaQuery.of(context).size.height * 0.4,
+              right: -40,
+              child: _GlowOrb(
+                size: 180,
+                color: const Color(0xFF9B7FC7),
+                opacity: 0.04,
+              ),
+            ),
+
+            // ── Main scrollable content (unchanged) ──
+            SafeArea(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.fromLTRB(22, 20, 22, 120),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(
-                          'Good morning ☀️',
-                          style: GoogleFonts.nunito(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w700,
-                            color: AppColors.textMuted,
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Good morning ☀️',
+                                style: GoogleFonts.nunito(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w700,
+                                  color: AppColors.textMuted,
+                                ),
+                              ),
+                              GestureDetector(
+                                onLongPress: () {
+                                  _nicknameController.text = _displayName;
+                                  setState(() => _isEditingNickname = true);
+                                },
+                                child: Text(
+                                  '$_displayName 👋',
+                                  style: GoogleFonts.nunito(
+                                    fontSize: 24,
+                                    fontWeight: FontWeight.w900,
+                                    color: AppColors.textDark,
+                                  ),
+                                ),
+                              ),
+                              if (_isEditingNickname)
+                                Padding(
+                                  padding: const EdgeInsets.only(top: 8),
+                                  child: Row(
+                                    children: [
+                                      Expanded(
+                                        child: Container(
+                                          decoration: BoxDecoration(
+                                            color: Colors.white,
+                                            borderRadius:
+                                                BorderRadius.circular(12),
+                                            border: Border.all(
+                                                color: AppColors.border,
+                                                width: 1.5),
+                                          ),
+                                          child: TextField(
+                                            controller: _nicknameController,
+                                            autofocus: true,
+                                            style: GoogleFonts.nunito(
+                                              fontSize: 14,
+                                              fontWeight: FontWeight.w700,
+                                              color: AppColors.textDark,
+                                            ),
+                                            decoration: InputDecoration(
+                                              hintText: 'Enter nickname',
+                                              hintStyle: GoogleFonts.nunito(
+                                                fontSize: 14,
+                                                color: AppColors.textMuted,
+                                              ),
+                                              border: InputBorder.none,
+                                              contentPadding:
+                                                  const EdgeInsets.symmetric(
+                                                      horizontal: 12,
+                                                      vertical: 8),
+                                            ),
+                                            onSubmitted: _saveNickname,
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(width: 8),
+                                      GestureDetector(
+                                        onTap: () => _saveNickname(
+                                            _nicknameController.text.trim()),
+                                        child: Container(
+                                          padding: const EdgeInsets.all(10),
+                                          decoration: BoxDecoration(
+                                            color: themeColor,
+                                            borderRadius:
+                                                BorderRadius.circular(12),
+                                          ),
+                                          child: const Icon(Icons.check,
+                                              color: Colors.white, size: 20),
+                                        ),
+                                      ),
+                                      const SizedBox(width: 4),
+                                      GestureDetector(
+                                        onTap: () => setState(
+                                            () => _isEditingNickname = false),
+                                        child: Container(
+                                          padding: const EdgeInsets.all(10),
+                                          decoration: BoxDecoration(
+                                            color: AppColors.textMuted
+                                                .withOpacity(0.2),
+                                            borderRadius:
+                                                BorderRadius.circular(12),
+                                          ),
+                                          child: const Icon(Icons.close,
+                                              color: AppColors.textDark,
+                                              size: 20),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                            ],
                           ),
                         ),
                         GestureDetector(
-                          onLongPress: () {
-                            _nicknameController.text = _displayName;
-                            setState(() => _isEditingNickname = true);
-                          },
-                          child: Text(
-                            '$_displayName 👋',
-                            style: GoogleFonts.nunito(
-                              fontSize: 24,
-                              fontWeight: FontWeight.w900,
-                              color: AppColors.textDark,
+                          onTap: () => context.go('/profile'),
+                          child: Container(
+                            width: 44,
+                            height: 44,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              // Slight white tint to sit nicely on gradient
+                              color: Colors.white.withOpacity(0.85),
+                              border: Border.all(
+                                  color: AppColors.border, width: 1.5),
                             ),
+                            child: const Icon(Icons.person_outline,
+                                color: AppColors.textMid),
                           ),
                         ),
-                        if (_isEditingNickname)
-                          Padding(
-                            padding: const EdgeInsets.only(top: 8),
-                            child: Row(
-                              children: [
-                                Expanded(
-                                  child: Container(
-                                    decoration: BoxDecoration(
-                                      color: Colors.white,
-                                      borderRadius: BorderRadius.circular(12),
-                                      border: Border.all(
-                                          color: AppColors.border, width: 1.5),
-                                    ),
-                                    child: TextField(
-                                      controller: _nicknameController,
-                                      autofocus: true,
-                                      style: GoogleFonts.nunito(
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.w700,
-                                        color: AppColors.textDark,
-                                      ),
-                                      decoration: InputDecoration(
-                                        hintText: 'Enter nickname',
-                                        hintStyle: GoogleFonts.nunito(
-                                          fontSize: 14,
-                                          color: AppColors.textMuted,
-                                        ),
-                                        border: InputBorder.none,
-                                        contentPadding:
-                                            const EdgeInsets.symmetric(
-                                                horizontal: 12, vertical: 8),
-                                      ),
-                                      onSubmitted: _saveNickname,
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(width: 8),
-                                GestureDetector(
-                                  onTap: () => _saveNickname(
-                                      _nicknameController.text.trim()),
-                                  child: Container(
-                                    padding: const EdgeInsets.all(10),
-                                    decoration: BoxDecoration(
-                                      color: themeColor,
-                                      borderRadius: BorderRadius.circular(12),
-                                    ),
-                                    child: const Icon(Icons.check,
-                                        color: Colors.white, size: 20),
-                                  ),
-                                ),
-                                const SizedBox(width: 4),
-                                GestureDetector(
-                                  onTap: () => setState(
-                                      () => _isEditingNickname = false),
-                                  child: Container(
-                                    padding: const EdgeInsets.all(10),
-                                    decoration: BoxDecoration(
-                                      color:
-                                          AppColors.textMuted.withOpacity(0.2),
-                                      borderRadius: BorderRadius.circular(12),
-                                    ),
-                                    child: const Icon(Icons.close,
-                                        color: AppColors.textDark, size: 20),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
                       ],
                     ),
-                  ),
-                  GestureDetector(
-                    onTap: () => context.go('/profile'),
-                    child: Container(
-                      width: 44,
-                      height: 44,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: Colors.white,
-                        border: Border.all(color: AppColors.border, width: 1.5),
-                      ),
-                      child: const Icon(Icons.person_outline,
-                          color: AppColors.textMid),
-                    ),
-                  ),
-                ],
+                    const SizedBox(height: 30),
+                    _buildModeSpecificContent(currentMode, homeData),
+                    const SizedBox(height: 30),
+                    _buildSwitchModeCard(currentMode),
+                  ],
+                ),
               ),
-              const SizedBox(height: 30),
-              _buildModeSpecificContent(currentMode, homeData),
-              const SizedBox(height: 30),
-              _buildSwitchModeCard(currentMode),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
       bottomNavigationBar:
@@ -386,7 +450,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 12),
         decoration: BoxDecoration(
-          color: Colors.white,
+          // Slightly translucent white so gradient peeks through
+          color: Colors.white.withOpacity(0.88),
           borderRadius: BorderRadius.circular(18),
           border: Border.all(color: AppColors.border, width: 1.5),
         ),
@@ -420,7 +485,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     return Container(
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Colors.white.withOpacity(0.88),
         borderRadius: BorderRadius.circular(22),
         border: Border.all(color: AppColors.border, width: 1.5),
         boxShadow: [
@@ -467,7 +532,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     return Container(
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Colors.white.withOpacity(0.88),
         borderRadius: BorderRadius.circular(22),
         border: Border.all(color: AppColors.border, width: 1.5),
       ),
@@ -568,7 +633,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Colors.white.withOpacity(0.88),
         borderRadius: BorderRadius.circular(24),
         border: Border.all(color: AppColors.border, width: 1.5),
       ),
@@ -638,5 +703,37 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   Future<void> _selectMode(String mode) async {
     await ref.read(modeProvider.notifier).resetJourney();
     if (mounted) context.go('/journey/$mode');
+  }
+}
+
+// ═══════════════════════════════════════════════════════
+//  PRIVATE: Ambient glow orb (mirrors PIN screen's GlowOrb)
+// ═══════════════════════════════════════════════════════
+class _GlowOrb extends StatelessWidget {
+  final double size;
+  final Color color;
+  final double opacity;
+
+  const _GlowOrb({
+    required this.size,
+    required this.color,
+    required this.opacity,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        gradient: RadialGradient(
+          colors: [
+            color.withOpacity(opacity),
+            color.withOpacity(0),
+          ],
+        ),
+      ),
+    );
   }
 }
