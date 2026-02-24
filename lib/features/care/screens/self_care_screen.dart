@@ -630,7 +630,7 @@ class _SelfCareScreenState extends ConsumerState<SelfCareScreen> {
     final ritualsAsync = ref.watch(ritualListProvider(phase));
     // Stream today's completions from Firebase (real-time)
     final completionsAsync = ref.watch(todayRitualCompletionsProvider);
-    final completedIndices = completionsAsync.valueOrNull?[phase] ?? {};
+    final completedIndices = completionsAsync.valueOrNull?[phase] ?? <int>{};
 
     return ritualsAsync.when(
       data: (rituals) {
