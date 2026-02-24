@@ -176,3 +176,39 @@ final phasesForModeProvider = StreamProvider<List<Map<String, dynamic>>>((ref) {
     return _parseDocs(docs);
   });
 });
+
+// ── Today's ritual completions provider ─────────────────────────
+// Streams users/{uid}/ritual_completions/{YYYY-MM-DD}
+// Returns Map<phase, Set<int>> — e.g. {"Early": {0, 2}}
+// Used by the main screen ritual tiles to show completion badges.
+
+String _todayDocKey() {
+  final n = DateTime.now();
+  return '${n.year}-${n.month.toString().padLeft(2, '0')}-${n.day.toString().padLeft(2, '0')}';
+}
+
+final todayRitualCompletionsProvider =
+    StreamProvider<Map<String, Set<int>>>((ref) {
+  final auth = ref.watch(firebaseAuthProvider);
+  final uid = auth.currentUser?.uid;
+  if (uid == null) return Stream.value({});
+
+  final firestore = ref.watch(firestoreProvider);
+  return firestore
+      .collection('users')
+      .doc(uid)
+      .collection('ritual_completions')
+      .doc(_todayDocKey())
+      .snapshots()
+      .map((snap) {
+    if (!snap.exists) return <String, Set<int>>{};
+    final data = snap.data() ?? {};
+    final result = <String, Set<int>>{};
+    for (final entry in data.entries) {
+      if (entry.value is List) {
+        result[entry.key] = (entry.value as List).whereType<int>().toSet();
+      }
+    }
+    return result;
+  });
+});

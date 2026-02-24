@@ -8,7 +8,7 @@ import '../../../core/services/affirmation_service.dart';
 import 'package:go_router/go_router.dart';
 import 'dart:async';
 import '../providers/self_care_provider.dart';
-import 'ritual_overlay.dart';
+import 'ritual_overlay.dart'; // ← new separate file
 
 class SelfCareScreen extends ConsumerStatefulWidget {
   const SelfCareScreen({super.key});
@@ -32,16 +32,13 @@ class _SelfCareScreenState extends ConsumerState<SelfCareScreen> {
     final currentMode = ref.read(modeProvider);
     final phase = _selectedPhase ?? _getDefaultPhase(currentMode);
 
-    setState(() {
-      _loadingAffirmation = true;
-    });
+    setState(() => _loadingAffirmation = true);
 
     try {
       final affirmation = await AffirmationService.getAffirmationOfTheDay(
         profile: currentMode,
         phase: phase,
       );
-
       if (mounted) {
         setState(() {
           _aiAffirmation = affirmation;
@@ -49,12 +46,7 @@ class _SelfCareScreenState extends ConsumerState<SelfCareScreen> {
         });
       }
     } catch (e) {
-      print('Error loading affirmation: $e');
-      if (mounted) {
-        setState(() {
-          _loadingAffirmation = false;
-        });
-      }
+      if (mounted) setState(() => _loadingAffirmation = false);
     }
   }
 
@@ -189,7 +181,7 @@ class _SelfCareScreenState extends ConsumerState<SelfCareScreen> {
     return 'Early';
   }
 
-  // ── Generic "no data" widgets ──────────────────────────────────────────────
+  // ── No-data widgets ────────────────────────────────────────────
 
   Widget _buildNoDataChip(String message) {
     return Container(
@@ -237,7 +229,7 @@ class _SelfCareScreenState extends ConsumerState<SelfCareScreen> {
     );
   }
 
-  // ── Phase strip ────────────────────────────────────────────────────────────
+  // ── Phase strip ────────────────────────────────────────────────
 
   Widget _buildPhaseStrip(List<Map<String, dynamic>> phases, Color color) {
     return SingleChildScrollView(
@@ -247,9 +239,7 @@ class _SelfCareScreenState extends ConsumerState<SelfCareScreen> {
           final isActive = _selectedPhase == p['key'];
           return GestureDetector(
             onTap: () {
-              setState(() {
-                _selectedPhase = p['key'];
-              });
+              setState(() => _selectedPhase = p['key']);
               _loadAffirmation();
             },
             child: Container(
@@ -304,11 +294,10 @@ class _SelfCareScreenState extends ConsumerState<SelfCareScreen> {
     );
   }
 
-  // ── Care hero ──────────────────────────────────────────────────────────────
+  // ── Care hero ──────────────────────────────────────────────────
 
   Widget _buildCareHero(String currentMode, Color color, String selectedPhase) {
     final phaseDataAsync = ref.watch(phaseDataProvider(selectedPhase));
-
     return phaseDataAsync.when(
       data: (data) {
         if (data.isEmpty)
@@ -411,32 +400,32 @@ class _SelfCareScreenState extends ConsumerState<SelfCareScreen> {
             width: 100,
             height: 20,
             decoration: BoxDecoration(
-              color: Colors.grey[300],
-              borderRadius: BorderRadius.circular(10),
-            ),
+                color: Colors.grey[300],
+                borderRadius: BorderRadius.circular(10)),
           ),
           const SizedBox(height: 16),
           Container(
             width: 60,
             height: 60,
-            decoration: BoxDecoration(
-              color: Colors.grey[300],
-              shape: BoxShape.circle,
-            ),
+            decoration:
+                BoxDecoration(color: Colors.grey[300], shape: BoxShape.circle),
           ),
           const SizedBox(height: 16),
           Container(
             width: 150,
             height: 24,
             decoration: BoxDecoration(
-              color: Colors.grey[300],
-              borderRadius: BorderRadius.circular(12),
-            ),
+                color: Colors.grey[300],
+                borderRadius: BorderRadius.circular(12)),
           ),
         ],
       ),
     );
   }
+
+  // ── _startRitual ───────────────────────────────────────────────
+  // ⚠️  FIXED: now passes `phase: phase` to RitualOverlay so Firebase
+  //    saves under the correct key.
 
   void _startRitual(String phase) {
     final currentMode = ref.read(modeProvider);
@@ -454,11 +443,11 @@ class _SelfCareScreenState extends ConsumerState<SelfCareScreen> {
             context: context,
             isScrollControlled: true,
             backgroundColor: Colors.transparent,
-            // Change to:
             builder: (context) => RitualOverlay(
               rituals: rituals,
               color: color,
-              phase: phase, // ← add this
+              phase:
+                  phase, // ← FIXED: was missing, caused Firebase to save under '' key
             ),
           );
         } else {
@@ -477,7 +466,7 @@ class _SelfCareScreenState extends ConsumerState<SelfCareScreen> {
     );
   }
 
-  // ── Affirmation card ───────────────────────────────────────────────────────
+  // ── Affirmation card ───────────────────────────────────────────
 
   Widget _buildAffirmationCard(Color color) {
     return Container(
@@ -545,7 +534,7 @@ class _SelfCareScreenState extends ConsumerState<SelfCareScreen> {
     );
   }
 
-  // ── Breathe card ───────────────────────────────────────────────────────────
+  // ── Breathe card ───────────────────────────────────────────────
 
   Widget _buildBreatheCard(Color color) {
     return Container(
@@ -566,30 +555,23 @@ class _SelfCareScreenState extends ConsumerState<SelfCareScreen> {
               shape: BoxShape.circle,
             ),
             child: const Center(
-              child: Text('🌬️', style: TextStyle(fontSize: 24)),
-            ),
+                child: Text('🌬️', style: TextStyle(fontSize: 24))),
           ),
           const SizedBox(width: 16),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  'Breathe with Soluna',
-                  style: GoogleFonts.nunito(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w900,
-                    color: AppColors.textDark,
-                  ),
-                ),
-                Text(
-                  '1 min session to center yourself',
-                  style: GoogleFonts.nunito(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.textMuted,
-                  ),
-                ),
+                Text('Breathe with Soluna',
+                    style: GoogleFonts.nunito(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w900,
+                        color: AppColors.textDark)),
+                Text('1 min session to center yourself',
+                    style: GoogleFonts.nunito(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.textMuted)),
               ],
             ),
           ),
@@ -600,7 +582,7 @@ class _SelfCareScreenState extends ConsumerState<SelfCareScreen> {
     );
   }
 
-  // ── Habits ─────────────────────────────────────────────────────────────────
+  // ── Habits ─────────────────────────────────────────────────────
 
   Widget _buildHabitRow(Color color) {
     return Row(
@@ -626,114 +608,135 @@ class _SelfCareScreenState extends ConsumerState<SelfCareScreen> {
           children: [
             Text(emoji, style: const TextStyle(fontSize: 20)),
             const SizedBox(height: 8),
-            Text(
-              val,
-              style: GoogleFonts.nunito(
-                fontSize: 14,
-                fontWeight: FontWeight.w900,
-                color: color,
-              ),
-            ),
-            Text(
-              label,
-              style: GoogleFonts.nunito(
-                fontSize: 10,
-                fontWeight: FontWeight.w800,
-                color: AppColors.textMuted,
-              ),
-            ),
+            Text(val,
+                style: GoogleFonts.nunito(
+                    fontSize: 14, fontWeight: FontWeight.w900, color: color)),
+            Text(label,
+                style: GoogleFonts.nunito(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w800,
+                    color: AppColors.textMuted)),
           ],
         ),
       ),
     );
   }
 
-  // ── Rituals section ────────────────────────────────────────────────────────
+  // ── Rituals section ────────────────────────────────────────────
+  // ⚠️  UPDATED: watches todayRitualCompletionsProvider to show
+  //    which rituals are already completed today (from Firebase).
 
   Widget _buildRitualsSection(Color color, String phase) {
     final ritualsAsync = ref.watch(ritualListProvider(phase));
+    // Stream today's completions from Firebase (real-time)
+    final completionsAsync = ref.watch(todayRitualCompletionsProvider);
+    final completedIndices = completionsAsync.valueOrNull?[phase] ?? {};
 
     return ritualsAsync.when(
       data: (rituals) {
-        if (rituals.isEmpty) {
+        if (rituals.isEmpty)
           return _buildNoDataCard('No rituals available for this phase');
-        }
         return Column(
-          children: rituals.map((r) => _buildRitualTile(r, color)).toList(),
+          children: rituals
+              .asMap()
+              .entries
+              .map((e) =>
+                  _buildRitualTile(e.value, color, e.key, completedIndices))
+              .toList(),
         );
       },
       loading: () => Column(
-        children: List.generate(3, (index) {
-          return Container(
-            margin: const EdgeInsets.only(bottom: 10),
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: Colors.grey[100],
-              borderRadius: BorderRadius.circular(20),
-            ),
-            height: 60,
-          );
-        }),
+        children: List.generate(
+            3,
+            (_) => Container(
+                  margin: const EdgeInsets.only(bottom: 10),
+                  height: 60,
+                  decoration: BoxDecoration(
+                    color: Colors.grey[100],
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                )),
       ),
       error: (_, __) => _buildNoDataCard('Could not load rituals'),
     );
   }
 
-  Widget _buildRitualTile(Map<String, String> r, Color color) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 10),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppColors.border, width: 1.5),
-      ),
-      child: Row(
-        children: [
-          Text(r['e']!, style: const TextStyle(fontSize: 24)),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  r['t']!,
-                  style: GoogleFonts.nunito(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w900,
-                    color: AppColors.textDark,
-                  ),
-                ),
-                Text(
-                  r['s']!,
-                  style: GoogleFonts.nunito(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.textMuted,
-                  ),
-                ),
-              ],
-            ),
+  Widget _buildRitualTile(
+    Map<String, String> r,
+    Color color,
+    int index,
+    Set<int> completedIndices,
+  ) {
+    final isDone = completedIndices.contains(index);
+
+    return GestureDetector(
+      // Tapping a tile on the main screen opens the ritual overlay at that phase
+      onTap: () => _startRitual(_selectedPhase!),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 260),
+        margin: const EdgeInsets.only(bottom: 10),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: isDone ? color.withOpacity(0.06) : Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: isDone ? color.withOpacity(0.3) : AppColors.border,
+            width: 1.5,
           ),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-            decoration: BoxDecoration(
-              color: color.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Text(
-              r['dur']!,
-              style: GoogleFonts.nunito(
-                fontSize: 10,
-                fontWeight: FontWeight.w900,
-                color: color,
+        ),
+        child: Row(
+          children: [
+            Text(r['e']!, style: const TextStyle(fontSize: 24)),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    r['t']!,
+                    style: GoogleFonts.nunito(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w900,
+                      color: isDone ? color : AppColors.textDark,
+                      decoration: isDone ? TextDecoration.lineThrough : null,
+                      decorationColor: color.withOpacity(0.5),
+                    ),
+                  ),
+                  Text(
+                    isDone ? 'Completed today ✓' : r['s']!,
+                    style: GoogleFonts.nunito(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                      color:
+                          isDone ? color.withOpacity(0.6) : AppColors.textMuted,
+                    ),
+                  ),
+                ],
               ),
             ),
-          ),
-        ],
+            // Duration chip OR done badge
+            isDone
+                ? Icon(Icons.check_circle_rounded,
+                    size: 22, color: color.withOpacity(0.7))
+                : Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: color.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text(
+                      r['dur']!,
+                      style: GoogleFonts.nunito(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w900,
+                        color: color,
+                      ),
+                    ),
+                  ),
+          ],
+        ),
       ),
     );
   }
 }
-
-// ── Ritual overlay (unchanged logic, no fallback data) ─────────────────────

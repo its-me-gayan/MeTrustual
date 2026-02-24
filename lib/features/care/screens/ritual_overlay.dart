@@ -1,6 +1,21 @@
+// ritual_overlay.dart
+//
+// Save as: lib/features/self_care/screens/ritual_overlay.dart
+//
+// In self_care_screen.dart update _startRitual() showModalBottomSheet:
+//   builder: (context) => RitualOverlay(
+//     rituals: rituals,
+//     color:   color,
+//     phase:   phase,   // pass _selectedPhase
+//   ),
+//
+// Delete the old RitualOverlay class from self_care_screen.dart, then add:
+//   import 'ritual_overlay.dart';
+
 import 'dart:async';
 import 'dart:math';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -47,8 +62,13 @@ class _RitualOverlayState extends ConsumerState<RitualOverlay>
   bool get _allDone =>
       widget.rituals.isNotEmpty && _checked.length == widget.rituals.length;
 
-  DocumentReference? get _docRef {
-    final uid = ref.read(firebaseAuthProvider).currentUser?.uid;
+  // ── Firestore helpers ────────────────────────────────
+  // Path: users/{uid}/ritual_completions/{YYYY-MM-DD}
+  // Field: { "PhaseName": [0, 1, 2], "updatedAt": Timestamp }
+  String? get _uid => ref.read(firebaseAuthProvider).currentUser?.uid;
+
+  DocumentReference<Map<String, dynamic>>? get _docRef {
+    final uid = _uid;
     if (uid == null) return null;
     return ref
         .read(firestoreProvider)
@@ -77,20 +97,33 @@ class _RitualOverlayState extends ConsumerState<RitualOverlay>
     super.dispose();
   }
 
-  // ── Load today's completions ─────────────────────────
+  // ── Load today's saved completions ──────────────────
   Future<void> _load() async {
     try {
-      final snap = await _docRef?.get();
-      if (snap != null && snap.exists) {
-        final data = snap.data() as Map<String, dynamic>?;
-        final raw = data?[widget.phase];
+      final doc = _docRef;
+      if (doc == null) {
+        debugPrint('[RitualOverlay] No user logged in — skipping load');
+        if (mounted) setState(() => _loading = false);
+        return;
+      }
+      debugPrint(
+          '[RitualOverlay] Loading completions for phase: ${widget.phase} / doc: ${_todayKey()}');
+      final snap = await doc.get();
+      if (snap.exists) {
+        final data = snap.data() ?? {};
+        debugPrint('[RitualOverlay] Loaded data: $data');
+        final raw = data[widget.phase];
         if (raw is List) {
           for (final idx in raw) {
             if (idx is int && idx < widget.rituals.length) _checked.add(idx);
           }
         }
+      } else {
+        debugPrint('[RitualOverlay] No doc exists yet for today');
       }
-    } catch (_) {}
+    } catch (e) {
+      debugPrint('[RitualOverlay] Load error: $e');
+    }
     if (mounted) {
       setState(() => _loading = false);
       if (_allDone) _bannerCtrl.value = 1.0;
@@ -100,17 +133,25 @@ class _RitualOverlayState extends ConsumerState<RitualOverlay>
   // ── Save after every change ──────────────────────────
   Future<void> _save() async {
     try {
-      await _docRef?.set(
-        {
-          widget.phase: _checked.toList()..sort(),
-          'updatedAt': FieldValue.serverTimestamp(),
-        },
-        SetOptions(merge: true),
-      );
-    } catch (_) {}
+      final doc = _docRef;
+      if (doc == null) {
+        debugPrint('[RitualOverlay] Cannot save — no user logged in');
+        return;
+      }
+      final payload = {
+        widget.phase: _checked.toList()..sort(),
+        'updatedAt': FieldValue.serverTimestamp(),
+      };
+      debugPrint('[RitualOverlay] Saving: $payload to ${doc.path}');
+      await doc.set(payload, SetOptions(merge: true));
+      debugPrint('[RitualOverlay] ✅ Saved successfully');
+    } catch (e) {
+      // Log the real error — likely a Firestore security rules issue
+      debugPrint('[RitualOverlay] ❌ Save error: $e');
+    }
   }
 
-  // ── Mark one ritual complete (called by timer sheet) ─
+  // ── Complete one ritual ──────────────────────────────
   void _complete(int index) {
     final wasAllDone = _allDone;
     setState(() => _checked.add(index));
@@ -128,7 +169,7 @@ class _RitualOverlayState extends ConsumerState<RitualOverlay>
     _save();
   }
 
-  // ── Uncheck (tap done item to undo) ──────────────────
+  // ── Uncheck (undo) ───────────────────────────────────
   void _uncheck(int index) {
     setState(() {
       _checked.remove(index);
@@ -136,7 +177,7 @@ class _RitualOverlayState extends ConsumerState<RitualOverlay>
         _showConfetti = false;
         _confettiCtrl.reset();
       }
-      _bannerCtrl.reverse();
+      if (_bannerCtrl.isCompleted) _bannerCtrl.reverse();
     });
     _save();
   }
@@ -159,7 +200,7 @@ class _RitualOverlayState extends ConsumerState<RitualOverlay>
         ritual: widget.rituals[index],
         color: widget.color,
         onComplete: () {
-          Navigator.pop(context); // close timer sheet
+          Navigator.pop(context);
           _complete(index);
         },
       ),
@@ -308,7 +349,6 @@ class _RitualOverlayState extends ConsumerState<RitualOverlay>
                           ritual: widget.rituals[i],
                           isDone: _checked.contains(i),
                           color: widget.color,
-                          // Tap: if already done → uncheck; else open timer
                           onTap: () => _checked.contains(i)
                               ? _uncheck(i)
                               : _openTimer(i),
@@ -371,7 +411,7 @@ class _RitualOverlayState extends ConsumerState<RitualOverlay>
             ],
           ),
 
-          // Confetti overlay
+          // Confetti
           if (_showConfetti)
             Positioned.fill(
               child: IgnorePointer(
@@ -424,7 +464,6 @@ class _RitualTile extends StatelessWidget {
         ),
         child: Row(
           children: [
-            // Checkbox indicator
             AnimatedContainer(
               duration: const Duration(milliseconds: 200),
               width: 24,
@@ -441,15 +480,9 @@ class _RitualTile extends StatelessWidget {
                   ? const Icon(Icons.check, size: 15, color: Colors.white)
                   : null,
             ),
-
             const SizedBox(width: 12),
-
-            // Emoji
             Text(ritual['e'] ?? '', style: const TextStyle(fontSize: 26)),
-
             const SizedBox(width: 12),
-
-            // Title + subtitle
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -466,7 +499,7 @@ class _RitualTile extends StatelessWidget {
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    isDone ? 'Tap to undo' : ritual['s'] ?? '',
+                    isDone ? 'Tap to undo' : (ritual['s'] ?? ''),
                     style: GoogleFonts.nunito(
                       fontSize: 11,
                       fontWeight: FontWeight.w600,
@@ -477,10 +510,7 @@ class _RitualTile extends StatelessWidget {
                 ],
               ),
             ),
-
             const SizedBox(width: 8),
-
-            // Right badge
             isDone
                 ? Icon(Icons.check_circle_rounded,
                     size: 22, color: color.withOpacity(0.7))
@@ -516,9 +546,6 @@ class _RitualTile extends StatelessWidget {
 
 // ─────────────────────────────────────────────────────────
 //  TIMER SHEET
-//  - Shows ritual detail + circular countdown timer
-//  - Auto-completes when timer hits 0
-//  - User can tap "Mark as done" at any time to complete early
 // ─────────────────────────────────────────────────────────
 class _TimerSheet extends StatefulWidget {
   final Map<String, String> ritual;
@@ -547,7 +574,6 @@ class _TimerSheetState extends State<_TimerSheet> {
     super.initState();
     _totalSec = _parseDuration(widget.ritual['dur'] ?? '');
     _remainingSec = _totalSec;
-    // Auto-start if there's a valid duration
     if (_totalSec > 0) _startTimer();
   }
 
@@ -557,13 +583,12 @@ class _TimerSheetState extends State<_TimerSheet> {
     super.dispose();
   }
 
-  // Parse "15 min", "5 min", "2 min", "30s" etc.
   int _parseDuration(String dur) {
     final mins = RegExp(r'(\d+)\s*min').firstMatch(dur);
     if (mins != null) return int.parse(mins.group(1)!) * 60;
     final secs = RegExp(r'(\d+)\s*s\b').firstMatch(dur);
     if (secs != null) return int.parse(secs.group(1)!);
-    return 0; // "All day", "Daily", "Ongoing" → no timer
+    return 0;
   }
 
   void _startTimer() {
@@ -582,7 +607,6 @@ class _TimerSheetState extends State<_TimerSheet> {
           _running = false;
           _completed = true;
         });
-        // Brief pause so user sees ✓, then auto-complete
         Future.delayed(const Duration(milliseconds: 800), () {
           if (mounted) widget.onComplete();
         });
@@ -627,7 +651,6 @@ class _TimerSheetState extends State<_TimerSheet> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // Handle
           Center(
             child: Container(
               width: 36,
@@ -639,12 +662,8 @@ class _TimerSheetState extends State<_TimerSheet> {
               ),
             ),
           ),
-
-          // Emoji
           Text(widget.ritual['e'] ?? '', style: const TextStyle(fontSize: 60)),
           const SizedBox(height: 14),
-
-          // Title
           Text(
             widget.ritual['t'] ?? '',
             textAlign: TextAlign.center,
@@ -655,8 +674,6 @@ class _TimerSheetState extends State<_TimerSheet> {
             ),
           ),
           const SizedBox(height: 6),
-
-          // Subtitle
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Text(
@@ -670,10 +687,7 @@ class _TimerSheetState extends State<_TimerSheet> {
               ),
             ),
           ),
-
           const SizedBox(height: 32),
-
-          // Circular timer (only when duration is parseable)
           if (hasTimer) ...[
             Stack(
               alignment: Alignment.center,
@@ -703,7 +717,7 @@ class _TimerSheetState extends State<_TimerSheet> {
                         color: widget.color,
                       ),
                     ),
-                    if (!_completed && _totalSec > 0)
+                    if (!_completed)
                       Text(
                         _running ? 'running' : 'paused',
                         style: GoogleFonts.nunito(
@@ -717,8 +731,6 @@ class _TimerSheetState extends State<_TimerSheet> {
               ],
             ),
             const SizedBox(height: 12),
-
-            // Pause / Resume toggle (only while timer not finished)
             if (!_completed)
               TextButton.icon(
                 onPressed: _running ? _pauseTimer : _resumeTimer,
@@ -738,14 +750,9 @@ class _TimerSheetState extends State<_TimerSheet> {
                   ),
                 ),
               ),
-
             const SizedBox(height: 20),
-          ] else ...[
-            // No timer — just a spacer
+          ] else
             const SizedBox(height: 16),
-          ],
-
-          // ── Mark as done (always visible, completes immediately) ──
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
@@ -780,7 +787,6 @@ class _TimerSheetState extends State<_TimerSheet> {
 class _ConfettiPainter extends CustomPainter {
   final double progress;
   final Color color;
-
   static List<_Particle>? _particles;
 
   _ConfettiPainter({required this.progress, required this.color}) {
@@ -794,27 +800,22 @@ class _ConfettiPainter extends CustomPainter {
     for (final p in _particles!) {
       final t = ((progress - p.delay) / (1.0 - p.delay)).clamp(0.0, 1.0);
       if (t <= 0) continue;
-
       final x = p.startX * size.width + p.vx * t * size.width * 0.45;
       final y = p.startY * size.height -
           p.vy * t * size.height * 0.65 +
           0.5 * 9.8 * t * t * size.height * 0.38;
-
       final opacity = (t < 0.15
               ? t / 0.15
               : t > 0.72
                   ? 1.0 - ((t - 0.72) / 0.28)
                   : 1.0)
           .clamp(0.0, 1.0);
-
       final paint = Paint()
         ..color = p.color.withOpacity(opacity)
         ..style = PaintingStyle.fill;
-
       canvas.save();
       canvas.translate(x, y);
       canvas.rotate(p.rotation + t * p.rotSpeed * 2 * pi);
-
       if (p.isCircle) {
         canvas.drawCircle(Offset.zero, p.size / 2, paint);
       } else {
