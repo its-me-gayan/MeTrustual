@@ -1,78 +1,95 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    
-    // Helper function to check if the user is authenticated
+
+    // ── Helpers ──────────────────────────────────────────────────
     function isAuthenticated() {
       return request.auth != null;
     }
 
-    // Helper function to check if the user owns the document
     function isOwner(userId) {
       return request.auth.uid == userId;
     }
 
-    // Helper function to check if the user is premium
-    function isPremium() {
-      return isAuthenticated() && 
-        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isPremium == true;
+    function isValidSecurityUpdate() {
+      let sec = request.resource.data.get('security', null);
+      return sec == null
+        || sec.get('lockUntil', null) == null
+        || sec.lockUntil >= request.time;
     }
 
-    // User Document: Only the owner can read/write
+    // ── User root document ────────────────────────────────────────
     match /users/{userId} {
-      allow read: if isAuthenticated() && isOwner(userId);
-      allow write: if isAuthenticated() && isOwner(userId);
+      allow read:   if isAuthenticated() && isOwner(userId);
+      allow create: if isAuthenticated() && isOwner(userId);
+      allow update: if isAuthenticated()
+                    && isOwner(userId)
+                    && isValidSecurityUpdate();
+
+      // ── Subcollections ────────────────────────────────────────
+      match /profile/{document=**} {
+        allow read, write: if isAuthenticated() && isOwner(userId);
+      }
+
+      match /cycles/{document=**} {
+        allow read, write: if isAuthenticated() && isOwner(userId);
+      }
+
+      match /logs/{document=**} {
+        allow read, write: if isAuthenticated() && isOwner(userId);
+      }
+
+      match /settings/{document=**} {
+        allow read, write: if isAuthenticated() && isOwner(userId);
+      }
+
+      match /journey/{document=**} {
+        allow read, write: if isAuthenticated() && isOwner(userId);
+      }
+
+      match /ritual_completions/{document=**} {
+        allow read, write: if isAuthenticated() && isOwner(userId);
+      }
     }
 
-    // User Profile: Only the owner can read/write their own profile
-    match /users/{userId}/profile/{document=**} {
-      allow read, write: if isAuthenticated() && isOwner(userId);
-    }
-
-    // Cycles Data: Only the owner can read/write their own cycles
-    match /users/{userId}/cycles/{document=**} {
-      allow read, write: if isAuthenticated() && isOwner(userId);
-    }
-
-    // Daily Logs: Only the owner can read/write their own logs
-    match /users/{userId}/logs/{document=**} {
-      allow read, write: if isAuthenticated() && isOwner(userId);
-    }
-
-    // Settings: Only the owner can read/write their own settings
-    match /users/{userId}/settings/{document=**} {
-      allow read, write: if isAuthenticated() && isOwner(userId);
-    }
-
-    // Journey Data: Only the owner can read/write their own journey
-    match /users/{userId}/journey/{document=**} {
-      allow read, write: if isAuthenticated() && isOwner(userId);
-    }
-
-    // Community: Authenticated users can read/write to the community collection
-    // (Note: Moderation logic will be handled via Cloud Functions/Admin)
+    // ── Community ─────────────────────────────────────────────────
     match /community/{postId} {
       allow read: if isAuthenticated();
-      allow create: if isAuthenticated() && request.resource.data.authorId == request.auth.uid;
-      allow update, delete: if isAuthenticated() && resource.data.authorId == request.auth.uid;
+      allow create: if isAuthenticated()
+                    && request.resource.data.authorId == request.auth.uid;
+      allow update, delete: if isAuthenticated()
+                             && resource.data.authorId == request.auth.uid;
     }
 
-    // Educational Content: Read-only for premium users
+    // ── Static / Read-only content ────────────────────────────────
+    match /journey/{mode} {
+      allow read:  if isAuthenticated();
+      allow write: if false;
+    }
+
     match /education/{articleId} {
-      allow read: if isPremium();
-      allow write: if false; // Only admin via Firebase Console/Admin SDK
+      allow read:  if isAuthenticated();
+      allow write: if false;
     }
 
-    // Journey Steps: Read-only for authenticated users
     match /journeys/{document=**} {
-      allow read: if isAuthenticated();
-      allow write: if false; // Only admin via Firebase Console/Admin SDK
+      allow read:  if isAuthenticated();
+      allow write: if false;
     }
 
-    // Default deny all
+    match /config/{document=**} {
+      allow read:  if isAuthenticated();
+      allow write: if false;
+    }
+
+    match /education_articles/{articleId} {
+      allow read:  if isAuthenticated() && resource.data.isPublished == true;
+      allow write: if false;
+    }
+
+    // ── Default deny ──────────────────────────────────────────────
     match /{document=**} {
       allow read, write: if false;
     }
   }
 }
-
