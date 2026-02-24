@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/providers/firebase_providers.dart';
 import '../providers/onboarding_provider.dart';
+import '../../../core/widgets/transition_overlay.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class OnboardingScreen extends ConsumerStatefulWidget {
@@ -19,6 +20,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   String selectedLang = 'en';
   bool keepPrivate = true;
   bool backupData = false;
+  bool _isSubmitting = false; // ← guards against multiple taps
   final TextEditingController _nicknameController = TextEditingController();
 
   final List<Map<String, String>> languages = [
@@ -212,32 +214,48 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                             ),
                           ],
                         ),
-                            child: ElevatedButton(
-                          onPressed: () async {
-                            try {
-                              final nickname = _nicknameController.text.trim();
-                              if (nickname.isEmpty) {
-                                NotificationService.showError(context, 'Please enter a nickname');
-                                return;
-                              }
-                              await ref
-                                  .read(onboardingProvider.notifier)
-                                  .completeOnboarding(
-                                    language: selectedLang,
-                                    anonymousMode: keepPrivate,
-                                    cloudSync: backupData,
-                                    nickname: nickname,
-                                  );
+                        child: ElevatedButton(
+                          onPressed: _isSubmitting
+                              ? null // ← disabled while in-flight
+                              : () async {
+                                  final nickname =
+                                      _nicknameController.text.trim();
+                                  if (nickname.isEmpty) {
+                                    NotificationService.showError(
+                                        context, 'Please enter a nickname');
+                                    return;
+                                  }
 
-                              if (mounted) {
-                                context.go('/mode-selection');
-                              }
-                            } catch (e) {
-                              if (mounted) {
-                                NotificationService.showError(context, 'Error: $e');
-                              }
-                            }
-                          },
+                                  // Lock the button immediately
+                                  setState(() => _isSubmitting = true);
+
+                                  try {
+                                    await TransitionOverlay.show(
+                                      context,
+                                      message: 'Setting things up…',
+                                      submessage: 'Creating your safe space 🌸',
+                                      emoji: '✨',
+                                      themeColor: AppColors.primaryRose,
+                                      future: ref
+                                          .read(onboardingProvider.notifier)
+                                          .completeOnboarding(
+                                            language: selectedLang,
+                                            anonymousMode: keepPrivate,
+                                            cloudSync: backupData,
+                                            nickname: nickname,
+                                          ),
+                                    );
+
+                                    if (mounted) context.go('/mode-selection');
+                                  } catch (e) {
+                                    // Unlock on error so user can retry
+                                    if (mounted) {
+                                      setState(() => _isSubmitting = false);
+                                      NotificationService.showError(
+                                          context, 'Error: $e');
+                                    }
+                                  }
+                                },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.transparent,
                             shadowColor: Colors.transparent,

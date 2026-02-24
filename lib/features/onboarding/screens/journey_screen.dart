@@ -7,6 +7,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/services/notification_service.dart';
 import '../../../core/providers/mode_provider.dart';
 import '../../../core/providers/firebase_providers.dart';
+import '../../../core/widgets/transition_overlay.dart';
 import '../providers/journey_provider.dart';
 
 class JourneyScreen extends ConsumerStatefulWidget {
@@ -21,6 +22,7 @@ class _JourneyScreenState extends ConsumerState<JourneyScreen> {
   int currentStep = 0;
   final Map<String, dynamic> journeyData = {};
   bool _isLoading = false;
+  bool _isSubmitting = false; // ← guards Continue / auto-advance taps
   bool _stepsLoaded = false;
 
   late List<Map<String, dynamic>> steps;
@@ -72,12 +74,11 @@ class _JourneyScreenState extends ConsumerState<JourneyScreen> {
       if (!mounted) return;
       setState(() {
         steps = loadedSteps;
-        journeyData.addAll(userSelections); // pre-fill with saved data
+        journeyData.addAll(userSelections);
         _stepsLoaded = true;
       });
     } catch (e) {
       debugPrint('Error loading journey data: $e');
-      // Fallback to just provider steps
       try {
         final fallbackSteps =
             await ref.read(journeyStepsProvider(widget.mode).future);
@@ -89,40 +90,6 @@ class _JourneyScreenState extends ConsumerState<JourneyScreen> {
       } catch (e2) {
         debugPrint('Fallback also failed: $e2');
       }
-    } finally {
-      if (mounted) setState(() => _isLoading = false);
-    }
-  }
-
-  Future<void> _loadExistingData() async {
-    setState(() => _isLoading = true);
-    try {
-      final auth = ref.read(firebaseAuthProvider);
-      final firestore = ref.read(firestoreProvider);
-      final uid = auth.currentUser?.uid;
-
-      if (uid != null) {
-        final doc = await firestore
-            .collection('users')
-            .doc(uid)
-            .collection('journey')
-            .doc(widget.mode)
-            .get();
-        if (!mounted) return;
-        if (doc.exists) {
-          debugPrint(doc.data().toString());
-          debugPrint(
-              'Existing journey data found for user $uid and mode ${widget.mode}');
-          setState(() {
-            journeyData.addAll(doc.data()!);
-          });
-        } else {
-          debugPrint(
-              'No existing journey data found for user $uid and mode ${widget.mode}');
-        }
-      }
-    } catch (e) {
-      debugPrint('Error loading journey data: $e');
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -162,6 +129,30 @@ class _JourneyScreenState extends ConsumerState<JourneyScreen> {
     }
   }
 
+  // ── Per-mode overlay copy ─────────────────────────────────────
+  Map<String, String> get _completionOverlayCopy {
+    switch (widget.mode) {
+      case 'preg':
+        return {
+          'emoji': '💙',
+          'message': 'Setting up your pregnancy journey…',
+          'submessage': 'Preparing your personalised tracker',
+        };
+      case 'ovul':
+        return {
+          'emoji': '🌿',
+          'message': 'Setting up your fertility tracker…',
+          'submessage': 'Calculating your fertile window',
+        };
+      default:
+        return {
+          'emoji': '🌸',
+          'message': 'Setting up your cycle tracker…',
+          'submessage': 'Almost ready for you',
+        };
+    }
+  }
+
   Future<void> _saveData() async {
     final auth = ref.read(firebaseAuthProvider);
     final firestore = ref.read(firestoreProvider);
@@ -178,7 +169,7 @@ class _JourneyScreenState extends ConsumerState<JourneyScreen> {
   }
 
   Future<void> _nextStep() async {
-    if (!_stepsLoaded) return;
+    if (!_stepsLoaded || _isSubmitting) return; // ← double-tap guard
 
     final step = steps[currentStep];
     final key = step['key'];
@@ -191,25 +182,54 @@ class _JourneyScreenState extends ConsumerState<JourneyScreen> {
       return;
     }
 
-    await _saveData();
-    if (!mounted) return; // ✅ Guard after first await
-
+    // ── Mid-journey step: just save & advance ────────────────────
     if (currentStep < steps.length - 1) {
-      setState(() => currentStep++);
-    } else {
-      await ref.read(modeProvider.notifier).setMode(widget.mode);
-      if (!mounted) return; // ✅ Guard after second await
+      setState(() => _isSubmitting = true);
+      try {
+        await _saveData();
+        if (!mounted) return;
+        setState(() => currentStep++);
+      } finally {
+        if (mounted) setState(() => _isSubmitting = false);
+      }
+      return;
+    }
 
-      await ref.read(modeProvider.notifier).completeJourney();
-      if (!mounted) return; // ✅ Guard after third await
+    // ── Final step: show overlay while completing ─────────────────
+    setState(() => _isSubmitting = true);
+    final copy = _completionOverlayCopy;
 
+    try {
+      await TransitionOverlay.show(
+        context,
+        message: copy['message']!,
+        submessage: copy['submessage'],
+        emoji: copy['emoji']!,
+        themeColor: accentColor,
+        future: _completeJourney(),
+      );
+
+      if (!mounted) return;
       final auth = ref.read(firebaseAuthProvider);
       final uid = auth.currentUser?.uid;
       context.go('/biometric-setup/$uid');
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isSubmitting = false);
+        NotificationService.showError(context, 'Error: $e');
+      }
     }
   }
 
+  // ── All async work for the final step, run inside the overlay ──
+  Future<void> _completeJourney() async {
+    await _saveData();
+    await ref.read(modeProvider.notifier).setMode(widget.mode);
+    await ref.read(modeProvider.notifier).completeJourney();
+  }
+
   void _prevStep() {
+    if (_isSubmitting) return; // ← don't navigate back mid-submit
     if (currentStep > 0) {
       setState(() => currentStep--);
     } else {
@@ -226,6 +246,7 @@ class _JourneyScreenState extends ConsumerState<JourneyScreen> {
     final progress = (currentStep + 1) / steps.length;
     final isSingleChoice =
         step['type'] == 'chips-big-single' || step['type'] == 'chips-single';
+    final isLastStep = currentStep == steps.length - 1;
 
     return Scaffold(
       body: Container(
@@ -370,7 +391,7 @@ class _JourneyScreenState extends ConsumerState<JourneyScreen> {
                   children: [
                     if (step['skip'] != null)
                       TextButton(
-                        onPressed: _nextStep,
+                        onPressed: _isSubmitting ? null : _nextStep,
                         child: Text(
                           step['skip'],
                           style: GoogleFonts.nunito(
@@ -386,9 +407,12 @@ class _JourneyScreenState extends ConsumerState<JourneyScreen> {
                         width: double.infinity,
                         height: 56,
                         child: ElevatedButton(
-                          onPressed: _nextStep,
+                          // ← null disables the button while submitting
+                          onPressed: _isSubmitting ? null : _nextStep,
                           style: ElevatedButton.styleFrom(
                             backgroundColor: accentColor,
+                            disabledBackgroundColor:
+                                accentColor.withOpacity(0.5),
                             foregroundColor: Colors.white,
                             elevation: 6,
                             shadowColor: accentColor.withOpacity(0.35),
@@ -396,13 +420,24 @@ class _JourneyScreenState extends ConsumerState<JourneyScreen> {
                               borderRadius: BorderRadius.circular(18),
                             ),
                           ),
-                          child: Text(
-                            currentStep == steps.length - 1
-                                ? "Done! Let's go →"
-                                : 'Continue →',
-                            style: GoogleFonts.nunito(
-                                fontSize: 16, fontWeight: FontWeight.w900),
-                          ),
+                          child: _isSubmitting && isLastStep
+                              ? SizedBox(
+                                  width: 22,
+                                  height: 22,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2.5,
+                                    valueColor: AlwaysStoppedAnimation<Color>(
+                                        Colors.white.withOpacity(0.8)),
+                                  ),
+                                )
+                              : Text(
+                                  isLastStep
+                                      ? "Done! Let's go →"
+                                      : 'Continue →',
+                                  style: GoogleFonts.nunito(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w900),
+                                ),
                         ),
                       ),
                   ],
@@ -430,16 +465,16 @@ class _JourneyScreenState extends ConsumerState<JourneyScreen> {
             return Padding(
               padding: const EdgeInsets.only(bottom: 12),
               child: GestureDetector(
-                onTap: () {
-                  if (opt['v'] == 'switch') {
-                    context.go('/mode-selection');
-                  } else {
-                    setState(() {
-                      journeyData[key] = opt['v'];
-                    });
-                    _nextStep();
-                  }
-                },
+                onTap: _isSubmitting
+                    ? null // ← block taps while in-flight
+                    : () {
+                        if (opt['v'] == 'switch') {
+                          context.go('/mode-selection');
+                        } else {
+                          setState(() => journeyData[key] = opt['v']);
+                          _nextStep();
+                        }
+                      },
                 child: Container(
                   padding: const EdgeInsets.all(18),
                   decoration: BoxDecoration(
@@ -488,6 +523,7 @@ class _JourneyScreenState extends ConsumerState<JourneyScreen> {
             );
           }).toList(),
         );
+
       case 'chips-multi':
         final List opts = step['opts'];
         final List<String> selected = List<String>.from(currentValue ?? []);
@@ -535,6 +571,7 @@ class _JourneyScreenState extends ConsumerState<JourneyScreen> {
             );
           }).toList(),
         );
+
       case 'date':
       case 'due-date':
         final DateTime? date =
@@ -580,6 +617,7 @@ class _JourneyScreenState extends ConsumerState<JourneyScreen> {
             ),
           ),
         );
+
       case 'stepper':
         final int val = currentValue ?? step['def'];
         return Container(
@@ -631,6 +669,7 @@ class _JourneyScreenState extends ConsumerState<JourneyScreen> {
             ],
           ),
         );
+
       default:
         return const SizedBox();
     }

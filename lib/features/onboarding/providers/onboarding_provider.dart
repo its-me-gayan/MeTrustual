@@ -29,6 +29,8 @@ class OnboardingNotifier extends StateNotifier<bool> {
     final uid = user.uid;
 
     // Update display name in Firebase Auth
+    await user.getIdToken(true);
+
     await user.updateDisplayName(nickname);
     print('✓ Firebase Auth displayName set to: $nickname');
 

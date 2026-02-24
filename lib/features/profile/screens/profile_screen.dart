@@ -140,8 +140,7 @@ class _DeletionOverlayState extends State<_DeletionOverlay>
                     animation: _animController,
                     builder: (context, child) {
                       final delay = index * 0.15;
-                      final animValue =
-                          (_animController.value - delay) % 1.0;
+                      final animValue = (_animController.value - delay) % 1.0;
                       final opacity = (animValue < 0.5)
                           ? animValue * 2
                           : (1 - animValue) * 2;
@@ -493,7 +492,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   .doc('current')
                   .snapshots(),
               builder: (context, snapshot) {
-                final profile = snapshot.data != null
+                // ✅ AFTER — guard against deleted/non-existent document
+                final profile = (snapshot.data != null &&
+                        snapshot.data!.exists &&
+                        snapshot.data!.data() != null)
                     ? UserProfile.fromFirestore(snapshot.data!)
                     : null;
 
@@ -514,20 +516,19 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                             _buildSettingsCard([
                               _buildSettingsTile(Icons.person, 'Edit Profile',
                                   () => _editProfile(profile)),
-                              _buildSettingsTile(Icons.language, 'Language',
-                                  _changeLanguage),
-                              _buildSettingsTile(Icons.notifications, 'Notifications',
-                                  () {}),
+                              _buildSettingsTile(
+                                  Icons.language, 'Language', _changeLanguage),
+                              _buildSettingsTile(
+                                  Icons.notifications, 'Notifications', () {}),
                             ]),
                             const SizedBox(height: 24),
                             _buildSectionTitle('PREFERENCES'),
                             _buildSettingsCard([
-                              _buildSettingsTile(Icons.lock, 'Privacy & Security',
-                                  () {}),
-                              _buildSettingsTile(Icons.cloud, 'Cloud Sync',
-                                  () {}),
-                              _buildSettingsTile(Icons.palette, 'Theme',
-                                  () {}),
+                              _buildSettingsTile(
+                                  Icons.lock, 'Privacy & Security', () {}),
+                              _buildSettingsTile(
+                                  Icons.cloud, 'Cloud Sync', () {}),
+                              _buildSettingsTile(Icons.palette, 'Theme', () {}),
                             ]),
                             const SizedBox(height: 24),
                             _buildSectionTitle('DANGER ZONE'),
@@ -595,13 +596,17 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           Text(
             name,
             style: GoogleFonts.nunito(
-                fontSize: 20, fontWeight: FontWeight.w900, color: AppColors.textDark),
+                fontSize: 20,
+                fontWeight: FontWeight.w900,
+                color: AppColors.textDark),
           ),
           const SizedBox(height: 4),
           Text(
             email,
             style: GoogleFonts.nunito(
-                fontSize: 13, color: AppColors.textMid, fontWeight: FontWeight.w600),
+                fontSize: 13,
+                color: AppColors.textMid,
+                fontWeight: FontWeight.w600),
           ),
           const SizedBox(height: 20),
         ],

@@ -26,6 +26,23 @@ Color modeColor(String mode) {
   }
 }
 
+// ── Logs count provider ───────────────────────────────────────
+// Streams the count of documents in users/{uid}/logs
+// Returns 0 if the user is not logged in or has no logs.
+final _logsCountProvider = StreamProvider<int>((ref) {
+  final auth = ref.watch(firebaseAuthProvider);
+  final uid = auth.currentUser?.uid;
+  if (uid == null) return Stream.value(0);
+
+  final firestore = ref.watch(firestoreProvider);
+  return firestore
+      .collection('users')
+      .doc(uid)
+      .collection('logs')
+      .snapshots()
+      .map((snap) => snap.size);
+});
+
 // ── Shared background gradient (matches PIN screen) ──────────
 const _homeBackgroundGradient = LinearGradient(
   begin: Alignment.topCenter,
@@ -145,7 +162,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               ),
             ),
 
-            // ── Main scrollable content (unchanged) ──
+            // ── Main scrollable content ──
             SafeArea(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.fromLTRB(22, 20, 22, 120),
@@ -265,7 +282,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             height: 44,
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
-                              // Slight white tint to sit nicely on gradient
                               color: Colors.white.withOpacity(0.85),
                               border: Border.all(
                                   color: AppColors.border, width: 1.5),
@@ -317,6 +333,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   Widget _buildModeSpecificContent(
       String currentMode, Map<String, dynamic>? homeData) {
+    // ── Logs count — single watch, used by all 3 modes ──────────
+    final logsCount = ref.watch(_logsCountProvider).valueOrNull ?? 0;
+
     switch (currentMode) {
       case 'period':
         final lastCycle = homeData?['lastCycle'];
@@ -330,16 +349,22 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           children: [
             Center(child: CycleCircle(day: cycleDay, phase: phase)),
             const SizedBox(height: 16),
+            // ── 3 pills: Avg Cycle | Period Days | Logged ──────
             _buildPillsRow(
               {
                 'value': avgCycle.toString(),
                 'label': 'Avg Cycle',
-                'color': AppColors.primaryRose
+                'color': AppColors.primaryRose,
               },
               {
                 'value': avgPeriod.toString(),
                 'label': 'Period Days',
-                'color': const Color(0xFFC9A0D0)
+                'color': const Color(0xFFC9A0D0),
+              },
+              third: {
+                'value': logsCount.toString(),
+                'label': 'Logged',
+                'color': const Color(0xFF8AB88A),
               },
             ),
             const SizedBox(height: 24),
@@ -351,6 +376,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             const NextPeriodCard(),
           ],
         );
+
       case 'preg':
         return Column(
           children: [
@@ -363,16 +389,22 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               ),
             ),
             const SizedBox(height: 16),
+            // ── 3 pills: Days to Go | Due Date | Logs ─────────
             _buildPillsRow(
               {
                 'value': '113',
                 'label': 'Days to Go',
-                'color': const Color(0xFF4A70B0)
+                'color': const Color(0xFF4A70B0),
               },
               {
                 'value': 'Jun 5',
                 'label': 'Due Date',
-                'color': const Color(0xFF9870C0)
+                'color': const Color(0xFF9870C0),
+              },
+              third: {
+                'value': logsCount.toString(),
+                'label': 'Logs',
+                'color': const Color(0xFF8AB88A),
               },
             ),
             const SizedBox(height: 24),
@@ -390,7 +422,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             ),
           ],
         );
+
       case 'ovul':
+        final avgCycleOvul = homeData?['prediction']?.averageLength ?? 28;
         return Column(
           children: [
             const Center(
@@ -402,16 +436,22 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               ),
             ),
             const SizedBox(height: 16),
+            // ── 3 pills: Ovulation | Next Period | Cycle Len ──
             _buildPillsRow(
               {
                 'value': 'Today',
                 'label': 'Ovulation',
-                'color': const Color(0xFF5A8E6A)
+                'color': const Color(0xFF5A8E6A),
               },
               {
                 'value': 'Mar 6',
                 'label': 'Next Period',
-                'color': AppColors.primaryRose
+                'color': AppColors.primaryRose,
+              },
+              third: {
+                'value': avgCycleOvul.toString(),
+                'label': 'Cycle Len',
+                'color': const Color(0xFF8AB88A),
               },
             ),
             const SizedBox(height: 24),
@@ -429,18 +469,27 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             ),
           ],
         );
+
       default:
         return const SizedBox();
     }
   }
 
+  // ── Pills row — now supports an optional 3rd pill ─────────────
   Widget _buildPillsRow(
-      Map<String, dynamic> pill1, Map<String, dynamic> pill2) {
+    Map<String, dynamic> pill1,
+    Map<String, dynamic> pill2, {
+    Map<String, dynamic>? third,
+  }) {
     return Row(
       children: [
         _buildStatPill(pill1['value'], pill1['label'], color: pill1['color']),
         const SizedBox(width: 8),
         _buildStatPill(pill2['value'], pill2['label'], color: pill2['color']),
+        if (third != null) ...[
+          const SizedBox(width: 8),
+          _buildStatPill(third['value'], third['label'], color: third['color']),
+        ],
       ],
     );
   }
@@ -450,7 +499,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 12),
         decoration: BoxDecoration(
-          // Slightly translucent white so gradient peeks through
           color: Colors.white.withOpacity(0.88),
           borderRadius: BorderRadius.circular(18),
           border: Border.all(color: AppColors.border, width: 1.5),
