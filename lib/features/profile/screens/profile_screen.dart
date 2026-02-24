@@ -14,6 +14,162 @@ import '../../../models/user_profile_model.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+// ─────────────────────────────────────────────────────────
+//  DELETION OVERLAY WIDGET
+// ─────────────────────────────────────────────────────────
+class _DeletionOverlay extends StatefulWidget {
+  final Color themeColor;
+
+  const _DeletionOverlay({required this.themeColor});
+
+  @override
+  State<_DeletionOverlay> createState() => _DeletionOverlayState();
+}
+
+class _DeletionOverlayState extends State<_DeletionOverlay>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _animController;
+  late Animation<double> _scaleAnimation;
+  late Animation<double> _opacityAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _animController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1500),
+    )..repeat(reverse: true);
+
+    _scaleAnimation = Tween<double>(begin: 0.8, end: 1.1).animate(
+      CurvedAnimation(parent: _animController, curve: Curves.easeInOut),
+    );
+
+    _opacityAnimation = Tween<double>(begin: 0.6, end: 1.0).animate(
+      CurvedAnimation(parent: _animController, curve: Curves.easeInOut),
+    );
+  }
+
+  @override
+  void dispose() {
+    _animController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Dialog(
+      backgroundColor: Colors.transparent,
+      elevation: 0,
+      child: Center(
+        child: Container(
+          padding: const EdgeInsets.all(40),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(28),
+            boxShadow: [
+              BoxShadow(
+                color: widget.themeColor.withOpacity(0.2),
+                blurRadius: 30,
+                offset: const Offset(0, 10),
+              ),
+            ],
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Animated circle with gradient
+              ScaleTransition(
+                scale: _scaleAnimation,
+                child: FadeTransition(
+                  opacity: _opacityAnimation,
+                  child: Container(
+                    width: 80,
+                    height: 80,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      gradient: LinearGradient(
+                        colors: [
+                          widget.themeColor.withOpacity(0.3),
+                          widget.themeColor.withOpacity(0.1),
+                        ],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                    ),
+                    child: Center(
+                      child: CircularProgressIndicator(
+                        valueColor:
+                            AlwaysStoppedAnimation<Color>(widget.themeColor),
+                        strokeWidth: 3.5,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 32),
+              // Title
+              Text(
+                'Deleting Everything...',
+                textAlign: TextAlign.center,
+                style: GoogleFonts.nunito(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w900,
+                  color: AppColors.textDark,
+                  letterSpacing: 0.3,
+                ),
+              ),
+              const SizedBox(height: 12),
+              // Subtitle
+              Text(
+                'Please wait while we securely erase all your data',
+                textAlign: TextAlign.center,
+                style: GoogleFonts.nunito(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.textMid,
+                  height: 1.5,
+                ),
+              ),
+              const SizedBox(height: 24),
+              // Animated dots
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: List.generate(
+                  3,
+                  (index) => AnimatedBuilder(
+                    animation: _animController,
+                    builder: (context, child) {
+                      final delay = index * 0.15;
+                      final animValue =
+                          (_animController.value - delay) % 1.0;
+                      final opacity = (animValue < 0.5)
+                          ? animValue * 2
+                          : (1 - animValue) * 2;
+
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 6),
+                        child: Container(
+                          width: 8,
+                          height: 8,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: widget.themeColor
+                                .withOpacity(opacity.clamp(0.3, 1.0)),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({super.key});
 
@@ -214,6 +370,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     final auth = ref.read(firebaseAuthProvider);
     final user = auth.currentUser;
     final firestore = ref.read(firestoreProvider);
+    final currentMode = ref.read(modeProvider);
+    final themeColor = AppColors.getModeColor(currentMode, soft: true);
 
     final confirm = await showDialog<bool>(
       context: context,
@@ -234,7 +392,15 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     );
 
     if (confirm == true) {
-      setState(() => _isLoading = true);
+      // Show soothing deletion overlay
+      if (mounted) {
+        showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (context) => _DeletionOverlay(themeColor: themeColor),
+        );
+      }
+
       try {
         final uid = user?.uid;
 
@@ -292,15 +458,18 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         }
 
         if (mounted) {
+          // Close the deletion overlay
+          Navigator.pop(context);
           NotificationService.showSuccess(
               context, 'All data erased successfully');
           context.go('/splash');
         }
       } catch (e) {
-        if (mounted)
+        if (mounted) {
+          // Close the deletion overlay
+          Navigator.pop(context);
           NotificationService.showError(context, 'Error deleting data: $e');
-      } finally {
-        if (mounted) setState(() => _isLoading = false);
+        }
       }
     }
   }
@@ -314,138 +483,86 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     final themeColor = AppColors.getModeColor(currentMode, soft: true);
 
     return Scaffold(
-      body: SafeArea(
-        child: StreamBuilder(
-            stream: user != null
-                ? firestore.collection('users').doc(user.uid).snapshots()
-                : const Stream.empty(),
-            builder: (context, snapshot) {
-              final isPremium = snapshot.hasData &&
-                  snapshot.data!.exists &&
-                  (snapshot.data!.data()?['isPremium'] ?? false);
+      body: user == null
+          ? const Center(child: CircularProgressIndicator())
+          : StreamBuilder(
+              stream: firestore
+                  .collection('users')
+                  .doc(user.uid)
+                  .collection('profile')
+                  .doc('current')
+                  .snapshots(),
+              builder: (context, snapshot) {
+                final profile = snapshot.data != null
+                    ? UserProfile.fromFirestore(snapshot.data!)
+                    : null;
 
-              return StreamBuilder(
-                  stream: user != null
-                      ? firestore
-                          .collection('users')
-                          .doc(user.uid)
-                          .collection('profile')
-                          .doc('current')
-                          .snapshots()
-                      : const Stream.empty(),
-                  builder: (context, profileSnapshot) {
-                    UserProfile? profile;
-                    if (profileSnapshot.hasData &&
-                        profileSnapshot.data!.exists) {
-                      profile =
-                          UserProfile.fromFirestore(profileSnapshot.data!);
-                    }
-
-                    return SingleChildScrollView(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 22, vertical: 20),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              IconButton(
-                                icon: const Icon(Icons.arrow_back_ios,
-                                    color: AppColors.textDark, size: 20),
-                                onPressed: () => context.go('/home'),
-                              ),
-                              Text(
-                                'Profile & Settings',
-                                style: Theme.of(context).textTheme.titleLarge,
-                              ),
-                              if (_isLoading) ...[
-                                const SizedBox(width: 10),
-                                SizedBox(
-                                    width: 16,
-                                    height: 16,
-                                    child: CircularProgressIndicator(
-                                        strokeWidth: 2, color: themeColor)),
-                              ]
-                            ],
-                          ),
-                          const SizedBox(height: 30),
-                          _buildProfileHeader(
-                              profile?.displayName ?? 'Lovely User',
-                              user?.isAnonymous == true
-                                  ? 'Anonymous Mode'
-                                  : (user?.email ?? 'No Email'),
-                              themeColor),
-                          const SizedBox(height: 24),
-                          if (!isPremium) ...[
-                            _buildPremiumBanner(themeColor),
-                            const SizedBox(height: 30),
-                          ] else ...[
-                            _buildPremiumStatusCard(themeColor),
-                            const SizedBox(height: 30),
-                          ],
-                          _buildSectionTitle('ACCOUNT'),
-                          _buildSettingsCard([
-                            _buildSettingsTile(Icons.person_outline,
-                                'Edit Profile', () => _editProfile(profile)),
-                            _buildSettingsTile(
-                                Icons.language, 'Language', _changeLanguage),
-                            _buildSettingsTile(
-                                Icons.notifications_none, 'Notifications', () {
-                              NotificationService.showSuccess(context,
-                                  'Notification settings coming soon!');
-                            }),
-                          ]),
-                          const SizedBox(height: 24),
-                          _buildSectionTitle('PREFERENCES'),
-                          _buildSettingsCard([
-                            _buildSettingsTile(
-                                Icons.lock_outline,
-                                'Privacy & Security',
-                                () => context.go('/privacy')),
-                            _buildSettingsTile(
-                                Icons.cloud_upload_outlined, 'Cloud Sync', () {
-                              NotificationService.showSuccess(
-                                  context, 'Cloud sync is active');
-                            }),
-                            _buildSettingsTile(Icons.palette_outlined, 'Theme',
-                                () {
-                              NotificationService.showSuccess(context,
-                                  'Light theme is currently the only option');
-                            }),
-                          ]),
-                          SizedBox(height: 24),
-                          _buildSectionTitle('DANGER ZONE'),
-                          _buildSettingsCard([
-                            if (isPremium)
+                return SingleChildScrollView(
+                  child: Column(
+                    children: [
+                      _buildProfileHeader(user.displayName ?? 'User',
+                          user.email ?? 'No email', themeColor),
+                      Padding(
+                        padding: const EdgeInsets.all(20),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            if (profile != null)
+                              _buildProfileCard(profile, themeColor),
+                            const SizedBox(height: 24),
+                            _buildSectionTitle('ACCOUNT'),
+                            _buildSettingsCard([
+                              _buildSettingsTile(Icons.person, 'Edit Profile',
+                                  () => _editProfile(profile)),
+                              _buildSettingsTile(Icons.language, 'Language',
+                                  _changeLanguage),
+                              _buildSettingsTile(Icons.notifications, 'Notifications',
+                                  () {}),
+                            ]),
+                            const SizedBox(height: 24),
+                            _buildSectionTitle('PREFERENCES'),
+                            _buildSettingsCard([
+                              _buildSettingsTile(Icons.lock, 'Privacy & Security',
+                                  () {}),
+                              _buildSettingsTile(Icons.cloud, 'Cloud Sync',
+                                  () {}),
+                              _buildSettingsTile(Icons.palette, 'Theme',
+                                  () {}),
+                            ]),
+                            const SizedBox(height: 24),
+                            _buildSectionTitle('DANGER ZONE'),
+                            _buildSettingsCard([
+                              if (user.isAnonymous == false)
+                                _buildSettingsTile(
+                                    Icons.star_border,
+                                    'Cancel Premium Membership',
+                                    _handleCancelPremium,
+                                    color: Colors.redAccent),
                               _buildSettingsTile(
-                                  Icons.star_border,
-                                  'Cancel Premium Membership',
-                                  _handleCancelPremium,
+                                  Icons.logout, 'Sign Out', _handleSignOut,
                                   color: Colors.redAccent),
-                            _buildSettingsTile(
-                                Icons.logout, 'Sign Out', _handleSignOut,
-                                color: Colors.redAccent),
-                            _buildSettingsTile(Icons.delete_forever_outlined,
-                                'Delete All Data', _handleDeleteData,
-                                color: Colors.redAccent),
-                          ]),
-                          const SizedBox(height: 40),
-                          Center(
-                            child: Text(
-                              'MeTrustual v1.0.0\nMade with ❤️ for you',
-                              textAlign: TextAlign.center,
-                              style: GoogleFonts.nunito(
-                                  fontSize: 11,
-                                  color: AppColors.textMuted,
-                                  fontWeight: FontWeight.w700),
+                              _buildSettingsTile(Icons.delete_forever_outlined,
+                                  'Delete All Data', _handleDeleteData,
+                                  color: Colors.redAccent),
+                            ]),
+                            const SizedBox(height: 40),
+                            Center(
+                              child: Text(
+                                'MeTrustual v1.0.0\nMade with ❤️ for you',
+                                textAlign: TextAlign.center,
+                                style: GoogleFonts.nunito(
+                                    fontSize: 11,
+                                    color: AppColors.textMuted,
+                                    fontWeight: FontWeight.w700),
+                              ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
-                    );
-                  });
-            }),
-      ),
+                    ],
+                  ),
+                );
+              }),
     );
   }
 
@@ -463,38 +580,98 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
-              border: Border.all(color: Colors.white, width: 3),
-              boxShadow: [
-                BoxShadow(
-                    color: themeColor.withOpacity(0.2),
-                    blurRadius: 20,
-                    offset: Offset(0, 10)),
-              ],
             ),
-            child: const Icon(Icons.person, color: Colors.white, size: 40),
+            child: Center(
+              child: Text(
+                name.isNotEmpty ? name[0].toUpperCase() : '?',
+                style: GoogleFonts.nunito(
+                    fontSize: 32,
+                    fontWeight: FontWeight.w900,
+                    color: Colors.white),
+              ),
+            ),
           ),
-          const SizedBox(height: 16),
-          Text(name,
-              style: GoogleFonts.nunito(
-                  fontSize: 20,
-                  fontWeight: FontWeight.w900,
-                  color: AppColors.textDark)),
-          Text(email,
-              style: GoogleFonts.nunito(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.textMuted)),
+          const SizedBox(height: 12),
+          Text(
+            name,
+            style: GoogleFonts.nunito(
+                fontSize: 20, fontWeight: FontWeight.w900, color: AppColors.textDark),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            email,
+            style: GoogleFonts.nunito(
+                fontSize: 13, color: AppColors.textMid, fontWeight: FontWeight.w600),
+          ),
+          const SizedBox(height: 20),
         ],
       ),
     );
   }
 
-  Widget _buildPremiumBanner(Color themeColor) {
+  Widget _buildProfileCard(UserProfile profile, Color themeColor) {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [themeColor.withOpacity(0.7), themeColor],
+          colors: [themeColor.withOpacity(0.15), themeColor.withOpacity(0.05)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: themeColor.withOpacity(0.2), width: 1.5),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Profile Information',
+            style: GoogleFonts.nunito(
+                fontSize: 14,
+                fontWeight: FontWeight.w900,
+                color: AppColors.textDark),
+          ),
+          const SizedBox(height: 12),
+          _buildProfileInfoRow('Age Group', profile.ageGroup),
+          _buildProfileInfoRow('Region', profile.region),
+          _buildProfileInfoRow('Language', profile.language),
+          _buildProfileInfoRow('Life Stage', profile.lifeStage),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildProfileInfoRow(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            label,
+            style: GoogleFonts.nunito(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                color: AppColors.textMid),
+          ),
+          Text(
+            value,
+            style: GoogleFonts.nunito(
+                fontSize: 12,
+                fontWeight: FontWeight.w700,
+                color: AppColors.textDark),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildUpgradeCard(Color themeColor) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [themeColor, themeColor.withOpacity(0.8)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
