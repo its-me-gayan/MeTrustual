@@ -20,6 +20,10 @@ class DayDetailSheet extends ConsumerWidget {
     final dateLabel =
         DateFormat('EEE, MMM d').format(day.date).toUpperCase();
 
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final isFuture = day.date.isAfter(today);
+
     return Container(
       decoration: const BoxDecoration(
         color: Colors.white,
@@ -100,18 +104,20 @@ class DayDetailSheet extends ConsumerWidget {
           // ── CTAs ──
           Row(
             children: [
-              Expanded(
-                child: _ActionButton(
-                  label: '📝  Log this day',
-                  isPrimary: true,
-                  onTap: () {
-                    Navigator.of(context).pop();
-                    final dateStr = day.date.toIso8601String();
-                    context.go('/log?date=$dateStr');
-                  },
+              if (!isFuture) ...[
+                Expanded(
+                  child: _ActionButton(
+                    label: '📝  Log this day',
+                    isPrimary: true,
+                    onTap: () {
+                      Navigator.of(context).pop();
+                      final dateStr = day.date.toIso8601String();
+                      context.go('/log?date=$dateStr');
+                    },
+                  ),
                 ),
-              ),
-              const SizedBox(width: 10),
+                const SizedBox(width: 10),
+              ],
               Expanded(
                 child: _ActionButton(
                   label: '🌿  Rituals',
