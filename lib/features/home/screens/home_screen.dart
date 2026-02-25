@@ -26,6 +26,42 @@ Color modeColor(String mode) {
   }
 }
 
+// ── Mode → Luna FAB gradient colors ──────────────────────────
+List<Color> _modeFabGradient(String mode) {
+  switch (mode) {
+    case 'preg':
+      return [const Color(0xFF7AA0E0), const Color(0xFF4A70B0)];
+    case 'ovul':
+      return [const Color(0xFF78C890), const Color(0xFF5A8E6A)];
+    default:
+      return [const Color(0xFFE8789A), const Color(0xFFC95678)];
+  }
+}
+
+// ── Mode → Luna FAB shadow color ─────────────────────────────
+Color _modeFabShadow(String mode) {
+  switch (mode) {
+    case 'preg':
+      return const Color(0xFF4A70B0);
+    case 'ovul':
+      return const Color(0xFF5A8E6A);
+    default:
+      return const Color(0xFFC95678);
+  }
+}
+
+// ── Mode → Luna FAB ring color ───────────────────────────────
+Color _modeFabRing(String mode) {
+  switch (mode) {
+    case 'preg':
+      return const Color(0xFFC8DCF8);
+    case 'ovul':
+      return const Color(0xFFBEE6CD);
+    default:
+      return const Color(0xFFFCDCE6);
+  }
+}
+
 // ── Logs count provider ───────────────────────────────────────
 final _logsCountProvider = StreamProvider<int>((ref) {
   final auth = ref.watch(firebaseAuthProvider);
@@ -71,7 +107,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
   final TextEditingController _nicknameController = TextEditingController();
   String _displayName = 'Sweetie';
 
-  // ── Luna pulse animation ──────────────────────────────────
+  // ── Luna FAB pulse animation ──────────────────────────────
   late final AnimationController _lunaPulseCtrl;
   late final Animation<double> _lunaPulse;
 
@@ -81,9 +117,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     _loadNickname();
     _lunaPulseCtrl = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 2200),
+      duration: const Duration(milliseconds: 3500),
     )..repeat(reverse: true);
-    _lunaPulse = Tween<double>(begin: 0.85, end: 1.0).animate(
+    _lunaPulse = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(parent: _lunaPulseCtrl, curve: Curves.easeInOut),
     );
   }
@@ -192,6 +228,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                 ),
               ),
             ),
+
+            // ── Luna FAB — matching HTML .luna-fab ──
+            Positioned(
+              bottom: 92,
+              right: 18,
+              child: _buildLunaFab(currentMode),
+            ),
           ],
         ),
       ),
@@ -202,9 +245,91 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     );
   }
 
-  // ─────────────────────────────────────────────────────────
-  //  TOP ROW — greeting + Luna button + profile button
-  // ─────────────────────────────────────────────────────────
+  // ─────────────────────────────────────────────────────────────
+  //  LUNA FAB — matches HTML .luna-fab design exactly
+  // ─────────────────────────────────────────────────────────────
+
+  Widget _buildLunaFab(String mode) {
+    final gradientColors = _modeFabGradient(mode);
+    final shadowColor = _modeFabShadow(mode);
+    final ringColor = _modeFabRing(mode);
+
+    return AnimatedBuilder(
+      animation: _lunaPulse,
+      builder: (context, child) {
+        // Interpolate the outer ring spread: 4px → 8px (matches HTML keyframe)
+        final ringSpread = 4.0 + (_lunaPulse.value * 4.0);
+        final ringOpacity = 0.55 - (_lunaPulse.value * 0.35);
+        final shadowOpacity = 0.38 + (_lunaPulse.value * 0.07);
+
+        return GestureDetector(
+          onTap: () => context.go('/luna'),
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
+            width: 54,
+            height: 54,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: gradientColors,
+              ),
+              boxShadow: [
+                // inner drop shadow
+                BoxShadow(
+                  color: shadowColor.withOpacity(shadowOpacity),
+                  blurRadius: 20,
+                  offset: const Offset(0, 6),
+                ),
+                // pulsing outer ring
+                BoxShadow(
+                  color: ringColor.withOpacity(ringOpacity),
+                  blurRadius: 0,
+                  spreadRadius: ringSpread,
+                ),
+              ],
+            ),
+            child: Stack(
+              children: [
+                // ── Moon icon + label ──
+                Center(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Text('🌙',
+                          style: TextStyle(fontSize: 22, height: 1.0)),
+                      const SizedBox(height: 1),
+                      Text(
+                        'SOLUNA',
+                        style: GoogleFonts.nunito(
+                          fontSize: 5.5,
+                          fontWeight: FontWeight.w900,
+                          color: Colors.white.withOpacity(0.9),
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                // ── Notification dot (top-right) ──
+                Positioned(
+                  top: 6,
+                  right: 6,
+                  child: _PulsingDot(),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  // ─────────────────────────────────────────────────────────────
+  //  TOP ROW — greeting + profile button only (Luna moved to FAB)
+  // ─────────────────────────────────────────────────────────────
 
   Widget _buildTopRow(Color themeColor) {
     return Row(
@@ -306,65 +431,27 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
           ),
         ),
 
-        // Action buttons — Ask Soluna + profile
-        Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // ── Ask Soluna button ─────────────────────────
-            AnimatedBuilder(
-              animation: _lunaPulse,
-              builder: (context, child) => GestureDetector(
-                onTap: () => context.go('/luna'),
-                child: Container(
-                  width: 44,
-                  height: 44,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: Colors.white.withOpacity(0.85),
-                    border: Border.all(
-                      color: themeColor.withOpacity(0.45 * _lunaPulse.value),
-                      width: 1.5,
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: themeColor.withOpacity(0.2 * _lunaPulse.value),
-                        blurRadius: 10 * _lunaPulse.value,
-                        spreadRadius: 1,
-                      ),
-                    ],
-                  ),
-                  child: const Center(
-                    child: Text('🌙', style: TextStyle(fontSize: 20)),
-                  ),
-                ),
-              ),
+        // Profile button only — Luna is now the floating FAB
+        GestureDetector(
+          onTap: () => context.go('/profile'),
+          child: Container(
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: Colors.white.withOpacity(0.85),
+              border: Border.all(color: AppColors.border, width: 1.5),
             ),
-            const SizedBox(width: 8),
-
-            // ── Profile button ─────────────────────────────
-            GestureDetector(
-              onTap: () => context.go('/profile'),
-              child: Container(
-                width: 44,
-                height: 44,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: Colors.white.withOpacity(0.85),
-                  border: Border.all(color: AppColors.border, width: 1.5),
-                ),
-                child:
-                    const Icon(Icons.person_outline, color: AppColors.textMid),
-              ),
-            ),
-          ],
+            child: const Icon(Icons.person_outline, color: AppColors.textMid),
+          ),
         ),
       ],
     );
   }
 
-  // ─────────────────────────────────────────────────────────
+  // ─────────────────────────────────────────────────────────────
   //  ROUTING HELPERS
-  // ─────────────────────────────────────────────────────────
+  // ─────────────────────────────────────────────────────────────
 
   String get _currentRoute {
     final String? location =
@@ -387,9 +474,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     }
   }
 
-  // ─────────────────────────────────────────────────────────
+  // ─────────────────────────────────────────────────────────────
   //  MODE CONTENT
-  // ─────────────────────────────────────────────────────────
+  // ─────────────────────────────────────────────────────────────
 
   Widget _buildModeSpecificContent(
       String currentMode, Map<String, dynamic>? homeData) {
@@ -806,6 +893,57 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
   Future<void> _selectMode(String mode) async {
     await ref.read(modeProvider.notifier).resetJourney();
     if (mounted) context.go('/journey/$mode');
+  }
+}
+
+// ═══════════════════════════════════════════════════════
+//  PRIVATE: Pulsing notification dot — matches HTML .luna-fab-dot
+// ═══════════════════════════════════════════════════════
+class _PulsingDot extends StatefulWidget {
+  @override
+  State<_PulsingDot> createState() => _PulsingDotState();
+}
+
+class _PulsingDotState extends State<_PulsingDot>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _ctrl;
+  late final Animation<double> _anim;
+
+  @override
+  void initState() {
+    super.initState();
+    _ctrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 2200),
+    )..repeat(reverse: true);
+    _anim = Tween<double>(begin: 1.0, end: 0.35).animate(
+      CurvedAnimation(parent: _ctrl, curve: Curves.easeInOut),
+    );
+  }
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _anim,
+      builder: (_, __) => Opacity(
+        opacity: _anim.value,
+        child: Container(
+          width: 9,
+          height: 9,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: const Color(0xFFF9C06A), // warm yellow dot
+            border: Border.all(color: Colors.white, width: 2),
+          ),
+        ),
+      ),
+    );
   }
 }
 
