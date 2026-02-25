@@ -40,40 +40,43 @@ class CalendarDayCell extends StatelessWidget {
         builder: (context, constraints) {
           // Bubble size: ~76% of available width, centered
           final bubbleSize = constraints.maxWidth * 0.76;
-          return Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            mainAxisSize: MainAxisSize.max,
-            children: [
-              // ── Cycle day badge row (above bubble) ──
-              SizedBox(
-                height: 10,
-                child: Align(
-                  alignment: Alignment.centerRight,
-                  child: Padding(
-                    padding: const EdgeInsets.only(right: 2),
-                    child: Text(
-                      'c${day.cycleDay}',
-                      style: GoogleFonts.nunito(
-                        fontSize: 6,
-                        fontWeight: FontWeight.w900,
-                        color: _cycleTagColor().withOpacity(0.45),
-                        height: 1,
+          return FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisSize: MainAxisSize.max,
+              children: [
+                // ── Cycle day badge row (above bubble) ──
+                SizedBox(
+                  height: 10,
+                  child: Align(
+                    alignment: Alignment.centerRight,
+                    child: Padding(
+                      padding: const EdgeInsets.only(right: 2),
+                      child: Text(
+                        'c${day.cycleDay}',
+                        style: GoogleFonts.nunito(
+                          fontSize: 6,
+                          fontWeight: FontWeight.w900,
+                          color: _cycleTagColor().withOpacity(0.45),
+                          height: 1,
+                        ),
                       ),
                     ),
                   ),
                 ),
-              ),
 
-              // ── Colored bubble with day number ──
-              _buildBubble(bubbleSize),
+                // ── Colored bubble with day number ──
+                _buildBubble(bubbleSize),
 
-              // ── Symptom dots (below bubble) ──
-              const SizedBox(height: 2),
-              SizedBox(
-                height: 7,
-                child: _buildDots(),
-              ),
-            ],
+                // ── Symptom dots (below bubble) ──
+                const SizedBox(height: 2),
+                SizedBox(
+                  height: 7,
+                  child: _buildDots(),
+                ),
+              ],
+            ),
           );
         },
       ),
