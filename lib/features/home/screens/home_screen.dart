@@ -10,6 +10,7 @@ import '../widgets/cycle_circle.dart';
 import '../widgets/mini_calendar.dart';
 import '../widgets/next_period_card.dart';
 import '../providers/home_provider.dart';
+import '../../../core/providers/period_journey_provider.dart';
 import '../../../core/providers/firebase_providers.dart';
 import '../../../core/widgets/app_bottom_nav.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -484,25 +485,23 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
 
     switch (currentMode) {
       case 'period':
-        final lastCycle = homeData?['lastCycle'];
-        final phase = homeData?['phase'] as String? ?? 'No data yet 🌸';
-        final cycleDay = lastCycle != null
-            ? DateTime.now().difference(lastCycle.startDate).inDays + 1
-            : 0;
-        final avgCycle = homeData?['prediction']?.averageLength ?? 28;
-        const avgPeriod = 5;
+        final journey = ref.watch(periodHomeDataProvider);
+        final cycleDay = journey?.cycleDay ?? 0;
+        final phaseLabel = journey?.phaseLabel ?? 'Loading… 🌸';
+        final cycleLen = journey?.cycleLen ?? 28;
+        final periodLen = journey?.periodLen ?? 5;
         return Column(
           children: [
-            Center(child: CycleCircle(day: cycleDay, phase: phase)),
+            Center(child: CycleCircle(day: cycleDay, phase: phaseLabel)),
             const SizedBox(height: 16),
             _buildPillsRow(
               {
-                'value': avgCycle.toString(),
-                'label': 'Avg Cycle',
+                'value': cycleLen.toString(),
+                'label': 'Cycle Days',
                 'color': AppColors.primaryRose
               },
               {
-                'value': avgPeriod.toString(),
+                'value': periodLen.toString(),
                 'label': 'Period Days',
                 'color': const Color(0xFFC9A0D0)
               },
@@ -512,6 +511,18 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                 'color': const Color(0xFF8AB88A)
               },
             ),
+            const SizedBox(height: 16),
+            _buildPredictionSourceBanner(journey),
+            if (journey != null &&
+                journey.aiResult?.insight.isNotEmpty == true) ...[
+              const SizedBox(height: 12),
+              _buildAiInsightCard(journey.aiResult!.insight),
+            ],
+            if (journey != null &&
+                (journey.flow != null || journey.symptoms.isNotEmpty)) ...[
+              const SizedBox(height: 12),
+              _buildCycleProfileCard(journey),
+            ],
             const SizedBox(height: 24),
             const PremiumGate(
               message: 'Unlock Advanced Calendar',
@@ -814,6 +825,301 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
                   color: AppColors.textMid)),
+        ],
+      ),
+    );
+  }
+
+  // ─────────────────────────────────────────────────────────────
+  //  PREDICTION SOURCE BANNER — shows learning progress + source
+  // ─────────────────────────────────────────────────────────────
+  Widget _buildPredictionSourceBanner(PeriodHomeData? journey) {
+    const rose = AppColors.primaryRose;
+    if (journey == null) return const SizedBox.shrink();
+
+    final isAi = journey.isAiDriven;
+    final isLoading = journey.aiLoading;
+    final progress = journey.learningProgress;
+    final label = journey.sourceLabel;
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      decoration: BoxDecoration(
+        color: isAi
+            ? const Color(0xFF9B7FC7).withOpacity(0.08)
+            : rose.withOpacity(0.06),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: isAi
+              ? const Color(0xFF9B7FC7).withOpacity(0.2)
+              : rose.withOpacity(0.15),
+          width: 1,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Text(
+                isLoading
+                    ? '✨ '
+                    : isAi
+                        ? '🤖 '
+                        : '📊 ',
+                style: const TextStyle(fontSize: 13),
+              ),
+              const SizedBox(width: 4),
+              Expanded(
+                child: Text(
+                  label,
+                  style: GoogleFonts.nunito(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
+                    color: isAi ? const Color(0xFF7B5FC7) : AppColors.textMuted,
+                  ),
+                ),
+              ),
+              if (!journey.isFullyLearned)
+                Text(
+                  '${journey.cyclesToConfidence} cycles to full accuracy',
+                  style: GoogleFonts.nunito(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.textMuted,
+                  ),
+                ),
+            ],
+          ),
+          if (!journey.isFullyLearned) ...[
+            const SizedBox(height: 8),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(4),
+              child: LinearProgressIndicator(
+                value: progress,
+                minHeight: 4,
+                backgroundColor: rose.withOpacity(0.1),
+                valueColor: AlwaysStoppedAnimation<Color>(
+                  isAi ? const Color(0xFF9B7FC7) : rose,
+                ),
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  // ─────────────────────────────────────────────────────────────
+  //  AI INSIGHT CARD — shows the insight returned by Claude
+  // ─────────────────────────────────────────────────────────────
+  Widget _buildAiInsightCard(String insight) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            const Color(0xFF9B7FC7).withOpacity(0.08),
+            const Color(0xFFD4639A).withOpacity(0.06),
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+            color: const Color(0xFF9B7FC7).withOpacity(0.2), width: 1),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text('✨', style: TextStyle(fontSize: 16)),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              insight,
+              style: GoogleFonts.nunito(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                color: AppColors.textMid,
+                height: 1.5,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ─────────────────────────────────────────────────────────────
+  //  CYCLE PROFILE CARD — shows journey flow + symptoms
+  // ─────────────────────────────────────────────────────────────
+  Widget _buildCycleProfileCard(PeriodHomeData journey) {
+    const rose = AppColors.primaryRose;
+
+    final flowIcon = {
+          'light': '💧',
+          'medium': '🟠',
+          'heavy': '🔴',
+          'varies': '🔀',
+        }[journey.flow] ??
+        '💧';
+
+    final flowLabel = {
+          'light': 'Light flow',
+          'medium': 'Medium flow',
+          'heavy': 'Heavy flow',
+          'varies': 'Varies',
+        }[journey.flow] ??
+        journey.flow ??
+        '';
+
+    // Filter out "None of these" from symptoms display
+    final symptoms =
+        journey.symptoms.where((s) => s != 'None of these').toList();
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.88),
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(color: AppColors.border, width: 1.5),
+        boxShadow: [
+          BoxShadow(
+            color: rose.withOpacity(0.06),
+            offset: const Offset(0, 4),
+            blurRadius: 16,
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Header
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: rose.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Text('🌸', style: TextStyle(fontSize: 16)),
+              ),
+              const SizedBox(width: 10),
+              Text(
+                'Your Cycle Profile',
+                style: GoogleFonts.nunito(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w900,
+                  color: AppColors.textDark,
+                ),
+              ),
+            ],
+          ),
+
+          // Flow row
+          if (journey.flow != null) ...[
+            const SizedBox(height: 14),
+            Row(
+              children: [
+                Text(
+                  'Typical flow',
+                  style: GoogleFonts.nunito(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.textMuted,
+                  ),
+                ),
+                const Spacer(),
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+                  decoration: BoxDecoration(
+                    color: rose.withOpacity(0.08),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: rose.withOpacity(0.2), width: 1),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(flowIcon, style: const TextStyle(fontSize: 13)),
+                      const SizedBox(width: 5),
+                      Text(
+                        flowLabel,
+                        style: GoogleFonts.nunito(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w800,
+                          color: rose,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ],
+
+          // Symptoms chips
+          if (symptoms.isNotEmpty) ...[
+            const SizedBox(height: 14),
+            Text(
+              'Common symptoms',
+              style: GoogleFonts.nunito(
+                fontSize: 12,
+                fontWeight: FontWeight.w700,
+                color: AppColors.textMuted,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 6,
+              runSpacing: 6,
+              children: symptoms.map((s) {
+                return Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFC9A0D0).withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
+                        color: const Color(0xFFC9A0D0).withOpacity(0.3),
+                        width: 1),
+                  ),
+                  child: Text(
+                    s,
+                    style: GoogleFonts.nunito(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w700,
+                      color: const Color(0xFF9870C0),
+                    ),
+                  ),
+                );
+              }).toList(),
+            ),
+          ],
+
+          // Hint to update
+          const SizedBox(height: 14),
+          GestureDetector(
+            onTap: () => context.go('/journey/period'),
+            child: Row(
+              children: [
+                Icon(Icons.edit_outlined, size: 12, color: AppColors.textMuted),
+                const SizedBox(width: 4),
+                Text(
+                  'Update your profile',
+                  style: GoogleFonts.nunito(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.textMuted,
+                    decoration: TextDecoration.underline,
+                  ),
+                ),
+              ],
+            ),
+          ),
         ],
       ),
     );

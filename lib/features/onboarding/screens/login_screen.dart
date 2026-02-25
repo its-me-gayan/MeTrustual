@@ -5,11 +5,18 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/providers/firebase_providers.dart';
 import '../../../core/services/biometric_service.dart';
 import '../../../core/services/uuid_persistence_service.dart';
+import '../../../core/services/anonymous_migration_service.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../../core/services/notification_service.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
-  const LoginScreen({super.key});
+  /// Set to true when this login is triggered from the anonymous → premium
+  /// upgrade flow so the UI subtitle changes accordingly.
+  final bool isPremiumFlow;
+
+  const LoginScreen({super.key, this.isPremiumFlow = false});
 
   @override
   ConsumerState<LoginScreen> createState() => _LoginScreenState();
@@ -38,34 +45,178 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
     try {
       final auth = ref.read(firebaseAuthProvider);
+      final firestore = ref.read(firestoreProvider);
+
+      // ── A: Snapshot anonymous data BEFORE auth state changes ──────────
+      // We must capture this now — once we call signIn the anonymous user
+      // reference is gone from auth.currentUser.
+      final currentUser = auth.currentUser;
+      final isCurrentlyAnonymous =
+          currentUser != null && currentUser.isAnonymous;
+      AnonymousSnapshot? anonSnapshot;
+      User? anonymousAuthUser; // keep a reference for later cleanup
+
+      if (isCurrentlyAnonymous) {
+        anonymousAuthUser = currentUser;
+        anonSnapshot = await AnonymousMigrationService.captureAnonymousData(
+          auth: auth,
+          firestore: firestore,
+        );
+      }
+
+      // ── B: Sign in to the permanent account ───────────────────────────
       final userCredential = await auth.signInWithEmailAndPassword(
         email: _emailController.text.trim(),
         password: _passwordController.text,
       );
 
       final user = userCredential.user;
-      if (user != null) {
-        // Persist UUID locally
-        await UUIDPersistenceService.saveUUID(user.uid);
-        
-        // Check if PIN is already set up for this user
-        final isPinSet = await BiometricService.isBiometricSetUp();
-        
-        if (mounted) {
-          if (isPinSet) {
-            // Bypass PIN verification specifically for the login flow
-            // as the user just authenticated with their email/password.
-            // We go directly to home, but the PIN remains active for future app restarts.
-            context.go('/home');
-          } else {
-            context.go('/biometric-setup/${user.uid}');
+      if (user == null) {
+        _showError('Login failed. Please try again.');
+        return;
+      }
+
+      // ── C: Migrate anonymous data (when applicable) ───────────────────
+      if (anonSnapshot != null && anonSnapshot.hasAnyData) {
+        // SECURITY CHECK: does the account they just signed in to already
+        // have its own real data?  If yes we ask for explicit confirmation.
+        final targetHasData =
+            await AnonymousMigrationService.targetAccountHasData(
+          targetUid: user.uid,
+          firestore: firestore,
+        );
+
+        bool proceedWithMigration = true;
+
+        if (targetHasData) {
+          // Show dialog — user must actively confirm before we touch anything.
+          // This also prevents an adversary who stole credentials from silently
+          // corrupting the victim's account (they'd have to tap "Merge" and
+          // even then the merge is non-destructive).
+          proceedWithMigration = await _showMergeConfirmationDialog();
+        }
+
+        if (proceedWithMigration) {
+          final result = await AnonymousMigrationService.mergeIntoTarget(
+            snapshot: anonSnapshot,
+            targetUid: user.uid,
+            firestore: firestore,
+          );
+
+          if (result.success) {
+            // Queue the anonymous account for deletion via Cloud Function.
+            // Writes to pending_deletions/{uid} which the server watches.
+            await AnonymousMigrationService.queueAnonymousAccountDeletion(
+              anonymousUid: anonSnapshot.anonymousUid,
+              firestore: firestore,
+            );
+
+            if (mounted && result.journeyMigrated ||
+                result.settingsMigrated ||
+                result.logsMigrated > 0) {
+              final msg = _buildSuccessMessage(result);
+              NotificationService.showSuccess(context, msg);
+            }
           }
         }
       }
+
+      // ── D: Persist UID locally and navigate ───────────────────────────
+      await UUIDPersistenceService.saveUUID(user.uid);
+
+      final isPinSet = await BiometricService.isBiometricSetUp();
+      if (mounted) {
+        if (isPinSet) {
+          context.go('/home');
+        } else {
+          context.go('/biometric-setup/${user.uid}');
+        }
+      }
+    } on FirebaseAuthException catch (e) {
+      _showError(_friendlyAuthError(e.code));
     } catch (e) {
       _showError('Login failed: ${e.toString()}');
     } finally {
       if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  Future<bool> _showMergeConfirmationDialog() async {
+    return await showDialog<bool>(
+          context: context,
+          barrierDismissible: false,
+          builder: (ctx) => AlertDialog(
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+            title: Text(
+              '⚠️ This account already has data',
+              style: GoogleFonts.nunito(
+                fontWeight: FontWeight.w800,
+                color: AppColors.textDark,
+              ),
+            ),
+            content: Text(
+              'This account has its own history.\n\n'
+              'Your current session data can be merged in — but '
+              'nothing in the existing account will be overwritten.\n\n'
+              'Only tap "Merge" if this is your own account.',
+              style: GoogleFonts.nunito(
+                fontSize: 14,
+                color: AppColors.textMid,
+                height: 1.5,
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(ctx).pop(false),
+                child: Text(
+                  'Skip merge',
+                  style: GoogleFonts.nunito(
+                      color: AppColors.textMid, fontWeight: FontWeight.w700),
+                ),
+              ),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primaryRose,
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12)),
+                ),
+                onPressed: () => Navigator.of(ctx).pop(true),
+                child: Text(
+                  'Merge my data',
+                  style: GoogleFonts.nunito(
+                      color: Colors.white, fontWeight: FontWeight.w800),
+                ),
+              ),
+            ],
+          ),
+        ) ??
+        false;
+  }
+
+  String _buildSuccessMessage(MigrationResult result) {
+    final parts = <String>[];
+    if (result.journeyMigrated) parts.add('cycle history');
+    if (result.settingsMigrated) parts.add('settings');
+    if (result.logsMigrated > 0)
+      parts.add('${result.logsMigrated} log entries');
+    if (parts.isEmpty) return 'Welcome back!';
+    return 'Transferred: ${parts.join(', ')} ✨';
+  }
+
+  String _friendlyAuthError(String code) {
+    switch (code) {
+      case 'user-not-found':
+        return 'No account found with that email.';
+      case 'wrong-password':
+      case 'invalid-credential':
+        return 'Incorrect password. Please try again.';
+      case 'user-disabled':
+        return 'This account has been disabled.';
+      case 'too-many-requests':
+        return 'Too many attempts. Please wait a moment.';
+      default:
+        return 'Login failed. Please check your details.';
     }
   }
 
@@ -102,7 +253,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     ),
               ),
               const SizedBox(height: 8),
-              Text('Log in to sync your premium data across devices',
+              Text(
+                widget.isPremiumFlow
+                    ? 'Log in to activate premium on this account'
+                    : 'Log in to sync your data across devices',
                 style: GoogleFonts.nunito(
                   fontSize: 14,
                   color: AppColors.textMid,
@@ -127,7 +281,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     _obscurePassword ? Icons.visibility_off : Icons.visibility,
                     color: AppColors.textMid,
                   ),
-                  onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+                  onPressed: () =>
+                      setState(() => _obscurePassword = !_obscurePassword),
                 ),
               ),
               const SizedBox(height: 12),
@@ -135,17 +290,18 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 alignment: Alignment.centerRight,
                 child: TextButton(
                   onPressed: () {
-                    // Implement forgot password
                     if (_emailController.text.isNotEmpty) {
                       ref.read(firebaseAuthProvider).sendPasswordResetEmail(
-                        email: _emailController.text.trim(),
-                      );
-                      NotificationService.showSuccess(context, 'Password reset email sent!');
+                            email: _emailController.text.trim(),
+                          );
+                      NotificationService.showSuccess(
+                          context, 'Password reset email sent!');
                     } else {
                       _showError('Please enter your email first');
                     }
                   },
-                  child: Text('Forgot Password?',
+                  child: Text(
+                    'Forgot Password?',
                     style: GoogleFonts.nunito(
                       color: AppColors.primaryRose,
                       fontWeight: FontWeight.w700,
@@ -174,18 +330,21 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.transparent,
                       shadowColor: Colors.transparent,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(18)),
                     ),
                     child: _isLoading
                         ? const SizedBox(
                             height: 20,
                             width: 20,
                             child: CircularProgressIndicator(
-                              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                              valueColor:
+                                  AlwaysStoppedAnimation<Color>(Colors.white),
                               strokeWidth: 2,
                             ),
                           )
-                        : Text('Log In',
+                        : Text(
+                            'Log In',
                             style: GoogleFonts.nunito(
                               fontSize: 16,
                               fontWeight: FontWeight.w900,
@@ -200,12 +359,16 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text('Don\'t have an account?',
-                      style: GoogleFonts.nunito(color: AppColors.textMid, fontWeight: FontWeight.w600),
+                    Text(
+                      'Don\'t have an account?',
+                      style: GoogleFonts.nunito(
+                          color: AppColors.textMid,
+                          fontWeight: FontWeight.w600),
                     ),
                     TextButton(
                       onPressed: () => context.pop(),
-                      child: Text('Sign Up',
+                      child: Text(
+                        'Sign Up',
                         style: GoogleFonts.nunito(
                           color: AppColors.primaryRose,
                           fontWeight: FontWeight.w800,

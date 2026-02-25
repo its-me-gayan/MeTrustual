@@ -13,6 +13,7 @@ import '../../../core/services/backup_service.dart';
 import '../../../models/user_profile_model.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import '../../../core/providers/premium_provider.dart';
 
 // ─────────────────────────────────────────────────────────
 //  DELETION OVERLAY WIDGET
@@ -564,6 +565,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     final user = auth.currentUser;
     final firestore = ref.watch(firestoreProvider);
     final currentMode = ref.watch(modeProvider);
+    final isPremium = ref.watch(premiumStatusProvider).value ?? false;
     final themeColor = AppColors.getModeColor(currentMode, soft: true);
 
     return Scaffold(
@@ -655,7 +657,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                             const SizedBox(height: 24),
                             _buildSectionTitle('DANGER ZONE'),
                             _buildSettingsCard([
-                              if (user.isAnonymous == false)
+                              if (isPremium)
                                 _buildSettingsTile(
                                     Icons.star_border,
                                     'Cancel Premium Membership',

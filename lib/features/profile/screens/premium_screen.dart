@@ -6,6 +6,8 @@ import 'package:go_router/go_router.dart';
 import '../../../core/providers/premium_provider.dart';
 import '../../../core/providers/mode_provider.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/providers/firebase_providers.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 // ── Plan enum ───────────────────────────────────────────────
 enum PremiumPlan { monthly, yearly, lifetime }
@@ -157,11 +159,57 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen>
     HapticFeedback.mediumImpact();
     try {
       await Future.delayed(const Duration(milliseconds: 500));
-      if (mounted) context.push('/signup?premium=true');
+
+      final auth = ref.read(firebaseAuthProvider);
+      final firestore = ref.read(firestoreProvider);
+      final currentUser = auth.currentUser;
+
+      if (currentUser == null) {
+        // No session at all — shouldn't happen, but guard anyway
+        if (mounted) context.push('/signup?premium=true');
+        return;
+      }
+
+      if (!currentUser.isAnonymous) {
+        // ── Already logged in with a real account ──────────────────────
+        // No signup or login needed. Write isPremium directly and stay in
+        // the app. directPremiumUpgrade: true is the one-use flag that the
+        // Firestore rule checks to allow isPremium going true from a client.
+        await firestore.collection('users').doc(currentUser.uid).set({
+          'isPremium': true,
+          'premiumSince': FieldValue.serverTimestamp(),
+          'cancelledAt': null,
+          'directPremiumUpgrade': true,
+        }, SetOptions(merge: true));
+
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: Text('Welcome to Premium! ✨',
+                style: GoogleFonts.nunito(fontWeight: FontWeight.w700)),
+            backgroundColor: _modeAccent(ref.read(modeProvider))[0],
+            behavior: SnackBarBehavior.floating,
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          ));
+          context.pop(); // go back to wherever they came from
+        }
+      } else {
+        // ── Anonymous user buying premium ──────────────────────────────
+        // Write isPremium to the anonymous account NOW so the migration
+        // service can transfer it — whether the user signs up fresh or
+        // logs into an existing account on the next screen.
+        await firestore.collection('users').doc(currentUser.uid).set({
+          'isPremium': true,
+          'premiumSince': FieldValue.serverTimestamp(),
+        }, SetOptions(merge: true));
+
+        if (mounted) context.push('/signup?premium=true');
+      }
     } catch (e) {
+      debugPrint('❌ _handlePurchase error: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text('Action failed. Please try again.',
+          content: Text('Purchase failed: $e',
               style: GoogleFonts.nunito(fontWeight: FontWeight.w700)),
           backgroundColor: _modeAccent(ref.read(modeProvider))[0],
           behavior: SnackBarBehavior.floating,
