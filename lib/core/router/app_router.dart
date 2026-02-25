@@ -1,3 +1,4 @@
+import 'package:Soluna/features/home/screens/luna_screen.dart';
 import 'package:go_router/go_router.dart';
 import '../../features/onboarding/screens/splash_screen.dart';
 import '../../features/onboarding/screens/onboarding_screen.dart';
@@ -92,5 +93,6 @@ final GoRouter appRouter = GoRouter(
       path: '/care',
       builder: (context, state) => const SelfCareScreen(),
     ),
+    GoRoute(path: '/luna', builder: (_, __) => const LunaScreen()),
   ],
 );

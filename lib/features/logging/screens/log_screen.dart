@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:intl/intl.dart';
 import '../../../core/theme/app_colors.dart';
-import '../../../core/widgets/premium_gate.dart';
+import '../../../core/providers/firebase_providers.dart';
 import '../../../core/providers/mode_provider.dart';
 import '../../../core/services/notification_service.dart';
-import 'package:google_fonts/google_fonts.dart';
+import '../../../core/widgets/premium_gate.dart';
 
 class LogScreen extends ConsumerStatefulWidget {
   const LogScreen({super.key});
@@ -15,126 +18,326 @@ class LogScreen extends ConsumerStatefulWidget {
 }
 
 class _LogScreenState extends ConsumerState<LogScreen> {
-  // Period Mode State
+  bool _isSaving = false;
+
+  // ── Existing log state ────────────────────────────────
+  bool _isExistingLog = false;
+  DateTime? _lastUpdatedAt;
+  bool _isLoadingExisting = true;
+
+  // ── Period Mode State ─────────────────────────────────
   String? selectedFlow;
   String? selectedMoodPeriod;
   List<String> selectedSymptomsPeriod = [];
   int waterGlasses = 6;
   int sleepHours = 7;
-  String periodNote = 'Feeling a bit drained. Cramps are manageable today.';
+  final TextEditingController _periodNoteCtrl = TextEditingController();
 
-  // Pregnancy Mode State
+  // ── Pregnancy Mode State ──────────────────────────────
   int kicks = 0;
   String? selectedMoodPreg;
   List<String> selectedSymptomsPreg = [];
   int waterGlassesPreg = 8;
   int weightKg = 64;
-  String pregNote = '';
+  final TextEditingController _pregApptNoteCtrl = TextEditingController();
 
-  // Ovulation Mode State
-  double bbt = 36.72;
+  // ── Ovulation Mode State ──────────────────────────────
+  final TextEditingController _bbtCtrl = TextEditingController(text: '36.72');
   String? selectedCervicalMucus;
   String? selectedOpkResult;
   String? selectedMoodOvul;
   List<String> selectedSymptomsOvul = [];
-  String ovulNote = '';
+  final TextEditingController _ovulNoteCtrl = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    // Defer until after first frame so ref is ready
+    WidgetsBinding.instance.addPostFrameCallback((_) => _loadExistingLog());
+  }
+
+  @override
+  void dispose() {
+    _periodNoteCtrl.dispose();
+    _pregApptNoteCtrl.dispose();
+    _bbtCtrl.dispose();
+    _ovulNoteCtrl.dispose();
+    super.dispose();
+  }
+
+  String get _todayKey => DateFormat('yyyy-MM-dd').format(DateTime.now());
+  String get _todayLabel =>
+      DateFormat('EEEE · MMM d, yyyy').format(DateTime.now());
+
+  // ── Load existing log from Firestore ─────────────────
+  Future<void> _loadExistingLog() async {
+    final uid = ref.read(firebaseAuthProvider).currentUser?.uid;
+    if (uid == null) {
+      if (mounted) setState(() => _isLoadingExisting = false);
+      return;
+    }
+    final mode = ref.read(modeProvider);
+    final firestore = ref.read(firestoreProvider);
+
+    try {
+      final doc = await firestore
+          .collection('users')
+          .doc(uid)
+          .collection('logs')
+          .doc(mode)
+          .collection('entries')
+          .doc(_todayKey)
+          .get();
+
+      if (doc.exists && mounted) {
+        final d = doc.data()!;
+
+        // Resolve savedAt timestamp
+        DateTime? savedAt;
+        if (d['savedAt'] is Timestamp) {
+          savedAt = (d['savedAt'] as Timestamp).toDate();
+        }
+
+        // Pre-fill based on mode
+        if (mode == 'period') {
+          selectedFlow = d['flow'] as String?;
+          selectedMoodPeriod = d['mood'] as String?;
+          selectedSymptomsPeriod =
+              List<String>.from(d['symptoms'] as List? ?? []);
+          waterGlasses = (d['water'] as num?)?.toInt() ?? 6;
+          sleepHours = (d['sleep'] as num?)?.toInt() ?? 7;
+          _periodNoteCtrl.text = d['note'] as String? ?? '';
+        } else if (mode == 'preg') {
+          kicks = (d['kicks'] as num?)?.toInt() ?? 0;
+          selectedMoodPreg = d['mood'] as String?;
+          selectedSymptomsPreg =
+              List<String>.from(d['symptoms'] as List? ?? []);
+          waterGlassesPreg = (d['water'] as num?)?.toInt() ?? 8;
+          weightKg = (d['weight'] as num?)?.toInt() ?? 64;
+          _pregApptNoteCtrl.text = d['appointmentNote'] as String? ?? '';
+        } else if (mode == 'ovul') {
+          final bbt = d['bbt'];
+          if (bbt != null) _bbtCtrl.text = bbt.toString();
+          selectedCervicalMucus = d['mucus'] as String?;
+          selectedOpkResult = d['opk'] as String?;
+          selectedMoodOvul = d['mood'] as String?;
+          selectedSymptomsOvul =
+              List<String>.from(d['symptoms'] as List? ?? []);
+          _ovulNoteCtrl.text = d['note'] as String? ?? '';
+        }
+
+        setState(() {
+          _isExistingLog = true;
+          _lastUpdatedAt = savedAt;
+          _isLoadingExisting = false;
+        });
+      } else {
+        if (mounted) setState(() => _isLoadingExisting = false);
+      }
+    } catch (_) {
+      // Silently fail — user can still log fresh
+      if (mounted) setState(() => _isLoadingExisting = false);
+    }
+  }
+
+  // ── Save to Firebase ──────────────────────────────────
+  Future<void> _save() async {
+    final uid = ref.read(firebaseAuthProvider).currentUser?.uid;
+    if (uid == null) return;
+    final mode = ref.read(modeProvider);
+    final firestore = ref.read(firestoreProvider);
+
+    setState(() => _isSaving = true);
+    try {
+      final Map<String, dynamic> data = {
+        'date': _todayKey,
+        'mode': mode,
+        'savedAt': FieldValue.serverTimestamp(),
+      };
+
+      if (mode == 'period') {
+        data['flow'] = selectedFlow ?? '';
+        data['mood'] = selectedMoodPeriod ?? '';
+        data['symptoms'] = selectedSymptomsPeriod;
+        data['water'] = waterGlasses;
+        data['sleep'] = sleepHours;
+        data['note'] = _periodNoteCtrl.text.trim();
+      } else if (mode == 'preg') {
+        data['kicks'] = kicks;
+        data['mood'] = selectedMoodPreg ?? '';
+        data['symptoms'] = selectedSymptomsPreg;
+        data['water'] = waterGlassesPreg;
+        data['weight'] = weightKg;
+        data['appointmentNote'] = _pregApptNoteCtrl.text.trim();
+      } else if (mode == 'ovul') {
+        data['bbt'] = double.tryParse(_bbtCtrl.text) ?? 0.0;
+        data['mucus'] = selectedCervicalMucus ?? '';
+        data['opk'] = selectedOpkResult ?? '';
+        data['mood'] = selectedMoodOvul ?? '';
+        data['symptoms'] = selectedSymptomsOvul;
+        data['note'] = _ovulNoteCtrl.text.trim();
+      }
+
+      await firestore
+          .collection('users')
+          .doc(uid)
+          .collection('logs')
+          .doc(mode)
+          .collection('entries')
+          .doc(_todayKey)
+          .set(data, SetOptions(merge: true));
+
+      if (mounted) {
+        NotificationService.showSuccess(
+          context,
+          _isExistingLog ? 'Log updated! 🌸' : 'Log saved! 🌸',
+        );
+        context.go('/home');
+      }
+    } catch (e) {
+      if (mounted) NotificationService.showError(context, 'Error: $e');
+    } finally {
+      if (mounted) setState(() => _isSaving = false);
+    }
+  }
+
+  // ── Formatted last-updated label ─────────────────────
+  String get _lastUpdatedLabel {
+    if (_lastUpdatedAt == null) return 'Last updated today';
+    final time = DateFormat('h:mm a').format(_lastUpdatedAt!.toLocal());
+    return 'Last updated · $time';
+  }
+
+  // ── Button label ──────────────────────────────────────
+  String _getButtonLabel(String mode) {
+    final verb = _isExistingLog ? "Update" : "Save";
+    switch (mode) {
+      case 'period':
+        return "$verb today's log ✓";
+      case 'preg':
+        return "$verb today's log 💙";
+      case 'ovul':
+        return "$verb today's log 🌿";
+      default:
+        return "$verb today's log";
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     final currentMode = ref.watch(modeProvider);
+    final color = _getAccentColor(currentMode);
 
     return Scaffold(
+      backgroundColor: const Color(0xFFFFF0F5),
       body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(22, 20, 22, 120),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  IconButton(
-                    icon: Icon(Icons.arrow_back_ios,
-                        color: AppColors.textDark, size: 20),
-                    onPressed: () => context.go('/home'),
-                  ),
-                  Text(
-                    _getPageTitle(currentMode),
-                    style: GoogleFonts.nunito(
-                      fontSize: 22,
-                      fontWeight: FontWeight.w900,
-                      color: AppColors.textDark,
+        child: _isLoadingExisting
+            ? const Center(
+                child: CircularProgressIndicator(
+                  color: AppColors.primaryRose,
+                  strokeWidth: 2.5,
+                ),
+              )
+            : SingleChildScrollView(
+                padding: const EdgeInsets.fromLTRB(22, 20, 22, 120),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // ── Header ──────────────────────────
+                    Row(
+                      children: [
+                        IconButton(
+                          icon: const Icon(Icons.arrow_back_ios_new_rounded,
+                              size: 20),
+                          color: AppColors.textDark,
+                          onPressed: () => context.canPop()
+                              ? context.pop()
+                              : context.go('/home'),
+                        ),
+                        Text(
+                          _getPageTitle(currentMode),
+                          style: GoogleFonts.nunito(
+                            fontSize: 22,
+                            fontWeight: FontWeight.w900,
+                            color: AppColors.textDark,
+                          ),
+                        ),
+                      ],
                     ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 4),
-              Text(
-                _getPageSub(currentMode),
-                style: GoogleFonts.nunito(
-                  fontSize: 11.5,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.textMuted,
+
+                    // ── Date & last-updated ─────────────
+                    Padding(
+                      padding: const EdgeInsets.only(left: 48),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            _todayLabel,
+                            style: GoogleFonts.nunito(
+                              fontSize: 11.5,
+                              fontWeight: FontWeight.w700,
+                              color: AppColors.textMuted,
+                            ),
+                          ),
+                          if (_isExistingLog) ...[
+                            const SizedBox(height: 4),
+                            _buildLastUpdatedBadge(color),
+                          ],
+                        ],
+                      ),
+                    ),
+
+                    const SizedBox(height: 20),
+                    _buildModeSpecificLogContent(currentMode),
+                    const SizedBox(height: 20),
+                    _buildSaveButton(currentMode, color),
+                  ],
                 ),
               ),
-              const SizedBox(height: 20),
-              _buildModeSpecificLogContent(currentMode),
-              const SizedBox(height: 20),
-              _buildSaveButton(currentMode),
-            ],
-          ),
-        ),
       ),
     );
   }
 
-  String _getPageTitle(String currentMode) {
-    switch (currentMode) {
-      case 'period':
-        return 'How are you? 🌸';
-      case 'preg':
-        return 'Daily Log 💙';
-      case 'ovul':
-        return 'Daily Log 🌿';
-      default:
-        return 'Daily Log';
-    }
+  // ── Last updated badge ────────────────────────────────
+  Widget _buildLastUpdatedBadge(Color color) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.08),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: color.withOpacity(0.25), width: 1),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.edit_rounded, size: 10, color: color.withOpacity(0.8)),
+          const SizedBox(width: 4),
+          Text(
+            _lastUpdatedLabel,
+            style: GoogleFonts.nunito(
+              fontSize: 10,
+              fontWeight: FontWeight.w800,
+              color: color.withOpacity(0.85),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
-  String _getPageSub(String currentMode) {
-    switch (currentMode) {
-      case 'period':
-        return 'Thursday · Feb 21, 2026';
-      case 'preg':
-        return 'Week 24 · Thursday, Feb 21';
-      case 'ovul':
-        return 'Cycle Day 14 · Feb 21, 2026';
-      default:
-        return 'Thursday · Feb 21, 2026';
-    }
-  }
-
-  Widget _buildModeSpecificLogContent(String currentMode) {
-    switch (currentMode) {
-      case 'period':
-        return _buildPeriodLogContent();
-      case 'preg':
-        return _buildPregnancyLogContent();
-      case 'ovul':
-        return _buildOvulationLogContent();
-      default:
-        return const SizedBox();
-    }
-  }
-
+  // ─────────────────────────────────────────────────────
+  //  PERIOD LOG
+  // ─────────────────────────────────────────────────────
   Widget _buildPeriodLogContent() {
+    const color = AppColors.primaryRose;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildSectionTitle('Flow today?'),
+        _sectionTitle('Flow today?'),
         _buildFlowSelection(),
-        _buildSectionTitle('Mood?'),
+        _sectionTitle('Mood?'),
         _buildMoodSelection('period'),
-        _buildSectionTitle('Physical symptoms?'),
+        _sectionTitle('Physical symptoms?'),
         _buildChipsMulti(
           [
             '🌀 Cramps',
@@ -149,46 +352,55 @@ class _LogScreenState extends ConsumerState<LogScreen> {
             '✚ More'
           ],
           selectedSymptomsPeriod,
-          (chip) => setState(() {
-            if (selectedSymptomsPeriod.contains(chip)) {
-              selectedSymptomsPeriod.remove(chip);
-            } else {
-              selectedSymptomsPeriod.add(chip);
-            }
-          }),
-          AppColors.primaryRose,
+          (chip) => setState(() => selectedSymptomsPeriod.contains(chip)
+              ? selectedSymptomsPeriod.remove(chip)
+              : selectedSymptomsPeriod.add(chip)),
+          color,
         ),
-        _buildSectionTitle('Wellness'),
+        _sectionTitle('Wellness'),
         _buildLogStepperRow(
           '💧 Water (glasses)',
           waterGlasses,
           0,
           15,
-          (val) => setState(() => waterGlasses = val),
+          (v) => setState(() => waterGlasses = v),
           '🌙 Sleep (hrs)',
           sleepHours,
           0,
           12,
-          (val) => setState(() => sleepHours = val),
-          AppColors.primaryRose,
+          (v) => setState(() => sleepHours = v),
+          color,
         ),
-        _buildSectionTitle('Note to self 🌷'),
-        _buildNoteField(periodNote, (text) => periodNote = text),
+        // ── PREMIUM: Cycle phase tip ────────────────────
+        _sectionTitle('Phase tip ✨'),
+        PremiumGate(
+          message: 'Unlock Cycle Phase Tips',
+          child: _buildPhaseTipCard(color),
+        ),
+        _sectionTitle('Note to self 🌷'),
+        _buildNoteField(
+            'Just for you — how are you really feeling?', _periodNoteCtrl),
       ],
     );
   }
 
+  // ─────────────────────────────────────────────────────
+  //  PREGNANCY LOG
+  // ─────────────────────────────────────────────────────
   Widget _buildPregnancyLogContent() {
+    const color = Color(0xFF4A70B0);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        // ── PREMIUM: Kick Counter ───────────────────────
+        _sectionTitle('Kick Counter 👶'),
         PremiumGate(
           message: 'Unlock Kick Counter',
           child: _buildKickCounter(),
         ),
-        _buildSectionTitle('How are you feeling?'),
+        _sectionTitle('How are you feeling?'),
         _buildMoodSelection('preg'),
-        _buildSectionTitle('Symptoms today?'),
+        _sectionTitle('Symptoms today?'),
         _buildChipsMulti(
           [
             '🤢 Nausea',
@@ -203,44 +415,53 @@ class _LogScreenState extends ConsumerState<LogScreen> {
             '✨ Feeling great!'
           ],
           selectedSymptomsPreg,
-          (chip) => setState(() {
-            if (selectedSymptomsPreg.contains(chip)) {
-              selectedSymptomsPreg.remove(chip);
-            } else {
-              selectedSymptomsPreg.add(chip);
-            }
-          }),
-          const Color(0xFF4A70B0),
+          (chip) => setState(() => selectedSymptomsPreg.contains(chip)
+              ? selectedSymptomsPreg.remove(chip)
+              : selectedSymptomsPreg.add(chip)),
+          color,
         ),
-        _buildSectionTitle('Wellness'),
+        _sectionTitle('Wellness'),
         _buildLogStepperRow(
           '💧 Water (glasses)',
           waterGlassesPreg,
           0,
           15,
-          (val) => setState(() => waterGlassesPreg = val),
+          (v) => setState(() => waterGlassesPreg = v),
           '⚖️ Weight (kg)',
           weightKg,
-          50,
-          120,
-          (val) => setState(() => weightKg = val),
-          const Color(0xFF4A70B0),
+          40,
+          150,
+          (v) => setState(() => weightKg = v),
+          color,
         ),
-        _buildSectionTitle('Appointment notes 🩺'),
-        _buildNoteField(pregNote, (text) => pregNote = text),
+        // ── PREMIUM: Baby development ───────────────────
+        _sectionTitle('Baby this week 🌱'),
+        PremiumGate(
+          message: 'Unlock Weekly Baby Updates',
+          child: _buildBabyDevelopmentCard(),
+        ),
+        _sectionTitle('Appointment notes 🩺'),
+        _buildNoteField('Notes from your last visit, questions for next time…',
+            _pregApptNoteCtrl),
       ],
     );
   }
 
+  // ─────────────────────────────────────────────────────
+  //  OVULATION LOG
+  // ─────────────────────────────────────────────────────
   Widget _buildOvulationLogContent() {
+    const color = Color(0xFF5A8E6A);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        // ── PREMIUM: BBT Input ──────────────────────────
+        _sectionTitle('Basal Body Temperature 🌡️'),
         PremiumGate(
           message: 'Unlock BBT Logging',
           child: _buildBBTInput(),
         ),
-        _buildSectionTitle('Cervical mucus?'),
+        _sectionTitle('Cervical mucus?'),
         _buildChipsSingle(
           [
             '🏜️ Dry / None',
@@ -251,18 +472,18 @@ class _LogScreenState extends ConsumerState<LogScreen> {
           ],
           selectedCervicalMucus,
           (chip) => setState(() => selectedCervicalMucus = chip),
-          const Color(0xFF5A8E6A),
+          color,
         ),
-        _buildSectionTitle('OPK Test result?'),
+        _sectionTitle('OPK Test result?'),
         _buildChipsSingle(
           ['⬜ Negative', '🟡 Low', '🟠 High', '🎯 Peak!', '⏭️ Didn\'t test'],
           selectedOpkResult,
           (chip) => setState(() => selectedOpkResult = chip),
-          const Color(0xFF5A8E6A),
+          color,
         ),
-        _buildSectionTitle('Mood & energy?'),
+        _sectionTitle('Mood & energy?'),
         _buildMoodSelection('ovul'),
-        _buildSectionTitle('Other symptoms?'),
+        _sectionTitle('Other symptoms?'),
         _buildChipsMulti(
           [
             '🩸 Mid-cycle spotting',
@@ -271,22 +492,237 @@ class _LogScreenState extends ConsumerState<LogScreen> {
             '🌡️ Feeling warm'
           ],
           selectedSymptomsOvul,
-          (chip) => setState(() {
-            if (selectedSymptomsOvul.contains(chip)) {
-              selectedSymptomsOvul.remove(chip);
-            } else {
-              selectedSymptomsOvul.add(chip);
-            }
-          }),
-          const Color(0xFF5A8E6A),
+          (chip) => setState(() => selectedSymptomsOvul.contains(chip)
+              ? selectedSymptomsOvul.remove(chip)
+              : selectedSymptomsOvul.add(chip)),
+          color,
         ),
-        _buildSectionTitle('Note 🌷'),
-        _buildNoteField(ovulNote, (text) => ovulNote = text),
+        // ── PREMIUM: Fertility insight ──────────────────
+        _sectionTitle('Fertility insight 🎯'),
+        PremiumGate(
+          message: 'Unlock Fertile Window Analysis',
+          child: _buildFertilityInsightCard(),
+        ),
+        _sectionTitle('Note 🌷'),
+        _buildNoteField('Anything else worth noting today?', _ovulNoteCtrl),
       ],
     );
   }
 
-  Widget _buildSectionTitle(String title) {
+  // ─────────────────────────────────────────────────────
+  //  PREMIUM CONTENT WIDGETS
+  // ─────────────────────────────────────────────────────
+
+  Widget _buildPhaseTipCard(Color color) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [color.withOpacity(0.08), color.withOpacity(0.03)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: color.withOpacity(0.2), width: 1.5),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(children: [
+            const Text('🌿', style: TextStyle(fontSize: 18)),
+            const SizedBox(width: 8),
+            Text('Fertile Window — Day 10–16',
+                style: GoogleFonts.nunito(
+                    fontSize: 13, fontWeight: FontWeight.w900, color: color)),
+          ]),
+          const SizedBox(height: 8),
+          Text(
+            'Your energy peaks now. Great time for exercise, social plans, and creative work. Oestrogen is high — you may feel more confident.',
+            style: GoogleFonts.nunito(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                color: AppColors.textMid,
+                height: 1.5),
+          ),
+          const SizedBox(height: 10),
+          Wrap(spacing: 6, children: [
+            _tipPill('🥦 Iron-rich foods', color),
+            _tipPill('💧 Stay hydrated', color),
+            _tipPill('🏃 Move your body', color),
+          ]),
+        ],
+      ),
+    );
+  }
+
+  Widget _tipPill(String label, Color color) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: color.withOpacity(0.25)),
+      ),
+      child: Text(label,
+          style: GoogleFonts.nunito(
+              fontSize: 10, fontWeight: FontWeight.w800, color: color)),
+    );
+  }
+
+  Widget _buildBabyDevelopmentCard() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Color(0xFFF0F4FF), Color(0xFFE8EEFF)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: const Color(0xFFC8D8F4), width: 1.5),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('WEEK 24 · WHAT\'S HAPPENING',
+              style: GoogleFonts.nunito(
+                  fontSize: 10,
+                  fontWeight: FontWeight.w900,
+                  color: const Color(0xFF7090C0),
+                  letterSpacing: 0.5)),
+          const SizedBox(height: 8),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text('🌽', style: TextStyle(fontSize: 36)),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('Baby is the size of a corn cob!',
+                        style: GoogleFonts.nunito(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w900,
+                            color: AppColors.textDark)),
+                    const SizedBox(height: 4),
+                    Text(
+                      'About 30cm and 600g. Baby\'s face is fully formed and practising breathing movements. Brain growing rapidly 💙',
+                      style: GoogleFonts.nunito(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.textMid,
+                          height: 1.5),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+            decoration: BoxDecoration(
+              color: const Color(0xFF4A70B0).withOpacity(0.08),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Text('Baby weight: ~600g  •  Length: ~30cm',
+                style: GoogleFonts.nunito(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w800,
+                    color: const Color(0xFF4A70B0))),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFertilityInsightCard() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Color(0xFFF0FAF4), Color(0xFFE8F5EE)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: const Color(0xFFB0D8C0), width: 1.5),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('🟢 Fertile Window — Day 10 to 16',
+              style: GoogleFonts.nunito(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w900,
+                  color: const Color(0xFF5A8E6A))),
+          const SizedBox(height: 10),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(5),
+            child: const LinearProgressIndicator(
+              value: 0.72,
+              minHeight: 10,
+              backgroundColor: Color(0xFFE8F5EE),
+              valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF5A8E6A)),
+            ),
+          ),
+          const SizedBox(height: 6),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text('Day 10',
+                  style: GoogleFonts.nunito(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w800,
+                      color: const Color(0xFFA0C8B0))),
+              Text('Peak (Day 14)',
+                  style: GoogleFonts.nunito(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w800,
+                      color: const Color(0xFF5A8E6A))),
+              Text('Day 16',
+                  style: GoogleFonts.nunito(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w800,
+                      color: const Color(0xFFA0C8B0))),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Text(
+            'BBT rise + egg-white mucus + high OPK confirms peak fertility. Your pattern is very consistent — 89% prediction accuracy 🌿',
+            style: GoogleFonts.nunito(
+                fontSize: 11,
+                fontWeight: FontWeight.w600,
+                color: AppColors.textMid,
+                height: 1.5),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ─────────────────────────────────────────────────────
+  //  SHARED UI HELPERS
+  // ─────────────────────────────────────────────────────
+
+  Widget _buildModeSpecificLogContent(String currentMode) {
+    switch (currentMode) {
+      case 'period':
+        return _buildPeriodLogContent();
+      case 'preg':
+        return _buildPregnancyLogContent();
+      case 'ovul':
+        return _buildOvulationLogContent();
+      default:
+        return const SizedBox();
+    }
+  }
+
+  Widget _sectionTitle(String title) {
     return Padding(
       padding: const EdgeInsets.only(top: 20, bottom: 10, left: 4),
       child: Text(
@@ -294,7 +730,7 @@ class _LogScreenState extends ConsumerState<LogScreen> {
         style: GoogleFonts.nunito(
           fontSize: 11,
           fontWeight: FontWeight.w900,
-          color: Color(0xFFC0A0A8),
+          color: const Color(0xFFC0A0A8),
           letterSpacing: 1.0,
         ),
       ),
@@ -314,32 +750,40 @@ class _LogScreenState extends ConsumerState<LogScreen> {
         final isSelected = selectedFlow == flow['value'];
         return GestureDetector(
           onTap: () => setState(() => selectedFlow = flow['value']),
-          child: Container(
-            padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 5),
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 180),
+            padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 14),
             decoration: BoxDecoration(
               color: isSelected
                   ? AppColors.primaryRose.withOpacity(0.1)
                   : Colors.white,
               borderRadius: BorderRadius.circular(14),
               border: Border.all(
-                color: isSelected ? AppColors.primaryRose : Color(0xFFFCE8E4),
+                color: isSelected
+                    ? AppColors.primaryRose
+                    : const Color(0xFFFCE8E4),
                 width: 1.5,
               ),
+              boxShadow: isSelected
+                  ? [
+                      BoxShadow(
+                          color: AppColors.primaryRose.withOpacity(0.15),
+                          blurRadius: 10,
+                          offset: const Offset(0, 3))
+                    ]
+                  : [],
             ),
-            child: Column(
-              children: [
-                Text(flow['icon']!, style: GoogleFonts.nunito(fontSize: 28)),
-                Text(
-                  flow['label']!,
+            child: Column(children: [
+              Text(flow['icon']!, style: const TextStyle(fontSize: 26)),
+              const SizedBox(height: 4),
+              Text(flow['label']!,
                   style: GoogleFonts.nunito(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w800,
-                    color:
-                        isSelected ? AppColors.primaryRose : AppColors.textDark,
-                  ),
-                ),
-              ],
-            ),
+                      fontSize: 11,
+                      fontWeight: FontWeight.w800,
+                      color: isSelected
+                          ? AppColors.primaryRose
+                          : AppColors.textMuted)),
+            ]),
           ),
         );
       }).toList(),
@@ -348,24 +792,23 @@ class _LogScreenState extends ConsumerState<LogScreen> {
 
   Widget _buildMoodSelection(String mode) {
     final moods = ['😔', '😐', '🙂', '😊', '🥰'];
-    Color accentColor = _getAccentColor(mode);
-    String? currentSelectedMood;
+    final color = _getAccentColor(mode);
+    String? current;
     switch (mode) {
       case 'period':
-        currentSelectedMood = selectedMoodPeriod;
+        current = selectedMoodPeriod;
         break;
       case 'preg':
-        currentSelectedMood = selectedMoodPreg;
+        current = selectedMoodPreg;
         break;
       case 'ovul':
-        currentSelectedMood = selectedMoodOvul;
+        current = selectedMoodOvul;
         break;
     }
-
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceAround,
       children: moods.map((mood) {
-        final isSelected = currentSelectedMood == mood;
+        final isSelected = current == mood;
         return GestureDetector(
           onTap: () => setState(() {
             switch (mode) {
@@ -380,17 +823,17 @@ class _LogScreenState extends ConsumerState<LogScreen> {
                 break;
             }
           }),
-          child: Container(
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 180),
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: isSelected ? accentColor.withOpacity(0.1) : Colors.white,
+              color: isSelected ? color.withOpacity(0.1) : Colors.white,
               shape: BoxShape.circle,
               border: Border.all(
-                color: isSelected ? accentColor : Color(0xFFFCE8E4),
-                width: 1.5,
-              ),
+                  color: isSelected ? color : const Color(0xFFFCE8E4),
+                  width: 1.5),
             ),
-            child: Text(mood, style: GoogleFonts.nunito(fontSize: 28)),
+            child: Text(mood, style: TextStyle(fontSize: isSelected ? 28 : 24)),
           ),
         );
       }).toList(),
@@ -402,120 +845,110 @@ class _LogScreenState extends ConsumerState<LogScreen> {
       width: double.infinity,
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Color(0xFFF0F4FF),
+        gradient: const LinearGradient(
+          colors: [Color(0xFFF0F4FF), Color(0xFFE8EEFF)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: const Color(0xFFE8EEFF), width: 1.5),
+        border: Border.all(color: const Color(0xFFC0D0F0), width: 1.5),
       ),
-      child: Column(
-        children: [
-          Text(
-            '👶 Kick Counter — Today',
+      child: Column(children: [
+        Text('👶 KICK COUNTER — TODAY',
             style: GoogleFonts.nunito(
-                fontSize: 12,
+                fontSize: 11,
                 fontWeight: FontWeight.w800,
-                color: Color(0xFF4A70B0)),
-          ),
-          const SizedBox(height: 10),
-          Text(
-            kicks.toString(),
-            style: GoogleFonts.nunito(
-                fontSize: 48,
-                fontWeight: FontWeight.w900,
-                color: Color(0xFF4A70B0)),
-          ),
-          const SizedBox(height: 14),
-          GestureDetector(
-            onTap: () => setState(() => kicks++),
-            child: Container(
-              width: 64,
-              height: 64,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                shape: BoxShape.circle,
-                boxShadow: [
-                  BoxShadow(
-                      color: const Color(0xFF4A70B0).withOpacity(0.2),
-                      blurRadius: 10,
-                      offset: const Offset(0, 4))
-                ],
-              ),
-              child: Center(
-                  child: Text('👶', style: GoogleFonts.nunito(fontSize: 32))),
+                color: const Color(0xFF7090C0),
+                letterSpacing: 0.5)),
+        const SizedBox(height: 8),
+        AnimatedSwitcher(
+          duration: const Duration(milliseconds: 150),
+          transitionBuilder: (child, anim) =>
+              ScaleTransition(scale: anim, child: child),
+          child: Text('$kicks',
+              key: ValueKey(kicks),
+              style: GoogleFonts.nunito(
+                  fontSize: 52,
+                  fontWeight: FontWeight.w900,
+                  color: const Color(0xFF4A70B0),
+                  height: 1)),
+        ),
+        const SizedBox(height: 12),
+        GestureDetector(
+          onTap: () => setState(() => kicks++),
+          child: Container(
+            width: 68,
+            height: 68,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              gradient: const LinearGradient(
+                  colors: [Color(0xFF7AA0E0), Color(0xFF4A70B0)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight),
+              boxShadow: [
+                BoxShadow(
+                    color: const Color(0xFF4A70B0).withOpacity(0.35),
+                    blurRadius: 18,
+                    offset: const Offset(0, 6))
+              ],
             ),
+            child:
+                const Center(child: Text('👶', style: TextStyle(fontSize: 30))),
           ),
-          const SizedBox(height: 12),
-          Text(
-            'Tap when you feel baby move — aim for 10 kicks in 2 hours',
+        ),
+        const SizedBox(height: 12),
+        Text('Tap when you feel baby move — aim for 10 kicks in 2 hours',
             textAlign: TextAlign.center,
             style: GoogleFonts.nunito(
                 fontSize: 10,
                 fontWeight: FontWeight.w700,
-                color: Color(0xFF7090C0)),
-          ),
-        ],
-      ),
+                color: const Color(0xFF7090C0))),
+      ]),
     );
   }
 
   Widget _buildBBTInput() {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Color(0xFFF0FAF4),
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: const Color(0xFFE8FAF0), width: 1.5),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+            color: const Color(0xFF5A8E6A).withOpacity(0.3), width: 2),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            '🌡️ Basal Body Temperature',
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Text('🌡️ BASAL BODY TEMPERATURE',
             style: GoogleFonts.nunito(
-                fontSize: 12,
-                fontWeight: FontWeight.w800,
-                color: Color(0xFF5A8E6A)),
+                fontSize: 10,
+                fontWeight: FontWeight.w900,
+                color: const Color(0xFF5A8E6A),
+                letterSpacing: 0.5)),
+        const SizedBox(height: 10),
+        TextField(
+          controller: _bbtCtrl,
+          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+          textAlign: TextAlign.center,
+          style: GoogleFonts.nunito(
+              fontSize: 34,
+              fontWeight: FontWeight.w900,
+              color: const Color(0xFF5A8E6A)),
+          decoration: InputDecoration(
+            hintText: '36.70',
+            hintStyle: GoogleFonts.nunito(
+                fontSize: 34,
+                fontWeight: FontWeight.w900,
+                color: const Color(0xFF5A8E6A).withOpacity(0.3)),
+            border: InputBorder.none,
           ),
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              Expanded(
-                child: TextField(
-                  keyboardType:
-                      const TextInputType.numberWithOptions(decimal: true),
-                  decoration: InputDecoration(
-                    hintText: '36.70',
-                    filled: true,
-                    fillColor: Colors.white,
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 16),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: const BorderSide(color: Color(0xFFE8FAF0)),
-                    ),
-                  ),
-                  onChanged: (val) => bbt = double.tryParse(val) ?? bbt,
-                ),
-              ),
-              const SizedBox(width: 12),
-              Text(
-                '°C',
-                style: GoogleFonts.nunito(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w900,
-                    color: Color(0xFF5A8E6A)),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'taken immediately on waking, before getting up',
+        ),
+        Text('°C — taken immediately on waking, before getting up',
+            textAlign: TextAlign.center,
             style: GoogleFonts.nunito(
                 fontSize: 10,
                 fontWeight: FontWeight.w700,
-                color: Color(0xFF8Aae8a)),
-          ),
-        ],
-      ),
+                color: const Color(0xFFA0C0B0))),
+      ]),
     );
   }
 
@@ -528,24 +961,23 @@ class _LogScreenState extends ConsumerState<LogScreen> {
         final isSelected = selected.contains(chip);
         return GestureDetector(
           onTap: () => onToggle(chip),
-          child: Container(
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 160),
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
             decoration: BoxDecoration(
-              color: isSelected ? color : Colors.white,
-              borderRadius: BorderRadius.circular(12),
+              color: isSelected ? color.withOpacity(0.1) : Colors.white,
+              borderRadius: BorderRadius.circular(20),
               border: Border.all(
-                color: isSelected ? color : Color(0xFFFCE8E4),
-                width: 1.5,
-              ),
+                  color: isSelected
+                      ? color.withOpacity(0.6)
+                      : const Color(0xFFFCE8E4),
+                  width: 1.5),
             ),
-            child: Text(
-              chip,
-              style: GoogleFonts.nunito(
-                fontSize: 12,
-                fontWeight: FontWeight.w800,
-                color: isSelected ? Colors.white : AppColors.textMid,
-              ),
-            ),
+            child: Text(chip,
+                style: GoogleFonts.nunito(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                    color: isSelected ? color : const Color(0xFFC0A0A8))),
           ),
         );
       }).toList(),
@@ -561,24 +993,23 @@ class _LogScreenState extends ConsumerState<LogScreen> {
         final isSelected = selected == chip;
         return GestureDetector(
           onTap: () => onSelect(chip),
-          child: Container(
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 160),
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
             decoration: BoxDecoration(
-              color: isSelected ? color : Colors.white,
-              borderRadius: BorderRadius.circular(12),
+              color: isSelected ? color.withOpacity(0.1) : Colors.white,
+              borderRadius: BorderRadius.circular(20),
               border: Border.all(
-                color: isSelected ? color : Color(0xFFFCE8E4),
-                width: 1.5,
-              ),
+                  color: isSelected
+                      ? color.withOpacity(0.6)
+                      : const Color(0xFFFCE8E4),
+                  width: 1.5),
             ),
-            child: Text(
-              chip,
-              style: GoogleFonts.nunito(
-                fontSize: 12,
-                fontWeight: FontWeight.w800,
-                color: isSelected ? Colors.white : AppColors.textMid,
-              ),
-            ),
+            child: Text(chip,
+                style: GoogleFonts.nunito(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                    color: isSelected ? color : const Color(0xFFC0A0A8))),
           ),
         );
       }).toList(),
@@ -586,123 +1017,160 @@ class _LogScreenState extends ConsumerState<LogScreen> {
   }
 
   Widget _buildLogStepperRow(
-      String l1,
-      int v1,
-      int min1,
-      int max1,
-      Function(int) onC1,
-      String l2,
-      dynamic v2,
-      int min2,
-      int max2,
-      Function(int) onC2,
-      Color color) {
-    return Row(
-      children: [
-        Expanded(child: _buildLogStepper(l1, v1, min1, max1, onC1, color)),
-        const SizedBox(width: 12),
-        Expanded(child: _buildLogStepper(l2, v2, min2, max2, onC2, color)),
-      ],
-    );
+    String l1,
+    int v1,
+    int min1,
+    int max1,
+    Function(int) onC1,
+    String l2,
+    int v2,
+    int min2,
+    int max2,
+    Function(int) onC2,
+    Color color,
+  ) {
+    return Row(children: [
+      Expanded(child: _buildLogStepper(l1, v1, min1, max1, onC1, color)),
+      const SizedBox(width: 12),
+      Expanded(child: _buildLogStepper(l2, v2, min2, max2, onC2, color)),
+    ]);
   }
 
-  Widget _buildLogStepper(String label, dynamic value, int min, int max,
+  Widget _buildLogStepper(String label, int value, int min, int max,
       Function(int) onChanged, Color color) {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Color(0xFFFCE8E4), width: 1.5),
+        border: Border.all(color: const Color(0xFFFCE8E4), width: 1.5),
       ),
-      child: Column(
-        children: [
-          Text(
-            label,
+      child: Column(children: [
+        Text(label,
             style: GoogleFonts.nunito(
                 fontSize: 10,
                 fontWeight: FontWeight.w800,
-                color: AppColors.textMuted),
-          ),
-          const SizedBox(height: 8),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              _buildStepBtn(Icons.remove, () {
-                if (value > min) onChanged(value - 1);
-              }, color),
-              Text(
-                value.toString(),
+                color: AppColors.textMuted)),
+        const SizedBox(height: 8),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            _stepBtn(Icons.remove, color, () {
+              if (value > min) onChanged(value - 1);
+            }),
+            Text('$value',
                 style: GoogleFonts.nunito(
-                    fontSize: 18, fontWeight: FontWeight.w900, color: color),
-              ),
-              _buildStepBtn(Icons.add, () {
-                if (value < max) onChanged(value + 1);
-              }, color),
-            ],
-          ),
-        ],
-      ),
+                    fontSize: 18, fontWeight: FontWeight.w900, color: color)),
+            _stepBtn(Icons.add, color, () {
+              if (value < max) onChanged(value + 1);
+            }),
+          ],
+        ),
+      ]),
     );
   }
 
-  Widget _buildStepBtn(IconData icon, VoidCallback onTap, Color color) {
+  Widget _stepBtn(IconData icon, Color color, VoidCallback onTap) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
         width: 28,
         height: 28,
         decoration: BoxDecoration(
-          color: color.withOpacity(0.1),
-          shape: BoxShape.circle,
-        ),
+            color: color.withOpacity(0.1), shape: BoxShape.circle),
         child: Icon(icon, size: 16, color: color),
       ),
     );
   }
 
-  Widget _buildNoteField(String initial, Function(String) onChanged) {
+  Widget _buildNoteField(String hint, TextEditingController controller) {
     return TextField(
+      controller: controller,
       maxLines: 3,
-      controller: TextEditingController(text: initial),
+      style: GoogleFonts.nunito(
+          fontSize: 13,
+          fontWeight: FontWeight.w600,
+          color: const Color(0xFF5A3838)),
       decoration: InputDecoration(
-        hintText: 'Just for you — how are you really feeling?',
+        hintText: hint,
+        hintStyle: GoogleFonts.nunito(
+            fontSize: 13,
+            fontWeight: FontWeight.w600,
+            color: const Color(0xFFDDBEC0)),
         filled: true,
         fillColor: Colors.white,
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
-          borderSide: const BorderSide(color: Color(0xFFFCE8E4), width: 1.5),
-        ),
+            borderRadius: BorderRadius.circular(16),
+            borderSide: const BorderSide(color: Color(0xFFFCE8E4), width: 1.5)),
+        enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(16),
+            borderSide: const BorderSide(color: Color(0xFFFCE8E4), width: 1.5)),
+        focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(16),
+            borderSide: const BorderSide(color: Color(0xFFF0B0B8), width: 1.5)),
+        contentPadding: const EdgeInsets.all(14),
       ),
-      onChanged: onChanged,
     );
   }
 
-  Widget _buildSaveButton(String mode) {
-    Color color = _getAccentColor(mode);
-    return SizedBox(
+  Widget _buildSaveButton(String mode, Color color) {
+    return Container(
       width: double.infinity,
-      height: 56,
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: mode == 'period'
+              ? [const Color(0xFFF09090), const Color(0xFFD97B8A)]
+              : mode == 'preg'
+                  ? [const Color(0xFF7AA0E0), const Color(0xFF4A70B0)]
+                  : [const Color(0xFF78C890), const Color(0xFF5A8E6A)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(18),
+        boxShadow: [
+          BoxShadow(
+              color: color.withOpacity(0.35),
+              offset: const Offset(0, 6),
+              blurRadius: 18)
+        ],
+      ),
       child: ElevatedButton(
-        onPressed: () {
-          NotificationService.showSuccess(
-              context, 'Log saved successfully! 🌸');
-          context.go('/home');
-        },
+        onPressed: _isSaving ? null : _save,
         style: ElevatedButton.styleFrom(
-          backgroundColor: color,
-          foregroundColor: Colors.white,
-          elevation: 4,
-          shadowColor: color.withOpacity(0.4),
+          backgroundColor: Colors.transparent,
+          shadowColor: Colors.transparent,
+          padding: const EdgeInsets.symmetric(vertical: 16),
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
         ),
-        child: Text(
-          mode == 'preg' ? 'Save today\'s log 💙' : 'Save today\'s log ✓',
-          style: GoogleFonts.nunito(fontSize: 16, fontWeight: FontWeight.w900),
-        ),
+        child: _isSaving
+            ? const SizedBox(
+                width: 22,
+                height: 22,
+                child: CircularProgressIndicator(
+                    color: Colors.white, strokeWidth: 2.5))
+            : Text(
+                _getButtonLabel(mode),
+                style: GoogleFonts.nunito(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w900,
+                    color: Colors.white),
+              ),
       ),
     );
+  }
+
+  String _getPageTitle(String mode) {
+    switch (mode) {
+      case 'period':
+        return 'How are you? 🌸';
+      case 'preg':
+        return 'Daily Log 💙';
+      case 'ovul':
+        return 'Daily Log 🌿';
+      default:
+        return 'Daily Log';
+    }
   }
 
   Color _getAccentColor(String mode) {

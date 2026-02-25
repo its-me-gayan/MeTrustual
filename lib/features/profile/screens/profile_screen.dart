@@ -179,6 +179,99 @@ class ProfileScreen extends ConsumerStatefulWidget {
 class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   bool _isLoading = false;
 
+  // ── PIN status ───────────────────────────────────────
+  bool _pinExists = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkPinStatus();
+  }
+
+  Future<void> _checkPinStatus() async {
+    final exists = await BiometricService.isBiometricSetUp();
+    if (mounted) setState(() => _pinExists = exists);
+  }
+
+  // ── PIN handlers ─────────────────────────────────────
+
+  void _handleSetupPin() {
+    final user = ref.read(firebaseAuthProvider).currentUser;
+    if (user == null) return;
+    context.push('/biometric-setup/${user.uid}').then((_) {
+      // Refresh PIN status when returning from setup screen
+      _checkPinStatus();
+    });
+  }
+
+  Future<void> _handleRemovePin() async {
+    final currentMode = ref.read(modeProvider);
+    final themeColor = AppColors.getModeColor(currentMode, soft: true);
+
+    // Step 1 — Ask user to enter their current PIN
+    final enteredPin = await showDialog<String>(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => _VerifyPinDialog(themeColor: themeColor),
+    );
+
+    if (enteredPin == null || enteredPin.isEmpty) return;
+
+    // Step 2 — Verify the entered PIN
+    final isCorrect = await BiometricService.verifyWithPin(enteredPin);
+
+    if (!mounted) return;
+
+    if (!isCorrect) {
+      NotificationService.showError(
+          context, 'Incorrect PIN — please try again');
+      return;
+    }
+
+    // Step 3 — Confirm removal
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(
+          'Remove PIN',
+          style: GoogleFonts.nunito(fontWeight: FontWeight.w900),
+        ),
+        content: const Text(
+          'Are you sure you want to remove your PIN? Your app will no longer be protected.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text(
+              'Cancel',
+              style: GoogleFonts.nunito(color: AppColors.textMid),
+            ),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: Text(
+              'Remove',
+              style: GoogleFonts.nunito(
+                color: Colors.redAccent,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm == true) {
+      await BiometricService.resetBiometric();
+      if (mounted) {
+        setState(() => _pinExists = false);
+        NotificationService.showSuccess(context, 'PIN removed successfully');
+      }
+    }
+  }
+
+  // ── Existing handlers ────────────────────────────────
+
   Future<void> _editProfile(UserProfile? profile) async {
     if (profile == null) return;
 
@@ -405,7 +498,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
         // 1. Delete Firestore data if user exists
         if (uid != null) {
-          // Helper function to delete all documents in a subcollection
           Future<void> deleteCollection(String collectionPath) async {
             try {
               final docs = await firestore
@@ -418,18 +510,15 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               }
             } catch (e) {
               print('Error deleting $collectionPath: $e');
-              // Continue with other collections even if one fails
             }
           }
 
-          // Delete all subcollections
           await deleteCollection('profile');
           await deleteCollection('settings');
           await deleteCollection('cycles');
           await deleteCollection('ritual_completions');
           await deleteCollection('journey');
 
-          // Finally delete the main user document
           await firestore.collection('users').doc(uid).delete();
         }
 
@@ -438,26 +527,21 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         await BiometricService.resetBiometric();
         await BackupService.clearLocalBackup();
 
-        // Reset journey status in provider
         await ref.read(modeProvider.notifier).resetJourney();
 
         final prefs = await SharedPreferences.getInstance();
         await prefs.clear();
 
-        // 3. Delete Firebase Auth User (if possible)
+        // 3. Delete Firebase Auth User
         if (user != null) {
           try {
             await user.delete();
           } catch (e) {
-            // User might need to re-authenticate to delete,
-            // but we've already cleared their data and local state.
-            // Just sign out as fallback.
             await auth.signOut();
           }
         }
 
         if (mounted) {
-          // Close the deletion overlay
           Navigator.pop(context);
           NotificationService.showSuccess(
               context, 'All data erased successfully');
@@ -465,13 +549,14 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         }
       } catch (e) {
         if (mounted) {
-          // Close the deletion overlay
           Navigator.pop(context);
           NotificationService.showError(context, 'Error deleting data: $e');
         }
       }
     }
   }
+
+  // ── Build ─────────────────────────────────────────────
 
   @override
   Widget build(BuildContext context) {
@@ -482,6 +567,30 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     final themeColor = AppColors.getModeColor(currentMode, soft: true);
 
     return Scaffold(
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
+          color: AppColors.textDark,
+          onPressed: () {
+            if (context.canPop()) {
+              context.pop();
+            } else {
+              context.go('/home');
+            }
+          },
+        ),
+        title: Text(
+          'Profile',
+          style: GoogleFonts.nunito(
+            fontSize: 18,
+            fontWeight: FontWeight.w900,
+            color: AppColors.textDark,
+          ),
+        ),
+        centerTitle: true,
+      ),
       body: user == null
           ? const Center(child: CircularProgressIndicator())
           : StreamBuilder(
@@ -492,7 +601,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   .doc('current')
                   .snapshots(),
               builder: (context, snapshot) {
-                // ✅ AFTER — guard against deleted/non-existent document
                 final profile = (snapshot.data != null &&
                         snapshot.data!.exists &&
                         snapshot.data!.data() != null)
@@ -529,6 +637,20 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                               _buildSettingsTile(
                                   Icons.cloud, 'Cloud Sync', () {}),
                               _buildSettingsTile(Icons.palette, 'Theme', () {}),
+                              // ── PIN / Biometric tile ──────────────────
+                              if (!_pinExists)
+                                _buildSettingsTile(
+                                  Icons.fingerprint,
+                                  'Set up PIN & Biometric',
+                                  _handleSetupPin,
+                                )
+                              else
+                                _buildSettingsTile(
+                                  Icons.lock_open_outlined,
+                                  'Remove PIN',
+                                  _handleRemovePin,
+                                  color: Colors.redAccent,
+                                ),
                             ]),
                             const SizedBox(height: 24),
                             _buildSectionTitle('DANGER ZONE'),
@@ -566,6 +688,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               }),
     );
   }
+
+  // ── UI helpers ────────────────────────────────────────
 
   Widget _buildProfileHeader(String name, String email, Color themeColor) {
     return Center(
@@ -809,6 +933,218 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       trailing:
           const Icon(Icons.chevron_right, color: AppColors.border, size: 20),
       onTap: onTap,
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────
+//  VERIFY PIN DIALOG  (used before removing PIN)
+// ─────────────────────────────────────────────────────────
+class _VerifyPinDialog extends StatefulWidget {
+  final Color themeColor;
+  const _VerifyPinDialog({required this.themeColor});
+
+  @override
+  State<_VerifyPinDialog> createState() => _VerifyPinDialogState();
+}
+
+class _VerifyPinDialogState extends State<_VerifyPinDialog> {
+  final List<String> _pin = [];
+  bool _hasError = false;
+
+  void _onKey(String digit) {
+    if (_pin.length >= 4) return;
+    setState(() {
+      _hasError = false;
+      _pin.add(digit);
+    });
+    if (_pin.length == 4) {
+      Future.delayed(const Duration(milliseconds: 120), () {
+        if (mounted) Navigator.pop(context, _pin.join());
+      });
+    }
+  }
+
+  void _onDelete() {
+    if (_pin.isEmpty) return;
+    setState(() {
+      _hasError = false;
+      _pin.removeLast();
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Dialog(
+      backgroundColor: Colors.transparent,
+      elevation: 0,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 32),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(28),
+          boxShadow: [
+            BoxShadow(
+              color: widget.themeColor.withOpacity(0.18),
+              blurRadius: 30,
+              offset: const Offset(0, 10),
+            ),
+          ],
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Icon
+            Container(
+              width: 56,
+              height: 56,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: widget.themeColor.withOpacity(0.1),
+              ),
+              child: Icon(Icons.lock_outline_rounded,
+                  color: widget.themeColor, size: 28),
+            ),
+            const SizedBox(height: 16),
+
+            // Title
+            Text(
+              'Enter your current PIN',
+              style: GoogleFonts.nunito(
+                fontSize: 16,
+                fontWeight: FontWeight.w900,
+                color: const Color(0xFF3D2030),
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              'Required to remove PIN protection',
+              style: GoogleFonts.nunito(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                color: const Color(0xFFB08898),
+              ),
+            ),
+            const SizedBox(height: 24),
+
+            // Dot indicators
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: List.generate(4, (i) {
+                final filled = i < _pin.length;
+                return AnimatedContainer(
+                  duration: const Duration(milliseconds: 150),
+                  margin: const EdgeInsets.symmetric(horizontal: 8),
+                  width: filled ? 16 : 14,
+                  height: filled ? 16 : 14,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: filled
+                        ? (_hasError ? Colors.redAccent : widget.themeColor)
+                        : Colors.transparent,
+                    border: Border.all(
+                      color: _hasError
+                          ? Colors.redAccent
+                          : filled
+                              ? widget.themeColor
+                              : const Color(0xFFD4A0B0),
+                      width: 2,
+                    ),
+                  ),
+                );
+              }),
+            ),
+            const SizedBox(height: 28),
+
+            // Numpad
+            GridView.count(
+              crossAxisCount: 3,
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              mainAxisSpacing: 12,
+              crossAxisSpacing: 12,
+              childAspectRatio: 1.4,
+              children: [
+                ...['1', '2', '3', '4', '5', '6', '7', '8', '9'].map(
+                  (d) => _NumKey(
+                    label: d,
+                    themeColor: widget.themeColor,
+                    onTap: () => _onKey(d),
+                  ),
+                ),
+                const SizedBox.shrink(),
+                _NumKey(
+                  label: '0',
+                  themeColor: widget.themeColor,
+                  onTap: () => _onKey('0'),
+                ),
+                GestureDetector(
+                  onTap: _onDelete,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade100,
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    child: const Icon(Icons.backspace_outlined,
+                        size: 20, color: Color(0xFF9E7080)),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 20),
+
+            // Cancel
+            TextButton(
+              onPressed: () => Navigator.pop(context, null),
+              child: Text(
+                'Cancel',
+                style: GoogleFonts.nunito(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                  color: const Color(0xFFB08898),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// Small numpad key used inside _VerifyPinDialog
+class _NumKey extends StatelessWidget {
+  final String label;
+  final Color themeColor;
+  final VoidCallback onTap;
+
+  const _NumKey({
+    required this.label,
+    required this.themeColor,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        decoration: BoxDecoration(
+          color: themeColor.withOpacity(0.07),
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: themeColor.withOpacity(0.15), width: 1),
+        ),
+        child: Center(
+          child: Text(
+            label,
+            style: GoogleFonts.nunito(
+              fontSize: 22,
+              fontWeight: FontWeight.w800,
+              color: const Color(0xFF3D2030),
+            ),
+          ),
+        ),
+      ),
     );
   }
 }

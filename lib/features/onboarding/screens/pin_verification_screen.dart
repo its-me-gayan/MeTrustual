@@ -10,7 +10,7 @@ import '../../../core/services/notification_service.dart';
 import 'pin_constants.dart';
 import 'pin_widgets.dart';
 import 'forgot_pin_overlay.dart';
-
+import '../../../core/services/biometric_service.dart';
 // ═══════════════════════════════════════════════════════
 //  PIN VERIFICATION SCREEN
 // ═══════════════════════════════════════════════════════
@@ -52,6 +52,20 @@ class _PinVerificationScreenState extends ConsumerState<PinVerificationScreen>
   @override
   void initState() {
     super.initState();
+    // ── NEW: skip verification if user never set a PIN ──
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      final pinExists = await BiometricService.isBiometricSetUp();
+      if (!mounted) return;
+      if (!pinExists) {
+        if (widget.onSuccess != null) {
+          widget.onSuccess!();
+        } else {
+          context.go('/home');
+        }
+        return;
+      }
+      _ensureTimer(); // existing call — move it here from the other postFrameCallback
+    });
 
     _logoController = AnimationController(
       vsync: this,
@@ -68,7 +82,7 @@ class _PinVerificationScreenState extends ConsumerState<PinVerificationScreen>
 
     // Kick off the tick timer after the first frame.
     // It's harmless when not locked — _ensureTimer manages lifecycle.
-    WidgetsBinding.instance.addPostFrameCallback((_) => _ensureTimer());
+    // WidgetsBinding.instance.addPostFrameCallback((_) => _ensureTimer());
   }
 
   @override

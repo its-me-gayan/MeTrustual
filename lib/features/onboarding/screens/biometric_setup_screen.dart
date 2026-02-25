@@ -414,11 +414,26 @@ class _BiometricSetupScreenState extends ConsumerState<BiometricSetupScreen>
           ),
           const SizedBox(height: 12),
           Text(
-            'Required · Takes less than 1 minute',
+            'Recommended · Takes less than 1 minute',
             style: GoogleFonts.nunito(
               fontSize: 11,
               fontWeight: FontWeight.w600,
               color: PinColors.textHint,
+            ),
+          ),
+          const SizedBox(height: 16),
+          GestureDetector(
+            onTap: () => context.go('/home'),
+            child: Text(
+              'Skip for now',
+              style: GoogleFonts.nunito(
+                fontSize: 13,
+                fontWeight: FontWeight.w700,
+                color: PinColors.textSubtle,
+                decoration: TextDecoration.underline,
+                decorationColor: PinColors.textSubtle,
+                decorationThickness: 1.2,
+              ),
             ),
           ),
         ],

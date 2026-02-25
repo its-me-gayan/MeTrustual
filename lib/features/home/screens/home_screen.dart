@@ -27,31 +27,33 @@ Color modeColor(String mode) {
 }
 
 // ── Logs count provider ───────────────────────────────────────
-// Streams the count of documents in users/{uid}/logs
-// Returns 0 if the user is not logged in or has no logs.
 final _logsCountProvider = StreamProvider<int>((ref) {
   final auth = ref.watch(firebaseAuthProvider);
   final uid = auth.currentUser?.uid;
   if (uid == null) return Stream.value(0);
 
+  final mode = ref.watch(modeProvider);
   final firestore = ref.watch(firestoreProvider);
+
   return firestore
       .collection('users')
       .doc(uid)
       .collection('logs')
+      .doc(mode)
+      .collection('entries')
       .snapshots()
       .map((snap) => snap.size);
 });
 
-// ── Shared background gradient (matches PIN screen) ──────────
+// ── Shared background gradient ────────────────────────────────
 const _homeBackgroundGradient = LinearGradient(
   begin: Alignment.topCenter,
   end: Alignment.bottomCenter,
   colors: [
-    Color(0xFFFFF0F5), // soft petal pink at top
-    Color(0xFFFDE8F0), // warm rose mid
-    Color(0xFFFAF0F8), // blush lavender
-    Color(0xFFFFF6F0), // warm cream at bottom
+    Color(0xFFFFF0F5),
+    Color(0xFFFDE8F0),
+    Color(0xFFFAF0F8),
+    Color(0xFFFFF6F0),
   ],
   stops: [0.0, 0.35, 0.65, 1.0],
 );
@@ -63,15 +65,27 @@ class HomeScreen extends ConsumerStatefulWidget {
   ConsumerState<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends ConsumerState<HomeScreen> {
+class _HomeScreenState extends ConsumerState<HomeScreen>
+    with SingleTickerProviderStateMixin {
   bool _isEditingNickname = false;
   final TextEditingController _nicknameController = TextEditingController();
   String _displayName = 'Sweetie';
+
+  // ── Luna pulse animation ──────────────────────────────────
+  late final AnimationController _lunaPulseCtrl;
+  late final Animation<double> _lunaPulse;
 
   @override
   void initState() {
     super.initState();
     _loadNickname();
+    _lunaPulseCtrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 2200),
+    )..repeat(reverse: true);
+    _lunaPulse = Tween<double>(begin: 0.85, end: 1.0).animate(
+      CurvedAnimation(parent: _lunaPulseCtrl, curve: Curves.easeInOut),
+    );
   }
 
   Future<void> _loadNickname() async {
@@ -111,6 +125,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   @override
   void dispose() {
+    _lunaPulseCtrl.dispose();
     _nicknameController.dispose();
     super.dispose();
   }
@@ -122,7 +137,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final themeColor = modeColor(currentMode);
 
     return Scaffold(
-      // ── Transparent so our gradient shows through ──
       backgroundColor: Colors.transparent,
       extendBody: true,
       body: Container(
@@ -133,7 +147,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         decoration: const BoxDecoration(gradient: _homeBackgroundGradient),
         child: Stack(
           children: [
-            // ── Ambient glow orbs (mirrors PIN screen) ──
+            // ── Ambient glow orbs ──
             Positioned(
               top: -60,
               right: -70,
@@ -169,129 +183,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Good morning ☀️',
-                                style: GoogleFonts.nunito(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w700,
-                                  color: AppColors.textMuted,
-                                ),
-                              ),
-                              GestureDetector(
-                                onLongPress: () {
-                                  _nicknameController.text = _displayName;
-                                  setState(() => _isEditingNickname = true);
-                                },
-                                child: Text(
-                                  '$_displayName 👋',
-                                  style: GoogleFonts.nunito(
-                                    fontSize: 24,
-                                    fontWeight: FontWeight.w900,
-                                    color: AppColors.textDark,
-                                  ),
-                                ),
-                              ),
-                              if (_isEditingNickname)
-                                Padding(
-                                  padding: const EdgeInsets.only(top: 8),
-                                  child: Row(
-                                    children: [
-                                      Expanded(
-                                        child: Container(
-                                          decoration: BoxDecoration(
-                                            color: Colors.white,
-                                            borderRadius:
-                                                BorderRadius.circular(12),
-                                            border: Border.all(
-                                                color: AppColors.border,
-                                                width: 1.5),
-                                          ),
-                                          child: TextField(
-                                            controller: _nicknameController,
-                                            autofocus: true,
-                                            style: GoogleFonts.nunito(
-                                              fontSize: 14,
-                                              fontWeight: FontWeight.w700,
-                                              color: AppColors.textDark,
-                                            ),
-                                            decoration: InputDecoration(
-                                              hintText: 'Enter nickname',
-                                              hintStyle: GoogleFonts.nunito(
-                                                fontSize: 14,
-                                                color: AppColors.textMuted,
-                                              ),
-                                              border: InputBorder.none,
-                                              contentPadding:
-                                                  const EdgeInsets.symmetric(
-                                                      horizontal: 12,
-                                                      vertical: 8),
-                                            ),
-                                            onSubmitted: _saveNickname,
-                                          ),
-                                        ),
-                                      ),
-                                      const SizedBox(width: 8),
-                                      GestureDetector(
-                                        onTap: () => _saveNickname(
-                                            _nicknameController.text.trim()),
-                                        child: Container(
-                                          padding: const EdgeInsets.all(10),
-                                          decoration: BoxDecoration(
-                                            color: themeColor,
-                                            borderRadius:
-                                                BorderRadius.circular(12),
-                                          ),
-                                          child: const Icon(Icons.check,
-                                              color: Colors.white, size: 20),
-                                        ),
-                                      ),
-                                      const SizedBox(width: 4),
-                                      GestureDetector(
-                                        onTap: () => setState(
-                                            () => _isEditingNickname = false),
-                                        child: Container(
-                                          padding: const EdgeInsets.all(10),
-                                          decoration: BoxDecoration(
-                                            color: AppColors.textMuted
-                                                .withOpacity(0.2),
-                                            borderRadius:
-                                                BorderRadius.circular(12),
-                                          ),
-                                          child: const Icon(Icons.close,
-                                              color: AppColors.textDark,
-                                              size: 20),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                            ],
-                          ),
-                        ),
-                        GestureDetector(
-                          onTap: () => context.go('/profile'),
-                          child: Container(
-                            width: 44,
-                            height: 44,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: Colors.white.withOpacity(0.85),
-                              border: Border.all(
-                                  color: AppColors.border, width: 1.5),
-                            ),
-                            child: const Icon(Icons.person_outline,
-                                color: AppColors.textMid),
-                          ),
-                        ),
-                      ],
-                    ),
+                    _buildTopRow(themeColor),
                     const SizedBox(height: 30),
                     _buildModeSpecificContent(currentMode, homeData),
                     const SizedBox(height: 30),
@@ -309,6 +201,170 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
     );
   }
+
+  // ─────────────────────────────────────────────────────────
+  //  TOP ROW — greeting + Luna button + profile button
+  // ─────────────────────────────────────────────────────────
+
+  Widget _buildTopRow(Color themeColor) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        // Greeting + editable nickname
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Good morning ☀️',
+                style: GoogleFonts.nunito(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.textMuted,
+                ),
+              ),
+              GestureDetector(
+                onLongPress: () {
+                  _nicknameController.text = _displayName;
+                  setState(() => _isEditingNickname = true);
+                },
+                child: Text(
+                  '$_displayName 👋',
+                  style: GoogleFonts.nunito(
+                    fontSize: 24,
+                    fontWeight: FontWeight.w900,
+                    color: AppColors.textDark,
+                  ),
+                ),
+              ),
+              if (_isEditingNickname)
+                Padding(
+                  padding: const EdgeInsets.only(top: 8),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(12),
+                            border:
+                                Border.all(color: AppColors.border, width: 1.5),
+                          ),
+                          child: TextField(
+                            controller: _nicknameController,
+                            autofocus: true,
+                            style: GoogleFonts.nunito(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w700,
+                              color: AppColors.textDark,
+                            ),
+                            decoration: InputDecoration(
+                              hintText: 'Enter nickname',
+                              hintStyle: GoogleFonts.nunito(
+                                fontSize: 14,
+                                color: AppColors.textMuted,
+                              ),
+                              border: InputBorder.none,
+                              contentPadding: const EdgeInsets.symmetric(
+                                  horizontal: 12, vertical: 8),
+                            ),
+                            onSubmitted: _saveNickname,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      GestureDetector(
+                        onTap: () =>
+                            _saveNickname(_nicknameController.text.trim()),
+                        child: Container(
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            color: themeColor,
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: const Icon(Icons.check,
+                              color: Colors.white, size: 20),
+                        ),
+                      ),
+                      const SizedBox(width: 4),
+                      GestureDetector(
+                        onTap: () => setState(() => _isEditingNickname = false),
+                        child: Container(
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            color: AppColors.textMuted.withOpacity(0.2),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: const Icon(Icons.close,
+                              color: AppColors.textDark, size: 20),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+            ],
+          ),
+        ),
+
+        // Action buttons — Ask Soluna + profile
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // ── Ask Soluna button ─────────────────────────
+            AnimatedBuilder(
+              animation: _lunaPulse,
+              builder: (context, child) => GestureDetector(
+                onTap: () => context.go('/luna'),
+                child: Container(
+                  width: 44,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Colors.white.withOpacity(0.85),
+                    border: Border.all(
+                      color: themeColor.withOpacity(0.45 * _lunaPulse.value),
+                      width: 1.5,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: themeColor.withOpacity(0.2 * _lunaPulse.value),
+                        blurRadius: 10 * _lunaPulse.value,
+                        spreadRadius: 1,
+                      ),
+                    ],
+                  ),
+                  child: const Center(
+                    child: Text('🌙', style: TextStyle(fontSize: 20)),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(width: 8),
+
+            // ── Profile button ─────────────────────────────
+            GestureDetector(
+              onTap: () => context.go('/profile'),
+              child: Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.white.withOpacity(0.85),
+                  border: Border.all(color: AppColors.border, width: 1.5),
+                ),
+                child:
+                    const Icon(Icons.person_outline, color: AppColors.textMid),
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  // ─────────────────────────────────────────────────────────
+  //  ROUTING HELPERS
+  // ─────────────────────────────────────────────────────────
 
   String get _currentRoute {
     final String? location =
@@ -331,9 +387,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     }
   }
 
+  // ─────────────────────────────────────────────────────────
+  //  MODE CONTENT
+  // ─────────────────────────────────────────────────────────
+
   Widget _buildModeSpecificContent(
       String currentMode, Map<String, dynamic>? homeData) {
-    // ── Logs count — single watch, used by all 3 modes ──────────
     final logsCount = ref.watch(_logsCountProvider).valueOrNull ?? 0;
 
     switch (currentMode) {
@@ -349,22 +408,21 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           children: [
             Center(child: CycleCircle(day: cycleDay, phase: phase)),
             const SizedBox(height: 16),
-            // ── 3 pills: Avg Cycle | Period Days | Logged ──────
             _buildPillsRow(
               {
                 'value': avgCycle.toString(),
                 'label': 'Avg Cycle',
-                'color': AppColors.primaryRose,
+                'color': AppColors.primaryRose
               },
               {
                 'value': avgPeriod.toString(),
                 'label': 'Period Days',
-                'color': const Color(0xFFC9A0D0),
+                'color': const Color(0xFFC9A0D0)
               },
               third: {
                 'value': logsCount.toString(),
                 'label': 'Logged',
-                'color': const Color(0xFF8AB88A),
+                'color': const Color(0xFF8AB88A)
               },
             ),
             const SizedBox(height: 24),
@@ -389,22 +447,21 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               ),
             ),
             const SizedBox(height: 16),
-            // ── 3 pills: Days to Go | Due Date | Logs ─────────
             _buildPillsRow(
               {
                 'value': '113',
                 'label': 'Days to Go',
-                'color': const Color(0xFF4A70B0),
+                'color': const Color(0xFF4A70B0)
               },
               {
                 'value': 'Jun 5',
                 'label': 'Due Date',
-                'color': const Color(0xFF9870C0),
+                'color': const Color(0xFF9870C0)
               },
               third: {
                 'value': logsCount.toString(),
                 'label': 'Logs',
-                'color': const Color(0xFF8AB88A),
+                'color': const Color(0xFF8AB88A)
               },
             ),
             const SizedBox(height: 24),
@@ -436,22 +493,21 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               ),
             ),
             const SizedBox(height: 16),
-            // ── 3 pills: Ovulation | Next Period | Cycle Len ──
             _buildPillsRow(
               {
                 'value': 'Today',
                 'label': 'Ovulation',
-                'color': const Color(0xFF5A8E6A),
+                'color': const Color(0xFF5A8E6A)
               },
               {
                 'value': 'Mar 6',
                 'label': 'Next Period',
-                'color': AppColors.primaryRose,
+                'color': AppColors.primaryRose
               },
               third: {
                 'value': avgCycleOvul.toString(),
                 'label': 'Cycle Len',
-                'color': const Color(0xFF8AB88A),
+                'color': const Color(0xFF8AB88A)
               },
             ),
             const SizedBox(height: 24),
@@ -475,7 +531,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     }
   }
 
-  // ── Pills row — now supports an optional 3rd pill ─────────────
   Widget _buildPillsRow(
     Map<String, dynamic> pill1,
     Map<String, dynamic> pill2, {
@@ -755,7 +810,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 }
 
 // ═══════════════════════════════════════════════════════
-//  PRIVATE: Ambient glow orb (mirrors PIN screen's GlowOrb)
+//  PRIVATE: Ambient glow orb
 // ═══════════════════════════════════════════════════════
 class _GlowOrb extends StatelessWidget {
   final double size;
