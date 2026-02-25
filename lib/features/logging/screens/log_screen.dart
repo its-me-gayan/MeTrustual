@@ -11,13 +11,15 @@ import '../../../core/services/notification_service.dart';
 import '../../../core/widgets/premium_gate.dart';
 
 class LogScreen extends ConsumerStatefulWidget {
-  const LogScreen({super.key});
+  final DateTime? date;
+  const LogScreen({super.key, this.date});
 
   @override
   ConsumerState<LogScreen> createState() => _LogScreenState();
 }
 
 class _LogScreenState extends ConsumerState<LogScreen> {
+  late final DateTime _selectedDate;
   bool _isSaving = false;
 
   // ── Existing log state ────────────────────────────────
@@ -52,6 +54,7 @@ class _LogScreenState extends ConsumerState<LogScreen> {
   @override
   void initState() {
     super.initState();
+    _selectedDate = widget.date ?? DateTime.now();
     // Defer until after first frame so ref is ready
     WidgetsBinding.instance.addPostFrameCallback((_) => _loadExistingLog());
   }
@@ -65,9 +68,9 @@ class _LogScreenState extends ConsumerState<LogScreen> {
     super.dispose();
   }
 
-  String get _todayKey => DateFormat('yyyy-MM-dd').format(DateTime.now());
+  String get _todayKey => DateFormat('yyyy-MM-dd').format(_selectedDate);
   String get _todayLabel =>
-      DateFormat('EEEE · MMM d, yyyy').format(DateTime.now());
+      DateFormat('EEEE · MMM d, yyyy').format(_selectedDate);
 
   // ── Load existing log from Firestore ─────────────────
   Future<void> _loadExistingLog() async {
@@ -211,15 +214,19 @@ class _LogScreenState extends ConsumerState<LogScreen> {
   // ── Button label ──────────────────────────────────────
   String _getButtonLabel(String mode) {
     final verb = _isExistingLog ? "Update" : "Save";
+    final isToday = DateFormat('yyyy-MM-dd').format(_selectedDate) ==
+        DateFormat('yyyy-MM-dd').format(DateTime.now());
+    final dayLabel = isToday ? "today's" : "this day's";
+
     switch (mode) {
       case 'period':
-        return "$verb today's log ✓";
+        return "$verb $dayLabel log ✓";
       case 'preg':
-        return "$verb today's log 💙";
+        return "$verb $dayLabel log 💙";
       case 'ovul':
-        return "$verb today's log 🌿";
+        return "$verb $dayLabel log 🌿";
       default:
-        return "$verb today's log";
+        return "$verb $dayLabel log";
     }
   }
 

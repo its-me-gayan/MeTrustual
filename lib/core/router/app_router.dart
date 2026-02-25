@@ -67,7 +67,11 @@ final GoRouter appRouter = GoRouter(
     ),
     GoRoute(
       path: '/log',
-      builder: (context, state) => const LogScreen(),
+      builder: (context, state) {
+        final dateStr = state.uri.queryParameters['date'];
+        final date = dateStr != null ? DateTime.tryParse(dateStr) : null;
+        return LogScreen(date: date);
+      },
     ),
     GoRoute(
       path: '/insights',

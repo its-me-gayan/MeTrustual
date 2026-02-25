@@ -106,7 +106,8 @@ class DayDetailSheet extends ConsumerWidget {
                   isPrimary: true,
                   onTap: () {
                     Navigator.of(context).pop();
-                    context.go('/log');
+                    final dateStr = day.date.toIso8601String();
+                    context.go('/log?date=$dateStr');
                   },
                 ),
               ),
