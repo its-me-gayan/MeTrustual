@@ -181,7 +181,10 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen>
           'cancelledAt': null,
           'directPremiumUpgrade': true,
         }, SetOptions(merge: true));
-
+// ✅ ADD THIS RIGHT HERE
+        await firestore.collection('users').doc(currentUser.uid).update({
+          'directPremiumUpgrade': FieldValue.delete(),
+        });
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(SnackBar(
             content: Text('Welcome to Premium! ✨',

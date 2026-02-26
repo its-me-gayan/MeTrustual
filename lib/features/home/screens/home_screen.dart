@@ -14,8 +14,8 @@ import '../../../core/providers/period_journey_provider.dart';
 import '../../../core/providers/firebase_providers.dart';
 import '../../../core/widgets/app_bottom_nav.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:intl/intl.dart';
 
-// ── Mode → theme color (shared helper) ───────────────────────
 Color modeColor(String mode) {
   switch (mode) {
     case 'preg':
@@ -27,7 +27,6 @@ Color modeColor(String mode) {
   }
 }
 
-// ── Mode → Luna FAB gradient colors ──────────────────────────
 List<Color> _modeFabGradient(String mode) {
   switch (mode) {
     case 'preg':
@@ -39,7 +38,6 @@ List<Color> _modeFabGradient(String mode) {
   }
 }
 
-// ── Mode → Luna FAB shadow color ─────────────────────────────
 Color _modeFabShadow(String mode) {
   switch (mode) {
     case 'preg':
@@ -51,7 +49,6 @@ Color _modeFabShadow(String mode) {
   }
 }
 
-// ── Mode → Luna FAB ring color ───────────────────────────────
 Color _modeFabRing(String mode) {
   switch (mode) {
     case 'preg':
@@ -63,15 +60,12 @@ Color _modeFabRing(String mode) {
   }
 }
 
-// ── Logs count provider ───────────────────────────────────────
 final _logsCountProvider = StreamProvider<int>((ref) {
   final auth = ref.watch(firebaseAuthProvider);
   final uid = auth.currentUser?.uid;
   if (uid == null) return Stream.value(0);
-
   final mode = ref.watch(modeProvider);
   final firestore = ref.watch(firestoreProvider);
-
   return firestore
       .collection('users')
       .doc(uid)
@@ -82,7 +76,6 @@ final _logsCountProvider = StreamProvider<int>((ref) {
       .map((snap) => snap.size);
 });
 
-// ── Shared background gradient ────────────────────────────────
 const _homeBackgroundGradient = LinearGradient(
   begin: Alignment.topCenter,
   end: Alignment.bottomCenter,
@@ -90,14 +83,13 @@ const _homeBackgroundGradient = LinearGradient(
     Color(0xFFFFF0F5),
     Color(0xFFFDE8F0),
     Color(0xFFFAF0F8),
-    Color(0xFFFFF6F0),
+    Color(0xFFFFF6F0)
   ],
   stops: [0.0, 0.35, 0.65, 1.0],
 );
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
-
   @override
   ConsumerState<HomeScreen> createState() => _HomeScreenState();
 }
@@ -108,7 +100,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
   final TextEditingController _nicknameController = TextEditingController();
   String _displayName = 'Sweetie';
 
-  // ── Luna FAB pulse animation ──────────────────────────────
   late final AnimationController _lunaPulseCtrl;
   late final Animation<double> _lunaPulse;
 
@@ -155,9 +146,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
       _displayName = newName;
       _isEditingNickname = false;
     });
-    if (mounted) {
+    if (mounted)
       NotificationService.showSuccess(context, 'Nickname updated! ✨');
-    }
   }
 
   @override
@@ -178,42 +168,26 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
       extendBody: true,
       body: Container(
         width: double.infinity,
-        constraints: BoxConstraints(
-          minHeight: MediaQuery.of(context).size.height,
-        ),
+        constraints:
+            BoxConstraints(minHeight: MediaQuery.of(context).size.height),
         decoration: const BoxDecoration(gradient: _homeBackgroundGradient),
         child: Stack(
           children: [
-            // ── Ambient glow orbs ──
             Positioned(
-              top: -60,
-              right: -70,
-              child: _GlowOrb(
-                size: 280,
-                color: const Color(0xFFE8A84A),
-                opacity: 0.05,
-              ),
-            ),
+                top: -60,
+                right: -70,
+                child: _GlowOrb(
+                    size: 280, color: const Color(0xFFE8A84A), opacity: 0.05)),
             Positioned(
-              bottom: 80,
-              left: -60,
-              child: _GlowOrb(
-                size: 260,
-                color: const Color(0xFFD4639A),
-                opacity: 0.06,
-              ),
-            ),
+                bottom: 80,
+                left: -60,
+                child: _GlowOrb(
+                    size: 260, color: const Color(0xFFD4639A), opacity: 0.06)),
             Positioned(
-              top: MediaQuery.of(context).size.height * 0.4,
-              right: -40,
-              child: _GlowOrb(
-                size: 180,
-                color: const Color(0xFF9B7FC7),
-                opacity: 0.04,
-              ),
-            ),
-
-            // ── Main scrollable content ──
+                top: MediaQuery.of(context).size.height * 0.4,
+                right: -40,
+                child: _GlowOrb(
+                    size: 180, color: const Color(0xFF9B7FC7), opacity: 0.04)),
             SafeArea(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.fromLTRB(22, 20, 22, 120),
@@ -223,19 +197,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                     _buildTopRow(themeColor),
                     const SizedBox(height: 30),
                     _buildModeSpecificContent(currentMode, homeData),
-                    const SizedBox(height: 30),
+                    const SizedBox(height: 16),
                     _buildSwitchModeCard(currentMode),
                   ],
                 ),
               ),
             ),
-
-            // ── Luna FAB — matching HTML .luna-fab ──
             Positioned(
-              bottom: 92,
-              right: 18,
-              child: _buildLunaFab(currentMode),
-            ),
+                bottom: 92, right: 18, child: _buildLunaFab(currentMode)),
           ],
         ),
       ),
@@ -246,10 +215,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     );
   }
 
-  // ─────────────────────────────────────────────────────────────
-  //  LUNA FAB — matches HTML .luna-fab design exactly
-  // ─────────────────────────────────────────────────────────────
-
   Widget _buildLunaFab(String mode) {
     final gradientColors = _modeFabGradient(mode);
     final shadowColor = _modeFabShadow(mode);
@@ -258,11 +223,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     return AnimatedBuilder(
       animation: _lunaPulse,
       builder: (context, child) {
-        // Interpolate the outer ring spread: 4px → 8px (matches HTML keyframe)
         final ringSpread = 4.0 + (_lunaPulse.value * 4.0);
         final ringOpacity = 0.55 - (_lunaPulse.value * 0.35);
         final shadowOpacity = 0.38 + (_lunaPulse.value * 0.07);
-
         return GestureDetector(
           onTap: () => context.go('/luna'),
           child: AnimatedContainer(
@@ -277,23 +240,18 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                 colors: gradientColors,
               ),
               boxShadow: [
-                // inner drop shadow
                 BoxShadow(
-                  color: shadowColor.withOpacity(shadowOpacity),
-                  blurRadius: 20,
-                  offset: const Offset(0, 6),
-                ),
-                // pulsing outer ring
+                    color: shadowColor.withOpacity(shadowOpacity),
+                    blurRadius: 20,
+                    offset: const Offset(0, 6)),
                 BoxShadow(
-                  color: ringColor.withOpacity(ringOpacity),
-                  blurRadius: 0,
-                  spreadRadius: ringSpread,
-                ),
+                    color: ringColor.withOpacity(ringOpacity),
+                    blurRadius: 0,
+                    spreadRadius: ringSpread),
               ],
             ),
             child: Stack(
               children: [
-                // ── Moon icon + label ──
                 Center(
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
@@ -301,25 +259,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                       const Text('🌙',
                           style: TextStyle(fontSize: 22, height: 1.0)),
                       const SizedBox(height: 1),
-                      Text(
-                        'SOLUNA',
-                        style: GoogleFonts.nunito(
-                          fontSize: 5.5,
-                          fontWeight: FontWeight.w900,
-                          color: Colors.white.withOpacity(0.9),
-                          letterSpacing: 0.5,
-                        ),
-                      ),
+                      Text('SOLUNA',
+                          style: GoogleFonts.nunito(
+                              fontSize: 5.5,
+                              fontWeight: FontWeight.w900,
+                              color: Colors.white.withOpacity(0.9),
+                              letterSpacing: 0.5)),
                     ],
                   ),
                 ),
-
-                // ── Notification dot (top-right) ──
-                Positioned(
-                  top: 6,
-                  right: 6,
-                  child: _PulsingDot(),
-                ),
+                Positioned(top: 6, right: 6, child: _PulsingDot()),
               ],
             ),
           ),
@@ -328,40 +277,29 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     );
   }
 
-  // ─────────────────────────────────────────────────────────────
-  //  TOP ROW — greeting + profile button only (Luna moved to FAB)
-  // ─────────────────────────────────────────────────────────────
-
   Widget _buildTopRow(Color themeColor) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        // Greeting + editable nickname
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                'Good morning ☀️',
-                style: GoogleFonts.nunito(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.textMuted,
-                ),
-              ),
+              Text('Good morning ☀️',
+                  style: GoogleFonts.nunito(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.textMuted)),
               GestureDetector(
                 onLongPress: () {
                   _nicknameController.text = _displayName;
                   setState(() => _isEditingNickname = true);
                 },
-                child: Text(
-                  '$_displayName 👋',
-                  style: GoogleFonts.nunito(
-                    fontSize: 24,
-                    fontWeight: FontWeight.w900,
-                    color: AppColors.textDark,
-                  ),
-                ),
+                child: Text('$_displayName 👋',
+                    style: GoogleFonts.nunito(
+                        fontSize: 24,
+                        fontWeight: FontWeight.w900,
+                        color: AppColors.textDark)),
               ),
               if (_isEditingNickname)
                 Padding(
@@ -380,16 +318,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                             controller: _nicknameController,
                             autofocus: true,
                             style: GoogleFonts.nunito(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w700,
-                              color: AppColors.textDark,
-                            ),
+                                fontSize: 14,
+                                fontWeight: FontWeight.w700,
+                                color: AppColors.textDark),
                             decoration: InputDecoration(
                               hintText: 'Enter nickname',
                               hintStyle: GoogleFonts.nunito(
-                                fontSize: 14,
-                                color: AppColors.textMuted,
-                              ),
+                                  fontSize: 14, color: AppColors.textMuted),
                               border: InputBorder.none,
                               contentPadding: const EdgeInsets.symmetric(
                                   horizontal: 12, vertical: 8),
@@ -405,9 +340,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                         child: Container(
                           padding: const EdgeInsets.all(10),
                           decoration: BoxDecoration(
-                            color: themeColor,
-                            borderRadius: BorderRadius.circular(12),
-                          ),
+                              color: themeColor,
+                              borderRadius: BorderRadius.circular(12)),
                           child: const Icon(Icons.check,
                               color: Colors.white, size: 20),
                         ),
@@ -431,8 +365,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
             ],
           ),
         ),
-
-        // Profile button only — Luna is now the floating FAB
         GestureDetector(
           onTap: () => context.go('/profile'),
           child: Container(
@@ -449,10 +381,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
       ],
     );
   }
-
-  // ─────────────────────────────────────────────────────────────
-  //  ROUTING HELPERS
-  // ─────────────────────────────────────────────────────────────
 
   String get _currentRoute {
     final String? location =
@@ -475,21 +403,19 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     }
   }
 
-  // ─────────────────────────────────────────────────────────────
-  //  MODE CONTENT
-  // ─────────────────────────────────────────────────────────────
-
   Widget _buildModeSpecificContent(
       String currentMode, Map<String, dynamic>? homeData) {
     final logsCount = ref.watch(_logsCountProvider).valueOrNull ?? 0;
 
     switch (currentMode) {
+      // ── PERIOD ── circle → pills → calendar → next period card ──
       case 'period':
         final journey = ref.watch(periodHomeDataProvider);
         final cycleDay = journey?.cycleDay ?? 0;
         final phaseLabel = journey?.phaseLabel ?? 'Loading… 🌸';
         final cycleLen = journey?.cycleLen ?? 28;
         final periodLen = journey?.periodLen ?? 5;
+
         return Column(
           children: [
             Center(child: CycleCircle(day: cycleDay, phase: phaseLabel)),
@@ -497,7 +423,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
             _buildPillsRow(
               {
                 'value': cycleLen.toString(),
-                'label': 'Cycle Days',
+                'label': 'Avg Cycle',
                 'color': AppColors.primaryRose
               },
               {
@@ -512,37 +438,25 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
               },
             ),
             const SizedBox(height: 16),
-            _buildPredictionSourceBanner(journey),
-            if (journey != null &&
-                journey.aiResult?.insight.isNotEmpty == true) ...[
-              const SizedBox(height: 12),
-              _buildAiInsightCard(journey.aiResult!.insight),
-            ],
-            if (journey != null &&
-                (journey.flow != null || journey.symptoms.isNotEmpty)) ...[
-              const SizedBox(height: 12),
-              _buildCycleProfileCard(journey),
-            ],
-            const SizedBox(height: 24),
+            _buildPredictionBanner(journey, cycleDay, cycleLen),
+            const SizedBox(height: 16),
             const PremiumGate(
               message: 'Unlock Advanced Calendar',
               child: MiniCalendar(),
             ),
-            const SizedBox(height: 24),
-            const NextPeriodCard(),
           ],
         );
 
+      // ── PREGNANCY ──────────────────────────────────────────────
       case 'preg':
         return Column(
           children: [
             const Center(
               child: CycleCircle(
-                day: 24,
-                phase: '2nd Trimester 💙',
-                color: Color(0xFF4A70B0),
-                label: 'Weeks',
-              ),
+                  day: 24,
+                  phase: '2nd Trimester 💙',
+                  color: Color(0xFF4A70B0),
+                  label: 'Weeks'),
             ),
             const SizedBox(height: 16),
             _buildPillsRow(
@@ -564,9 +478,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
             ),
             const SizedBox(height: 24),
             PremiumGate(
-              message: 'Unlock Weekly Baby Updates',
-              child: _buildBabyCard(),
-            ),
+                message: 'Unlock Weekly Baby Updates', child: _buildBabyCard()),
             const SizedBox(height: 24),
             _buildNextBanner(
               title: 'Next Appointment',
@@ -578,17 +490,17 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
           ],
         );
 
+      // ── OVULATION ──────────────────────────────────────────────
       case 'ovul':
         final avgCycleOvul = homeData?['prediction']?.averageLength ?? 28;
         return Column(
           children: [
             const Center(
               child: CycleCircle(
-                day: 14,
-                phase: '🎯 Peak Fertile',
-                color: Color(0xFF5A8E6A),
-                label: 'Cycle Day',
-              ),
+                  day: 14,
+                  phase: '🎯 Peak Fertile',
+                  color: Color(0xFF5A8E6A),
+                  label: 'Cycle Day'),
             ),
             const SizedBox(height: 16),
             _buildPillsRow(
@@ -610,9 +522,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
             ),
             const SizedBox(height: 24),
             PremiumGate(
-              message: 'Unlock Fertile Window Analysis',
-              child: _buildFertileBar(),
-            ),
+                message: 'Unlock Fertile Window Analysis',
+                child: _buildFertileBar()),
             const SizedBox(height: 24),
             _buildNextBanner(
               title: 'Ovulation Prediction',
@@ -629,11 +540,184 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     }
   }
 
-  Widget _buildPillsRow(
-    Map<String, dynamic> pill1,
-    Map<String, dynamic> pill2, {
-    Map<String, dynamic>? third,
-  }) {
+  Widget _buildPredictionBanner(
+      PeriodHomeData? journey, int cycleDay, int cycleLen) {
+    final fmt = DateFormat('MMM d');
+    final fmtShort = DateFormat('d');
+
+    // ── 1. Best source: real AI prediction from AiPredictionService ────────
+    final aiResult = journey?.aiResult;
+
+    // ── 2. Fallback: SmartPredictionEngine math (no API call needed) ───────
+    //    Uses the blended cycle length already computed in PeriodHomeData
+    final smartCycleLen = journey?.cycleLen ?? cycleLen; // blended by engine
+    final daysUntilPeriod = (smartCycleLen - cycleDay).clamp(0, smartCycleLen);
+    final mathNextPeriod = DateTime.now().add(Duration(days: daysUntilPeriod));
+
+    // Pick the best available next period date
+    final nextPeriod = aiResult?.nextPeriod ?? mathNextPeriod;
+
+    // Confidence: use AI value if available, otherwise from PeriodHomeData
+    final confidencePct = aiResult?.confidencePct ??
+        ((journey?.learningProgress ?? 0.35) * 100).round();
+
+    // Source label under next period
+    final isAi = aiResult != null;
+    final aiLoading = journey?.aiLoading ?? false;
+    final periodSub = aiLoading ? 'Calculating…' : '±2 days · $confidencePct%';
+
+    // ── 3. Fertile window — always derived from nextPeriod (biology) ───────
+    //    Ovulation ≈ 14 days before next period (luteal phase is fixed ~14d)
+    //    Fertile window = ovulation −5 → ovulation +1
+    final ovulationDate = nextPeriod.subtract(const Duration(days: 14));
+    final fertileStart = ovulationDate.subtract(const Duration(days: 5));
+    final fertileEnd = ovulationDate.add(const Duration(days: 1));
+
+    final nextPeriodStr = fmt.format(nextPeriod);
+    final fertileStr =
+        '${fmt.format(fertileStart)}–${fmtShort.format(fertileEnd)}';
+    final ovulStr = fmt.format(ovulationDate);
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Color(0xFFFFF5F8), Color(0xFFFDE8F4)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: const Color(0xFFF0C0D0), width: 1.5),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Title row — shows AI vs math source
+          Row(
+            children: [
+              Text(
+                aiLoading
+                    ? '✨ Calculating…'
+                    : isAi
+                        ? '🤖 AI Predictions'
+                        : '🔮 Predictions',
+                style: GoogleFonts.nunito(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w900,
+                    color: const Color(0xFFC080A0),
+                    letterSpacing: 0.5),
+              ),
+              const Spacer(),
+              if (isAi && !aiLoading)
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF9B7FC7).withOpacity(0.12),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text('AI-powered',
+                      style: GoogleFonts.nunito(
+                          fontSize: 8,
+                          fontWeight: FontWeight.w800,
+                          color: const Color(0xFF9B7FC7))),
+                ),
+            ],
+          ),
+          const SizedBox(height: 8),
+
+          // Two-column pred items
+          aiLoading
+              ? const SizedBox(
+                  height: 40,
+                  child: Center(
+                    child: SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(
+                            strokeWidth: 2, color: Color(0xFFC080A0))),
+                  ),
+                )
+              : IntrinsicHeight(
+                  child: Row(
+                    children: [
+                      Expanded(
+                          child: _buildPredItem(
+                              label: '🩸 Next period',
+                              value: nextPeriodStr,
+                              sub: periodSub)),
+                      Container(
+                          width: 1,
+                          color: const Color(0xFFF0D8E0),
+                          margin: const EdgeInsets.symmetric(horizontal: 10)),
+                      Expanded(
+                          child: _buildPredItem(
+                              label: '🌿 Fertile window',
+                              value: fertileStr,
+                              sub: 'Ovulation ~$ovulStr')),
+                    ],
+                  ),
+                ),
+
+          // AI insight (only when AI result has one)
+          if (isAi && aiResult!.insight.isNotEmpty) ...[
+            const SizedBox(height: 8),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+              decoration: BoxDecoration(
+                color: const Color(0xFF9B7FC7).withOpacity(0.07),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text('✨', style: TextStyle(fontSize: 11)),
+                  const SizedBox(width: 6),
+                  Expanded(
+                    child: Text(aiResult.insight,
+                        style: GoogleFonts.nunito(
+                            fontSize: 10,
+                            fontWeight: FontWeight.w600,
+                            color: const Color(0xFF7B5FC7),
+                            height: 1.4)),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPredItem(
+      {required String label, required String value, required String sub}) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label,
+            style: GoogleFonts.nunito(
+                fontSize: 10,
+                fontWeight: FontWeight.w700,
+                color: const Color(0xFFD0A0B8))),
+        const SizedBox(height: 2),
+        Text(value,
+            style: GoogleFonts.nunito(
+                fontSize: 13,
+                fontWeight: FontWeight.w900,
+                color: AppColors.textDark)),
+        const SizedBox(height: 1),
+        Text(sub,
+            style: GoogleFonts.nunito(
+                fontSize: 10,
+                fontWeight: FontWeight.w600,
+                color: const Color(0xFFD0A0B8))),
+      ],
+    );
+  }
+
+  Widget _buildPillsRow(Map<String, dynamic> pill1, Map<String, dynamic> pill2,
+      {Map<String, dynamic>? third}) {
     return Row(
       children: [
         _buildStatPill(pill1['value'], pill1['label'], color: pill1['color']),
@@ -658,24 +742,18 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
         ),
         child: Column(
           children: [
-            Text(
-              value,
-              style: GoogleFonts.nunito(
-                fontSize: 18,
-                fontWeight: FontWeight.w900,
-                color: color ?? AppColors.primaryRose,
-              ),
-            ),
+            Text(value,
+                style: GoogleFonts.nunito(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w900,
+                    color: color ?? AppColors.primaryRose)),
             const SizedBox(height: 2),
-            Text(
-              label,
-              style: GoogleFonts.nunito(
-                fontSize: 10,
-                fontWeight: FontWeight.w700,
-                color: AppColors.textMuted,
-                letterSpacing: 0.3,
-              ),
-            ),
+            Text(label,
+                style: GoogleFonts.nunito(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.textMuted,
+                    letterSpacing: 0.3)),
           ],
         ),
       ),
@@ -691,10 +769,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
         border: Border.all(color: AppColors.border, width: 1.5),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF4A70B0).withOpacity(0.08),
-            offset: const Offset(0, 4),
-            blurRadius: 16,
-          ),
+              color: const Color(0xFF4A70B0).withOpacity(0.08),
+              offset: const Offset(0, 4),
+              blurRadius: 16)
         ],
       ),
       child: Column(
@@ -830,301 +907,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     );
   }
 
-  // ─────────────────────────────────────────────────────────────
-  //  PREDICTION SOURCE BANNER — shows learning progress + source
-  // ─────────────────────────────────────────────────────────────
-  Widget _buildPredictionSourceBanner(PeriodHomeData? journey) {
-    const rose = AppColors.primaryRose;
-    if (journey == null) return const SizedBox.shrink();
-
-    final isAi = journey.isAiDriven;
-    final isLoading = journey.aiLoading;
-    final progress = journey.learningProgress;
-    final label = journey.sourceLabel;
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-      decoration: BoxDecoration(
-        color: isAi
-            ? const Color(0xFF9B7FC7).withOpacity(0.08)
-            : rose.withOpacity(0.06),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: isAi
-              ? const Color(0xFF9B7FC7).withOpacity(0.2)
-              : rose.withOpacity(0.15),
-          width: 1,
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Text(
-                isLoading
-                    ? '✨ '
-                    : isAi
-                        ? '🤖 '
-                        : '📊 ',
-                style: const TextStyle(fontSize: 13),
-              ),
-              const SizedBox(width: 4),
-              Expanded(
-                child: Text(
-                  label,
-                  style: GoogleFonts.nunito(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w700,
-                    color: isAi ? const Color(0xFF7B5FC7) : AppColors.textMuted,
-                  ),
-                ),
-              ),
-              if (!journey.isFullyLearned)
-                Text(
-                  '${journey.cyclesToConfidence} cycles to full accuracy',
-                  style: GoogleFonts.nunito(
-                    fontSize: 10,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.textMuted,
-                  ),
-                ),
-            ],
-          ),
-          if (!journey.isFullyLearned) ...[
-            const SizedBox(height: 8),
-            ClipRRect(
-              borderRadius: BorderRadius.circular(4),
-              child: LinearProgressIndicator(
-                value: progress,
-                minHeight: 4,
-                backgroundColor: rose.withOpacity(0.1),
-                valueColor: AlwaysStoppedAnimation<Color>(
-                  isAi ? const Color(0xFF9B7FC7) : rose,
-                ),
-              ),
-            ),
-          ],
-        ],
-      ),
-    );
-  }
-
-  // ─────────────────────────────────────────────────────────────
-  //  AI INSIGHT CARD — shows the insight returned by Claude
-  // ─────────────────────────────────────────────────────────────
-  Widget _buildAiInsightCard(String insight) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            const Color(0xFF9B7FC7).withOpacity(0.08),
-            const Color(0xFFD4639A).withOpacity(0.06),
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-            color: const Color(0xFF9B7FC7).withOpacity(0.2), width: 1),
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text('✨', style: TextStyle(fontSize: 16)),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Text(
-              insight,
-              style: GoogleFonts.nunito(
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
-                color: AppColors.textMid,
-                height: 1.5,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // ─────────────────────────────────────────────────────────────
-  //  CYCLE PROFILE CARD — shows journey flow + symptoms
-  // ─────────────────────────────────────────────────────────────
-  Widget _buildCycleProfileCard(PeriodHomeData journey) {
-    const rose = AppColors.primaryRose;
-
-    final flowIcon = {
-          'light': '💧',
-          'medium': '🟠',
-          'heavy': '🔴',
-          'varies': '🔀',
-        }[journey.flow] ??
-        '💧';
-
-    final flowLabel = {
-          'light': 'Light flow',
-          'medium': 'Medium flow',
-          'heavy': 'Heavy flow',
-          'varies': 'Varies',
-        }[journey.flow] ??
-        journey.flow ??
-        '';
-
-    // Filter out "None of these" from symptoms display
-    final symptoms =
-        journey.symptoms.where((s) => s != 'None of these').toList();
-
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.88),
-        borderRadius: BorderRadius.circular(22),
-        border: Border.all(color: AppColors.border, width: 1.5),
-        boxShadow: [
-          BoxShadow(
-            color: rose.withOpacity(0.06),
-            offset: const Offset(0, 4),
-            blurRadius: 16,
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Header
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: rose.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: const Text('🌸', style: TextStyle(fontSize: 16)),
-              ),
-              const SizedBox(width: 10),
-              Text(
-                'Your Cycle Profile',
-                style: GoogleFonts.nunito(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w900,
-                  color: AppColors.textDark,
-                ),
-              ),
-            ],
-          ),
-
-          // Flow row
-          if (journey.flow != null) ...[
-            const SizedBox(height: 14),
-            Row(
-              children: [
-                Text(
-                  'Typical flow',
-                  style: GoogleFonts.nunito(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.textMuted,
-                  ),
-                ),
-                const Spacer(),
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
-                  decoration: BoxDecoration(
-                    color: rose.withOpacity(0.08),
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: rose.withOpacity(0.2), width: 1),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(flowIcon, style: const TextStyle(fontSize: 13)),
-                      const SizedBox(width: 5),
-                      Text(
-                        flowLabel,
-                        style: GoogleFonts.nunito(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w800,
-                          color: rose,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ],
-
-          // Symptoms chips
-          if (symptoms.isNotEmpty) ...[
-            const SizedBox(height: 14),
-            Text(
-              'Common symptoms',
-              style: GoogleFonts.nunito(
-                fontSize: 12,
-                fontWeight: FontWeight.w700,
-                color: AppColors.textMuted,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Wrap(
-              spacing: 6,
-              runSpacing: 6,
-              children: symptoms.map((s) {
-                return Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFC9A0D0).withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(
-                        color: const Color(0xFFC9A0D0).withOpacity(0.3),
-                        width: 1),
-                  ),
-                  child: Text(
-                    s,
-                    style: GoogleFonts.nunito(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w700,
-                      color: const Color(0xFF9870C0),
-                    ),
-                  ),
-                );
-              }).toList(),
-            ),
-          ],
-
-          // Hint to update
-          const SizedBox(height: 14),
-          GestureDetector(
-            onTap: () => context.go('/journey/period'),
-            child: Row(
-              children: [
-                Icon(Icons.edit_outlined, size: 12, color: AppColors.textMuted),
-                const SizedBox(width: 4),
-                Text(
-                  'Update your profile',
-                  style: GoogleFonts.nunito(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.textMuted,
-                    decoration: TextDecoration.underline,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
   Widget _buildSwitchModeCard(String currentMode) {
     return Container(
       padding: const EdgeInsets.all(20),
@@ -1202,9 +984,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
   }
 }
 
-// ═══════════════════════════════════════════════════════
-//  PRIVATE: Pulsing notification dot — matches HTML .luna-fab-dot
-// ═══════════════════════════════════════════════════════
 class _PulsingDot extends StatefulWidget {
   @override
   State<_PulsingDot> createState() => _PulsingDotState();
@@ -1219,12 +998,10 @@ class _PulsingDotState extends State<_PulsingDot>
   void initState() {
     super.initState();
     _ctrl = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 2200),
-    )..repeat(reverse: true);
-    _anim = Tween<double>(begin: 1.0, end: 0.35).animate(
-      CurvedAnimation(parent: _ctrl, curve: Curves.easeInOut),
-    );
+        vsync: this, duration: const Duration(milliseconds: 2200))
+      ..repeat(reverse: true);
+    _anim = Tween<double>(begin: 1.0, end: 0.35)
+        .animate(CurvedAnimation(parent: _ctrl, curve: Curves.easeInOut));
   }
 
   @override
@@ -1244,7 +1021,7 @@ class _PulsingDotState extends State<_PulsingDot>
           height: 9,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: const Color(0xFFF9C06A), // warm yellow dot
+            color: const Color(0xFFF9C06A),
             border: Border.all(color: Colors.white, width: 2),
           ),
         ),
@@ -1253,19 +1030,12 @@ class _PulsingDotState extends State<_PulsingDot>
   }
 }
 
-// ═══════════════════════════════════════════════════════
-//  PRIVATE: Ambient glow orb
-// ═══════════════════════════════════════════════════════
 class _GlowOrb extends StatelessWidget {
   final double size;
   final Color color;
   final double opacity;
-
-  const _GlowOrb({
-    required this.size,
-    required this.color,
-    required this.opacity,
-  });
+  const _GlowOrb(
+      {required this.size, required this.color, required this.opacity});
 
   @override
   Widget build(BuildContext context) {
@@ -1275,10 +1045,7 @@ class _GlowOrb extends StatelessWidget {
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         gradient: RadialGradient(
-          colors: [
-            color.withOpacity(opacity),
-            color.withOpacity(0),
-          ],
+          colors: [color.withOpacity(opacity), color.withOpacity(0)],
         ),
       ),
     );
