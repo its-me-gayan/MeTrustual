@@ -5,7 +5,7 @@ import '../../../core/providers/firebase_providers.dart';
 import '../../../core/providers/mode_provider.dart';
 import '../../../core/utils/calendar_engine.dart';
 import '../../../models/calendar_day_model.dart';
-import 'home_provider.dart';
+import '../../../core/providers/period_journey_provider.dart';
 
 // ─────────────────────────────────────────────────────────────
 //  Calendar month offset state (0 = current month)
@@ -70,13 +70,15 @@ final _calendarLogMapProvider =
 // ─────────────────────────────────────────────────────────────
 //  Main calendar provider — combines cycle predictions + logs
 // ─────────────────────────────────────────────────────────────
-final calendarDaysProvider = Provider<AsyncValue<List<CalendarDayModel>>>((ref) {
+final calendarDaysProvider =
+    Provider<AsyncValue<List<CalendarDayModel>>>((ref) {
   final displayMonth = ref.watch(calendarDisplayMonthProvider);
   final mode = ref.watch(modeProvider);
-  final homeData = ref.watch(homeDataProvider);
 
-  // Only show full calendar for period mode (for now)
-  // For preg/ovul we still show a simplified calendar
+  // ✅ Use periodHomeDataProvider — same SmartCycleDetector-derived source
+  //    as the home screen, so calendar always matches home screen cycle day.
+  final periodData = ref.watch(periodHomeDataProvider);
+
   final monthKey = _MonthKey(
     year: displayMonth.year,
     month: displayMonth.month,
@@ -87,26 +89,27 @@ final calendarDaysProvider = Provider<AsyncValue<List<CalendarDayModel>>>((ref) 
 
   return logMapAsync.when(
     data: (logMap) {
-      // Extract cycle parameters from homeDataProvider
       DateTime lastPeriodStart;
       int cycleLength;
+      int periodLength;
 
-      if (homeData != null && homeData['lastCycle'] != null) {
-        final lastCycle = homeData['lastCycle'];
-        lastPeriodStart = lastCycle.startDate as DateTime;
-        cycleLength =
-            (homeData['prediction']?.averageLength as num?)?.toInt() ?? 28;
+      if (periodData != null && periodData.lastPeriod != null) {
+        // ✅ Anchor from SmartCycleDetector — always up to date with logs
+        lastPeriodStart = periodData.lastPeriod!;
+        cycleLength = periodData.cycleLen;
+        periodLength = periodData.periodLen;
       } else {
         // Fallback — no cycle data yet, use a sane default
         final now = DateTime.now();
         lastPeriodStart = DateTime(now.year, now.month, 1);
         cycleLength = 28;
+        periodLength = 5;
       }
 
       final engine = CalendarEngine(
         lastPeriodStart: lastPeriodStart,
         cycleLength: cycleLength,
-        periodLength: 5,
+        periodLength: periodLength,
         today: DateTime.now(),
       );
 
