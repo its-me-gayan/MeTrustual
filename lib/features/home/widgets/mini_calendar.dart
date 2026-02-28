@@ -8,7 +8,7 @@ import '../../../core/providers/firebase_providers.dart';
 import '../../../core/providers/mode_provider.dart';
 import '../../../core/utils/calendar_engine.dart';
 import '../../../models/calendar_day_model.dart';
-import '../providers/home_provider.dart';
+import '../../../core/providers/period_journey_provider.dart';
 import 'calendar_day_cell.dart';
 import 'day_detail_sheet.dart';
 
@@ -88,7 +88,9 @@ final _monthDaysProvider =
     Provider.family<AsyncValue<List<CalendarDayModel>>, int>((ref, offset) {
   final auth = ref.watch(firebaseAuthProvider);
   final mode = ref.watch(modeProvider);
-  final homeData = ref.watch(homeDataProvider);
+  // ✅ Use periodHomeDataProvider — the single source of truth for cycle data
+  // (same as the home screen stats, SmartCycleDetector-driven)
+  final periodData = ref.watch(periodHomeDataProvider);
   final uid = auth.currentUser?.uid ?? '';
 
   final now = DateTime.now();
@@ -105,27 +107,28 @@ final _monthDaysProvider =
     data: (logMap) {
       DateTime lastPeriodStart;
       int cycleLength;
+      int periodLength;
 
-      try {
-        if (homeData != null && homeData['lastCycle'] != null) {
-          final dynamic lastCycle = homeData['lastCycle'];
-          lastPeriodStart = lastCycle.startDate as DateTime;
-          final dynamic prediction = homeData['prediction'];
-          cycleLength = (prediction?.averageLength as num?)?.toInt() ?? 28;
-        } else {
-          lastPeriodStart = DateTime(now.year, now.month, 1);
-          cycleLength = 28;
-        }
-      } catch (_) {
+      if (periodData != null && periodData.lastPeriod != null) {
+        // ✅ Use real cycle data: SmartCycleDetector anchor + journey parameters
+        lastPeriodStart = periodData.lastPeriod!;
+        cycleLength = periodData.cycleLen;
+        periodLength = periodData.periodLen;
+      } else {
+        // Fallback — data not yet loaded or no journey set up
         lastPeriodStart = DateTime(now.year, now.month, 1);
         cycleLength = 28;
+        periodLength = 5;
       }
 
+      // Pass AI/smart prediction as nextPeriodOverride so swiped-to months
+      // show the same fertile/period highlights as the prediction card.
       final engine = CalendarEngine(
         lastPeriodStart: lastPeriodStart,
         cycleLength: cycleLength,
-        periodLength: 5,
+        periodLength: periodLength,
         today: now,
+        nextPeriodOverride: periodData?.nextPeriod,
       );
 
       return AsyncValue.data(engine.buildMonth(
@@ -304,7 +307,13 @@ class _CalendarMonthPage extends ConsumerWidget {
   final double rowHeight;
 
   static const List<String> _weekdays = [
-    'Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'
+    'Su',
+    'Mo',
+    'Tu',
+    'We',
+    'Th',
+    'Fr',
+    'Sa'
   ];
 
   const _CalendarMonthPage({
@@ -331,7 +340,9 @@ class _CalendarMonthPage extends ConsumerWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              _NavArrow(icon: Icons.chevron_left_rounded, onTap: () => onNavigate(-1)),
+              _NavArrow(
+                  icon: Icons.chevron_left_rounded,
+                  onTap: () => onNavigate(-1)),
               Text(
                 monthLabel,
                 style: GoogleFonts.nunito(
@@ -340,7 +351,9 @@ class _CalendarMonthPage extends ConsumerWidget {
                   color: AppColors.textDark,
                 ),
               ),
-              _NavArrow(icon: Icons.chevron_right_rounded, onTap: () => onNavigate(1)),
+              _NavArrow(
+                  icon: Icons.chevron_right_rounded,
+                  onTap: () => onNavigate(1)),
             ],
           ),
         ),
@@ -349,19 +362,21 @@ class _CalendarMonthPage extends ConsumerWidget {
         SizedBox(
           height: 18,
           child: Row(
-            children: _weekdays.map((d) => Expanded(
-              child: Center(
-                child: Text(
-                  d,
-                  style: GoogleFonts.nunito(
-                    fontSize: 9,
-                    fontWeight: FontWeight.w800,
-                    color: const Color(0xFFD0A8B0),
-                    letterSpacing: 0.2,
-                  ),
-                ),
-              ),
-            )).toList(),
+            children: _weekdays
+                .map((d) => Expanded(
+                      child: Center(
+                        child: Text(
+                          d,
+                          style: GoogleFonts.nunito(
+                            fontSize: 9,
+                            fontWeight: FontWeight.w800,
+                            color: const Color(0xFFD0A8B0),
+                            letterSpacing: 0.2,
+                          ),
+                        ),
+                      ),
+                    ))
+                .toList(),
           ),
         ),
 

@@ -163,6 +163,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     final currentMode = ref.watch(modeProvider);
     final themeColor = modeColor(currentMode);
 
+    // ── Silently sync cycle anchor to Firebase whenever logs change ──────────
+    // Handles two cases:
+    //   1. User skipped "last period" during onboarding → writes first detected start
+    //   2. A new period appears in logs that is newer than what Firebase has
+    //      → updates lastPeriod, cycleLen, periodLen so predictions stay accurate
+    ref.watch(cycleAnchorSyncProvider);
+
     return Scaffold(
       backgroundColor: Colors.transparent,
       extendBody: true,

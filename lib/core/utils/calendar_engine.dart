@@ -1,165 +1,235 @@
 import 'package:intl/intl.dart';
 import '../../models/calendar_day_model.dart';
 
-/// Pure computation engine. No Flutter/Firestore dependencies.
-/// Takes cycle parameters and a map of existing log summaries,
-/// and produces a full CalendarDayModel list for a given month.
+/// Pure computation engine — no Flutter/Firestore dependencies.
+///
+/// ═══ PAST DAYS — two rules, strictly separated ═══════════════════════
+///
+///  PERIOD colour (pink) ← ONLY if the user actually logged flow
+///  PHASE colour (green/follicular/luteal) ← ALWAYS from cycle math
+///
+///  Why separate? Because:
+///   • Period pink without a log = false data (Feb 19-22 bug)
+///   • Phase colours without a log = medically correct context
+///     (green fertile window on old months is valid even if nothing logged)
+///
+/// ═══ FUTURE DAYS ═════════════════════════════════════════════════════
+///
+///  nextPeriodOverride (AI predicted next period, stored as
+///  aiPrediction.nextPeriod in Firebase — NEVER as lastPeriod):
+///   • dates ≥ override → use override as next cycle anchor
+///   • dates < override → fertile window back-calculated from override
+///     (ovulation = override − 14 days) so calendar matches prediction card
+///
+/// ═══ TWO PERIODS IN ONE MONTH ════════════════════════════════════════
+///
+///  Handled automatically by modulo arithmetic.
+///  26-day cycle, anchor = Jan 3 → Jan 29 = cycle day 1 → another period.
+///  The same formula works for any cycle length.
+///
+/// ═══ FIREBASE KEY CLARIFICATION ══════════════════════════════════════
+///
+///  lastPeriodStart (passed here) = CONFIRMED period only.
+///  nextPeriodOverride (passed here) = AI prediction only.
+///  They are NEVER swapped or merged — kept fully separate.
+///
 class CalendarEngine {
-  // ── Cycle parameters ──────────────────────────────────
-  final DateTime lastPeriodStart; // first day of last known period
-  final int cycleLength; // average cycle length in days (default 28)
-  final int periodLength; // average period length in days (default 5)
+  final DateTime lastPeriodStart;
+  final int cycleLength;
+  final int periodLength;
   final DateTime today;
+
+  /// AI-predicted next period.
+  /// Stored in Firebase as `aiPrediction.nextPeriod` — NEVER as `lastPeriod`.
+  final DateTime? nextPeriodOverride;
 
   const CalendarEngine({
     required this.lastPeriodStart,
     this.cycleLength = 28,
     this.periodLength = 5,
     required this.today,
+    this.nextPeriodOverride,
   });
 
   // ─────────────────────────────────────────────────────
   //  PUBLIC API
   // ─────────────────────────────────────────────────────
 
-  /// Returns a list of [CalendarDayModel] for the given [year] and [month].
-  /// [logMap] keys are 'yyyy-MM-dd' strings; values are [LogDaySummary].
-  /// The returned list always has padding empty cells so it starts on Sunday.
   List<CalendarDayModel> buildMonth({
     required int year,
     required int month,
     required Map<String, LogDaySummary> logMap,
   }) {
-    final firstDayOfMonth = DateTime(year, month, 1);
+    final firstDay = DateTime(year, month, 1);
     final daysInMonth = DateTime(year, month + 1, 0).day;
-    final startPadding = firstDayOfMonth.weekday % 7; // 0=Sun…6=Sat
+    final startPadding = firstDay.weekday % 7;
 
     final result = <CalendarDayModel>[];
-
-    // Leading empty cells
-    for (int i = 0; i < startPadding; i++) {
-      result.add(_emptyCell());
+    for (var i = 0; i < startPadding; i++) result.add(_emptyCell());
+    for (var d = 1; d <= daysInMonth; d++) {
+      result.add(_classifyDay(DateTime(year, month, d), logMap));
     }
-
-    // Actual days
-    for (int d = 1; d <= daysInMonth; d++) {
-      final date = DateTime(year, month, d);
-      result.add(_classifyDay(date, logMap));
+    final rem = result.length % 7;
+    if (rem != 0) {
+      for (var i = 0; i < 7 - rem; i++) result.add(_emptyCell());
     }
-
-    // Trailing empty cells (complete the last row)
-    final totalCells = result.length;
-    final remainder = totalCells % 7;
-    if (remainder != 0) {
-      for (int i = 0; i < (7 - remainder); i++) {
-        result.add(_emptyCell());
-      }
-    }
-
     return result;
   }
 
   // ─────────────────────────────────────────────────────
-  //  INTERNAL HELPERS
+  //  CLASSIFICATION LOGIC
   // ─────────────────────────────────────────────────────
-
-  CalendarDayModel _emptyCell() {
-    return CalendarDayModel(
-      date: DateTime(0),
-      type: DayType.empty,
-      isPredicted: false,
-      isToday: false,
-      cycleDay: 0,
-    );
-  }
 
   CalendarDayModel _classifyDay(
       DateTime date, Map<String, LogDaySummary> logMap) {
-    final isToday = _isSameDay(date, today);
-    final isPast = date.isBefore(today) || isToday;
+    final isToday = _same(date, today);
     final isFuture = date.isAfter(today);
-
-    // Days elapsed since the most recent cycle start that falls before `date`
-    final daysSinceStart = _daysSinceCycleStart(date);
-    // 0-indexed cycle day within cycle (0 = day 1 of period)
-    final cycleDay0 =
-        ((daysSinceStart % cycleLength) + cycleLength) % cycleLength;
-    final cycleDay = cycleDay0 + 1; // 1-indexed
-
-    // ── Determine phase ──────────────────────────────
-    DayType type;
-    bool isPredicted;
-
-    // Approximate fertile window: days 9–15 of cycle (ovulation at day 14)
-    final fertileStart = 9;
-    final fertileEnd = 15;
-    final ovulationDay = 14;
-
-    if (cycleDay <= periodLength) {
-      // Menstrual
-      type = DayType.period;
-      isPredicted = isFuture; // past/today = logged, future = predicted
-    } else if (cycleDay >= fertileStart && cycleDay <= fertileEnd) {
-      // Fertile window
-      type = (cycleDay == ovulationDay || cycleDay == ovulationDay - 1)
-          ? DayType.fertileHigh
-          : DayType.fertile;
-      isPredicted = isFuture;
-    } else if (cycleDay < fertileStart) {
-      // Follicular (between end of period and fertile window)
-      type = DayType.follicular;
-      isPredicted = isFuture;
-    } else {
-      // Luteal (after fertile window, before next period)
-      type = DayType.luteal;
-      isPredicted = isFuture;
-    }
-
-    // ── Resolve actual logged flow intensity ──────────
     final dateKey = DateFormat('yyyy-MM-dd').format(date);
     final log = logMap[dateKey];
-    FlowIntensity? flowIntensity;
+    final hasLoggedFlow =
+        log?.flow != null && log!.flow != 'none' && log.flow!.isNotEmpty;
+    final cycleDay = _cycleDay(date);
 
-    if (type == DayType.period) {
-      if (log?.flowIntensity != null) {
-        // Use actual logged flow
-        flowIntensity = log!.flowIntensity;
-      } else if (!isFuture) {
-        // Past/today with no log — use cycle-day-based default
-        flowIntensity = _defaultFlowForDay(cycleDay);
-      } else {
-        // Future predicted — use cycle-day-based default
-        flowIntensity = _defaultFlowForDay(cycleDay);
+    // ──────────────────────────────────────────────────────────────────────
+    //  PAST & TODAY
+    // ──────────────────────────────────────────────────────────────────────
+    if (!isFuture) {
+      // Rule 1: Period pink — ONLY for days with actual logged flow.
+      //         This prevents false pink on Feb 19-22 when user never logged.
+      if (hasLoggedFlow) {
+        return CalendarDayModel(
+          date: date,
+          type: DayType.period,
+          isPredicted: false,
+          isToday: isToday,
+          cycleDay: cycleDay,
+          flowIntensity: log!.flowIntensity,
+          log: log,
+        );
       }
+
+      // Rule 2: Phase colour (fertile/follicular/luteal) — from cycle math.
+      //         Always show so navigating to old months shows meaningful context.
+      //         IMPORTANT: if math says DayType.period (cycle days 1–periodLen)
+      //         but there is no log, show as follicular instead — we cannot
+      //         confirm period without a log entry.
+      final mathPhase = _phaseForCycleDay(cycleDay);
+      final displayType =
+          mathPhase == DayType.period ? DayType.follicular : mathPhase;
+
+      return CalendarDayModel(
+        date: date,
+        type: displayType,
+        isPredicted: false,
+        isToday: isToday,
+        cycleDay: cycleDay,
+        log: log,
+      );
+    }
+
+    // ──────────────────────────────────────────────────────────────────────
+    //  FUTURE
+    // ──────────────────────────────────────────────────────────────────────
+    DayType type;
+    FlowIntensity? flowIntensity;
+    final override = nextPeriodOverride;
+
+    if (override != null && !date.isBefore(override)) {
+      // ── Case A: on or after AI-predicted next period ─────────────────────
+      final day0 =
+          (date.difference(override).inDays % cycleLength + cycleLength) %
+              cycleLength;
+      final cd = day0 + 1;
+      type = _phaseForCycleDay(cd);
+      if (type == DayType.period) flowIntensity = _defaultFlow(cd);
+
+      return CalendarDayModel(
+        date: date,
+        type: type,
+        isPredicted: true,
+        isToday: false,
+        cycleDay: cd,
+        flowIntensity: flowIntensity,
+        log: log,
+      );
+    } else if (override != null) {
+      // ── Case B: between today and AI-predicted period ─────────────────────
+      // Back-calculate fertile window from override → matches prediction card.
+      final ovulation = override.subtract(const Duration(days: 14));
+      final fertileFrom = ovulation.subtract(const Duration(days: 5));
+      final fertileTo = ovulation.add(const Duration(days: 1));
+
+      if (!date.isBefore(fertileFrom) && !date.isAfter(fertileTo)) {
+        type = (_same(date, ovulation) ||
+                _same(date, ovulation.subtract(const Duration(days: 1))))
+            ? DayType.fertileHigh
+            : DayType.fertile;
+      } else if (date.isBefore(fertileFrom)) {
+        type = DayType.follicular;
+      } else {
+        type = DayType.luteal;
+      }
+    } else {
+      // ── Case C: no override — pure cycle math ─────────────────────────────
+      type = _phaseForCycleDay(cycleDay);
+      if (type == DayType.period) flowIntensity = _defaultFlow(cycleDay);
     }
 
     return CalendarDayModel(
       date: date,
       type: type,
-      isPredicted: isPredicted,
-      isToday: isToday,
+      isPredicted: true,
+      isToday: false,
       cycleDay: cycleDay,
       flowIntensity: flowIntensity,
       log: log,
     );
   }
 
-  /// Days elapsed since the most recent cycle start that falls on or before [date].
-  int _daysSinceCycleStart(DateTime date) {
-    // Find how many full cycles have passed
-    final totalDays = date.difference(lastPeriodStart).inDays;
-    return totalDays;
+  // ─────────────────────────────────────────────────────
+  //  HELPERS
+  // ─────────────────────────────────────────────────────
+
+  /// 1-indexed cycle day via modulo from lastPeriodStart.
+  /// Handles past (negative) and future (large positive) offsets.
+  /// Also handles TWO PERIODS IN ONE MONTH automatically:
+  ///   anchor=Jan 3, cycleLen=26 → Jan 29 = day 1 (second period that month).
+  int _cycleDay(DateTime date) {
+    final total = date.difference(lastPeriodStart).inDays;
+    final day0 = ((total % cycleLength) + cycleLength) % cycleLength;
+    return day0 + 1;
   }
 
-  /// Default flow intensity based on position within period
-  FlowIntensity _defaultFlowForDay(int cycleDay) {
+  /// Phase from 1-indexed cycle day.
+  DayType _phaseForCycleDay(int cycleDay) {
+    const fertileStart = 9;
+    const fertileEnd = 15;
+    const ovulationDay = 14;
+    if (cycleDay <= periodLength) return DayType.period;
+    if (cycleDay >= fertileStart && cycleDay <= fertileEnd) {
+      return (cycleDay == ovulationDay || cycleDay == ovulationDay - 1)
+          ? DayType.fertileHigh
+          : DayType.fertile;
+    }
+    return cycleDay < fertileStart ? DayType.follicular : DayType.luteal;
+  }
+
+  FlowIntensity _defaultFlow(int cycleDay) {
     if (cycleDay == 1) return FlowIntensity.light;
     if (cycleDay == 2) return FlowIntensity.medium;
     if (cycleDay == 3) return FlowIntensity.heavy;
     if (cycleDay == 4) return FlowIntensity.medium;
-    return FlowIntensity.light; // day 5+
+    return FlowIntensity.light;
   }
 
-  bool _isSameDay(DateTime a, DateTime b) =>
+  CalendarDayModel _emptyCell() => CalendarDayModel(
+        date: DateTime(0),
+        type: DayType.empty,
+        isPredicted: false,
+        isToday: false,
+        cycleDay: 0,
+      );
+
+  bool _same(DateTime a, DateTime b) =>
       a.year == b.year && a.month == b.month && a.day == b.day;
 }

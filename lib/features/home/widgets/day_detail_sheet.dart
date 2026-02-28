@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+import '../../../core/providers/period_journey_provider.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../models/calendar_day_model.dart';
 
@@ -15,14 +16,56 @@ class DayDetailSheet extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // ── Fetch current cycle anchor so we can tell the user which cycle
+    //    this day belongs to (current vs previous).
+    final periodData = ref.watch(periodHomeDataProvider);
+    final currentPeriodStart = periodData?.lastPeriod;
+
     final phase = _phaseLabel(day);
     final tip = _selfCareTip(day);
-    final dateLabel =
-        DateFormat('EEE, MMM d').format(day.date).toUpperCase();
+    final dateLabel = DateFormat('EEE, MMM d').format(day.date).toUpperCase();
 
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
     final isFuture = day.date.isAfter(today);
+
+    // ── Is this day part of the *current* cycle or a previous one? ──────────
+    // A day is in the current cycle if it's on/after the most recent period
+    // start. Anything before that belongs to a prior cycle.
+    final isCurrentCycle = currentPeriodStart == null ||
+        !day.date.isBefore(DateTime(currentPeriodStart.year,
+            currentPeriodStart.month, currentPeriodStart.day));
+    final isPreviousCycle = !isCurrentCycle && !isFuture;
+
+    // ── Has the user actually logged something for this day? ─────────────────
+    final hasLog = day.log != null &&
+        ((day.log!.flow != null &&
+                day.log!.flow!.isNotEmpty &&
+                day.log!.flow != 'none') ||
+            (day.log!.mood != null && day.log!.mood!.isNotEmpty) ||
+            day.log!.symptoms.isNotEmpty ||
+            day.log!.hasNote);
+
+    // ── Subtitle line under the phase heading ─────────────────────────────────
+    // Examples:
+    //   "Current cycle · Day 3 · Logged"       ← today/recent, has log
+    //   "Current cycle · Day 3"                 ← today/recent, no log
+    //   "Previous cycle · Day 5 · No entry"     ← older, no log
+    //   "Previous cycle · Day 5 · Logged"       ← older, has log
+    //   "Predicted · Day 27 · AI estimate"      ← future
+    final String cycleContextLabel;
+    if (isFuture || day.isPredicted) {
+      cycleContextLabel = 'Predicted · Day ${day.cycleDay} · AI estimate';
+    } else if (isPreviousCycle) {
+      cycleContextLabel = hasLog
+          ? 'Previous cycle · Day ${day.cycleDay} · Logged'
+          : 'Previous cycle · Day ${day.cycleDay} · No entry';
+    } else {
+      // Current cycle
+      cycleContextLabel = hasLog
+          ? 'Current cycle · Day ${day.cycleDay} · Logged'
+          : 'Current cycle · Day ${day.cycleDay}';
+    }
 
     return Container(
       decoration: const BoxDecoration(
@@ -75,29 +118,36 @@ class DayDetailSheet extends ConsumerWidget {
           ),
           const SizedBox(height: 4),
 
-          // ── Cycle day ──
+          // ── Cycle context + logged status ──
           Text(
-            'Cycle day ${day.cycleDay}  ${day.isPredicted ? '· AI prediction' : day.date.isAfter(DateTime.now()) ? '' : '· Logged'}',
+            cycleContextLabel,
             style: GoogleFonts.nunito(
               fontSize: 12,
               fontWeight: FontWeight.w700,
-              color: AppColors.textMuted,
+              color: isPreviousCycle
+                  ? AppColors.textMuted.withOpacity(0.65)
+                  : AppColors.textMuted,
             ),
           ),
 
+          // ── Previous-cycle notice ──
+          if (isPreviousCycle) ...[
+            const SizedBox(height: 10),
+            _buildPreviousCycleBanner(),
+          ],
+
           const SizedBox(height: 14),
 
-          // ── Logged symptom chips (if any) ──
-          if (day.log != null) _buildLoggedChips(day.log!),
+          // ── Logged symptom chips (only if actually logged) ──
+          if (hasLog) _buildLoggedChips(day.log!),
 
           // ── Predicted label ──
-          if (day.isPredicted)
-            _buildPredictedBadge(),
+          if (day.isPredicted) _buildPredictedBadge(),
 
           const SizedBox(height: 12),
 
           // ── Self-care tip ──
-          _buildTipCard(tip),
+          _buildTipCard(tip, isPreviousCycle),
 
           const SizedBox(height: 16),
 
@@ -107,7 +157,7 @@ class DayDetailSheet extends ConsumerWidget {
               if (!isFuture) ...[
                 Expanded(
                   child: _ActionButton(
-                    label: '📝  Log this day',
+                    label: hasLog ? '📝  Edit log' : '📝  Log this day',
                     isPrimary: true,
                     onTap: () {
                       Navigator.of(context).pop();
@@ -182,8 +232,7 @@ class DayDetailSheet extends ConsumerWidget {
         runSpacing: 6,
         children: chips.map((chip) {
           return Container(
-            padding:
-                const EdgeInsets.symmetric(horizontal: 11, vertical: 5),
+            padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 5),
             decoration: BoxDecoration(
               color: const Color(0xFFFFF5F6),
               border: Border.all(color: AppColors.border, width: 1.2),
@@ -226,7 +275,39 @@ class DayDetailSheet extends ConsumerWidget {
     );
   }
 
-  Widget _buildTipCard(String tip) {
+  /// Banner shown when tapping a day from a *previous* cycle so the user
+  /// understands the cycle-day number refers to an older cycle.
+  Widget _buildPreviousCycleBanner() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF5F0FF),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(
+            color: const Color(0xFFD0B8F0).withOpacity(0.5), width: 1),
+      ),
+      child: Text(
+        '📅  This day is from a previous cycle. '
+        'Logging it now will help improve future predictions.',
+        style: GoogleFonts.nunito(
+          fontSize: 11,
+          fontWeight: FontWeight.w700,
+          color: const Color(0xFF8060A0),
+          height: 1.5,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTipCard(String tip, bool isPreviousCycle) {
+    // For previous-cycle days with no logged data the self-care tip isn't
+    // very relevant — show a more appropriate nudge instead.
+    final displayTip = isPreviousCycle
+        ? 'Logging past days helps the app learn your unique cycle pattern — '
+            'every entry counts 💕'
+        : tip;
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(14),
@@ -247,7 +328,7 @@ class DayDetailSheet extends ConsumerWidget {
               ),
             ),
             TextSpan(
-              text: tip,
+              text: displayTip,
               style: GoogleFonts.nunito(
                 fontSize: 12,
                 fontWeight: FontWeight.w600,
@@ -292,9 +373,14 @@ class DayDetailSheet extends ConsumerWidget {
   String _selfCareTip(CalendarDayModel day) {
     return switch (day.type) {
       DayType.period => switch (day.cycleDay) {
-          1 || 2 => 'Rest is sacred today 🌸 — gentle heat and iron-rich foods help replenish.',
-          3 => 'Dark chocolate is your friend 🍫 — magnesium eases cramps naturally.',
-          4 || 5 => 'Gentle yoga or a short walk can relieve bloating and lift your mood.',
+          1 ||
+          2 =>
+            'Rest is sacred today 🌸 — gentle heat and iron-rich foods help replenish.',
+          3 =>
+            'Dark chocolate is your friend 🍫 — magnesium eases cramps naturally.',
+          4 ||
+          5 =>
+            'Gentle yoga or a short walk can relieve bloating and lift your mood.',
           _ => 'Your body is wrapping up — light movement and warm teas help.',
         },
       DayType.follicular =>
@@ -306,7 +392,8 @@ class DayDetailSheet extends ConsumerWidget {
       DayType.luteal => day.cycleDay > 22
           ? 'Late luteal — PMS may arrive. Magnesium, rest and less caffeine help 💜'
           : 'Progesterone rising — focus on nourishing foods and quality sleep.',
-      _ => 'Log how you feel today — every entry makes your predictions more accurate 💕',
+      _ =>
+        'Log how you feel today — every entry makes your predictions more accurate 💕',
     };
   }
 

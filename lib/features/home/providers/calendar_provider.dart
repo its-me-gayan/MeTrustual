@@ -106,11 +106,14 @@ final calendarDaysProvider =
         periodLength = 5;
       }
 
+      // Pass AI/smart prediction as nextPeriodOverride so future month
+      // highlights (fertile window + period) match the prediction card exactly.
       final engine = CalendarEngine(
         lastPeriodStart: lastPeriodStart,
         cycleLength: cycleLength,
         periodLength: periodLength,
         today: DateTime.now(),
+        nextPeriodOverride: periodData?.nextPeriod,
       );
 
       final days = engine.buildMonth(
