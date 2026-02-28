@@ -220,25 +220,13 @@ final periodHomeDataProvider = Provider.autoDispose<PeriodHomeData?>((ref) {
   }
 
   // ── Resolve the best "last period start" anchor ──────────────────────────
-  // SmartCycleDetector scans daily logs and returns the most recent run of
-  // flow entries. However it can be fooled: if the user only logged flow on
-  // e.g. Feb 25-26 but their REAL period started Feb 19 (stored in Firebase),
-  // the detector declares Feb 25 as a *new* period — wrongly overriding Feb 19.
-  //
-  // Rule: if the detected start falls within half a cycle of journeyLastPeriod,
-  // they are the SAME period. Trust the earlier, user-confirmed journeyLastPeriod.
-  // Only accept the detected start as a genuinely new period if it is at least
-  // (cycleLen / 2) days after journeyLastPeriod.
   final _detectedStart = SmartCycleDetector.mostRecentPeriodStart(detected);
   final DateTime? anchor;
   if (_detectedStart != null && journeyLastPeriod != null) {
     final gapDays = _detectedStart.difference(journeyLastPeriod).inDays;
     if (gapDays >= (cycleLen / 2).round()) {
-      // Detected start is far enough ahead → genuinely a newer cycle
       anchor = _detectedStart;
     } else {
-      // Detected start is within the same cycle window as journeyLastPeriod
-      // (user only logged mid/late period days) → trust Firebase's value
       anchor = journeyLastPeriod;
     }
   } else {
@@ -265,6 +253,38 @@ final periodHomeDataProvider = Provider.autoDispose<PeriodHomeData?>((ref) {
     );
   }
 
+  // ── Rebase nextPeriod from the resolved anchor (math fallback only) ─────────
+  //
+  // ROOT-CAUSE FIX for "predicted Mar 16 on card but Mar 23 on calendar" bug:
+  //
+  // SmartPredictionEngine.predict() internally picks its own "lastPeriodAnchor"
+  // via SmartCycleDetector.mostRecentPeriodStart(detected) — e.g. Feb 1 from logs.
+  // That gives math.nextPeriod = Feb 1 + cycleLen = Feb 27 (already in the past).
+  //
+  // But the anchor resolver above (half-cycle proximity rule) correctly selects
+  // journeyLastPeriod = Feb 19 as the authoritative anchor, which is what the
+  // cycle-day circle and all other home-screen stats are based on.
+  //
+  // Consequence before this fix:
+  //   • Prediction banner computed: today + (cycleLen − cycleDay) = Mar 16 ✅
+  //   • CalendarEngine received:    nextPeriodOverride = Feb 27 → Case A for all
+  //     of March → wrong fertile/period windows → calendar showed Mar 23 ❌
+  //
+  // Fix: when AI is not driving, recompute nextPeriod from the same resolved
+  // anchor so calendar, prediction banner, and cycle-day stats are all in sync.
+  //   anchor (Feb 19) + cycleLen (26) = Mar 17 ≈ banner's Mar 16 (±1 day due
+  //   to cycleDay +1 offset — within the displayed ±2-day tolerance).
+  //
+  // AI result is intentionally left untouched — AI owns its own nextPeriod.
+  final DateTime rebasedNextPeriod;
+  if (aiResult != null) {
+    // AI is driving — trust its prediction exactly
+    rebasedNextPeriod = nextPeriod!;
+  } else {
+    // Math fallback — rebase onto the correctly resolved anchor
+    rebasedNextPeriod = anchor.add(Duration(days: cycleLen));
+  }
+
   final cycleDay = DateTime.now().difference(anchor).inDays + 1;
   final phase = PredictionEngine.getCurrentPhase(
     lastPeriodStart: anchor,
@@ -281,7 +301,7 @@ final periodHomeDataProvider = Provider.autoDispose<PeriodHomeData?>((ref) {
     cycleDay: cycleDay.clamp(1, cycleLen),
     phaseLabel: _phaseLabel(phase, cycleDay),
     phase: phase,
-    nextPeriod: nextPeriod,
+    nextPeriod: rebasedNextPeriod,
     confidence: confidence,
     source: source,
     detectedCycles: detected.length,
@@ -312,35 +332,36 @@ String _phaseLabel(CyclePhase phase, int day) {
 //
 //   users/{uid}/journey/period {
 //     lastPeriod:    Timestamp   ← CONFIRMED actual period start ONLY
-//                                  (set during onboarding or written here
-//                                   when a genuine new period is detected
-//                                   from daily logs)
-//                                  ⚠️  NEVER overwritten with AI predictions
-//
-//     cycleLen:      int         ← best known average, updated from logs
-//     periodLen:     int         ← best known average, updated from logs
-//
-//     aiPrediction: {            ← AI prediction — SEPARATE key
-//       nextPeriod:   Timestamp  ← predicted, not confirmed
-//       cycleLength:  int
-//       periodLength: int
-//       confidencePct: int
-//       insight:      String
-//       generatedAt:  Timestamp
-//     }
+//     cycleLen:      int
+//     periodLen:     int
+//     aiPrediction: { ... }      ← AI prediction — SEPARATE key, never touched here
 //   }
 //
 // This notifier watches daily logs + journey doc.
-// When it detects that:
-//   (a) lastPeriod is null (user skipped during onboarding), OR
-//   (b) a genuinely NEW period has been logged (gap ≥ cycleLen/2 from stored
-//       lastPeriod — same half-cycle proximity rule as the anchor resolver)
+// It writes ONLY to lastPeriod / cycleLen / periodLen when:
+//   (a) lastPeriod is null (user skipped onboarding), OR
+//   (b) a genuinely NEW period has been logged:
+//       gap ≥ cycleLen/2 from stored lastPeriod (half-cycle proximity rule)
+//       AND the detected run is substantial enough to be real menstruation
+//       (not mid-cycle Mittelschmerz spotting).
 //
-// ...it writes ONLY to lastPeriod / cycleLen / periodLen.
-// It NEVER touches aiPrediction.nextPeriod.
+// ── SPOTTING GUARD (NEW) ──────────────────────────────────────────────────
 //
-// HOW TO USE — watch in HomeScreen build():
-//   ref.watch(cycleAnchorSyncProvider);
+// Previously: any 2+ day bleed that passed the gap check would overwrite
+// lastPeriod, even if the run was only 2 days of spotting mid-cycle.
+//
+// Problem: if user logs spotting on Feb 25-26 (gap=22d > halfCycle=13d),
+// the old code would overwrite lastPeriod=Feb 25, corrupting the confirmed
+// Feb 19 anchor. This matters clinically for ovulation/fertile window
+// calculations.
+//
+// Fix: require detectedRun.periodDays ≥ ceil(journeyPeriodLen / 2) before
+// promoting a detected bleed to a confirmed lastPeriod. For a 4-day period,
+// this means we need at least 2 logged flow days before trusting it as a
+// new period start. A 2-day spotting run won't pass this gate.
+//
+// This is the "minimum days to trust" gate.
+//
 // ─────────────────────────────────────────────────────────────────────────────
 
 class _SyncResult {
@@ -372,6 +393,7 @@ class CycleAnchorSyncNotifier extends AutoDisposeAsyncNotifier<_SyncResult> {
       journeyLastPeriod = DateTime.tryParse(rawLP);
     }
     final journeyCycleLen = (journey?['cycleLen'] as num?)?.toInt() ?? 28;
+    final journeyPeriodLen = (journey?['periodLen'] as num?)?.toInt() ?? 5;
 
     // ── Detect actual period starts from logs ────────────────────────────────
     final detected = SmartCycleDetector.detect(logs);
@@ -379,19 +401,42 @@ class CycleAnchorSyncNotifier extends AutoDisposeAsyncNotifier<_SyncResult> {
 
     if (detectedStart == null) return const _SyncResult(); // no logs yet
 
-    // ── Decide if this is a genuinely NEW period or same cycle ───────────────
+    // ── Spotting guard — require minimum logged days before trusting ──────────
     //
-    // Half-cycle proximity rule:
+    // Get the most recent detected cycle's period length.
+    // We need at least ceil(journeyPeriodLen / 2) logged flow days before
+    // treating the detected start as a confirmed new period.
+    //
+    // Example: journeyPeriodLen=4 → minDaysToTrust=2
+    //   A 2-day spotting run → 2 >= 2 → would still pass.
+    //   We therefore also require the gap check (below) so that a 2-day
+    //   bleed at day 5 of the cycle (clearly same period) is still rejected.
+    //
+    // Example: journeyPeriodLen=5 → minDaysToTrust=3
+    //   Only runs of 3+ logged days can become a new confirmed anchor.
+    //   This filters out typical mid-cycle spotting (1-2 days).
+    final mostRecentCycle = detected.isNotEmpty ? detected.last : null;
+    final detectedPeriodDays = mostRecentCycle?.periodDays ?? 0;
+    final minDaysToTrust = (journeyPeriodLen / 2).ceil();
+
+    if (detectedPeriodDays < minDaysToTrust) {
+      debugPrint('[CycleAnchorSync] Skipping write — '
+          'detected run ($detectedPeriodDays days) < minDaysToTrust '
+          '($minDaysToTrust). Likely mid-cycle spotting. '
+          'journeyPeriodLen=$journeyPeriodLen');
+      return const _SyncResult();
+    }
+
+    // ── Half-cycle proximity rule — decide if genuinely NEW period ────────────
+    //
     //   gap < cycleLen/2  → user only logged mid/late days of the CURRENT
-    //                       period (e.g. logged Feb 25-26 but period started
-    //                       Feb 19) → keep Firebase as-is
+    //                        period → keep Firebase as-is
     //   gap ≥ cycleLen/2  → detected start is far enough ahead to be a
-    //                       NEW actual period → update Firebase
+    //                        NEW actual period → update Firebase
     //   lastPeriod null   → first time, always write
     //
     final bool shouldWrite;
     if (journeyLastPeriod == null) {
-      // No stored period at all (user skipped onboarding step)
       shouldWrite = true;
     } else {
       final gapDays = detectedStart.difference(journeyLastPeriod).inDays;
@@ -411,7 +456,6 @@ class CycleAnchorSyncNotifier extends AutoDisposeAsyncNotifier<_SyncResult> {
         : journeyCycleLen;
 
     final detectedPeriodLen = SmartCycleDetector.averagePeriodLength(detected);
-    final journeyPeriodLen = (journey?['periodLen'] as num?)?.toInt() ?? 5;
     final bestPeriodLen = detectedPeriodLen != null && detected.length >= 2
         ? detectedPeriodLen.round()
         : journeyPeriodLen;

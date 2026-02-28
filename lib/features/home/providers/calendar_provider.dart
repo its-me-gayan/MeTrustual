@@ -108,12 +108,15 @@ final calendarDaysProvider =
 
       // Pass AI/smart prediction as nextPeriodOverride so future month
       // highlights (fertile window + period) match the prediction card exactly.
+      // Pass confirmedFlow so confirmedJourney days display the real intensity
+      // from Firebase (e.g. 'heavy') rather than a hardcoded fallback.
       final engine = CalendarEngine(
         lastPeriodStart: lastPeriodStart,
         cycleLength: cycleLength,
         periodLength: periodLength,
         today: DateTime.now(),
         nextPeriodOverride: periodData?.nextPeriod,
+        confirmedFlow: periodData?.flow, // NEW — fixes confirmed-day intensity
       );
 
       final days = engine.buildMonth(

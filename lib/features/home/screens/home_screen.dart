@@ -555,14 +555,22 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     // ── 1. Best source: real AI prediction from AiPredictionService ────────
     final aiResult = journey?.aiResult;
 
-    // ── 2. Fallback: SmartPredictionEngine math (no API call needed) ───────
-    //    Uses the blended cycle length already computed in PeriodHomeData
+    // ── 2. Fallback: use the same nextPeriod that CalendarEngine receives ──────
+    //    journey?.nextPeriod is now rebased from the resolved anchor in
+    //    periodHomeDataProvider, so the banner and the calendar always agree.
+    //    The old local formula (today + cycleLen − cycleDay) is kept only as
+    //    an absolute last-resort guard when journey is null (e.g., first load).
     final smartCycleLen = journey?.cycleLen ?? cycleLen; // blended by engine
     final daysUntilPeriod = (smartCycleLen - cycleDay).clamp(0, smartCycleLen);
-    final mathNextPeriod = DateTime.now().add(Duration(days: daysUntilPeriod));
+    final absoluteFallback =
+        DateTime.now().add(Duration(days: daysUntilPeriod));
 
-    // Pick the best available next period date
-    final nextPeriod = aiResult?.nextPeriod ?? mathNextPeriod;
+    // Pick the best available next period date — priority order:
+    //   1. AI result (most accurate)
+    //   2. periodHomeDataProvider.nextPeriod (anchor-rebased math, same as calendar)
+    //   3. Local formula (absolute fallback, only when journey not loaded yet)
+    final nextPeriod =
+        aiResult?.nextPeriod ?? journey?.nextPeriod ?? absoluteFallback;
 
     // Confidence: use AI value if available, otherwise from PeriodHomeData
     final confidencePct = aiResult?.confidencePct ??
@@ -576,13 +584,34 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     // ── 3. Fertile window — always derived from nextPeriod (biology) ───────
     //    Ovulation ≈ 14 days before next period (luteal phase is fixed ~14d)
     //    Fertile window = ovulation −5 → ovulation +1
-    final ovulationDate = nextPeriod.subtract(const Duration(days: 14));
-    final fertileStart = ovulationDate.subtract(const Duration(days: 5));
-    final fertileEnd = ovulationDate.add(const Duration(days: 1));
+    //
+    //    Roll-forward rule: if the fertile window end has already passed today,
+    //    advance to the NEXT cycle's fertile window so the card never shows
+    //    expired dates. This happens when today is in the luteal phase or
+    //    when we've crossed into a new month past the old ovulation date.
+    //    Example: today=Mar 1, nextPeriod=Mar 16, fertileTo=Mar 3 → still valid.
+    //             today=Mar 5, nextPeriod=Mar 16, fertileTo=Mar 3 → ROLL FORWARD
+    //             → show next cycle: nextPeriod+cycleLen=Apr 11, fertileTo=Mar 30
+    final today = DateTime.now();
+    DateTime ovulationDate = nextPeriod.subtract(const Duration(days: 14));
+    DateTime fertileStart = ovulationDate.subtract(const Duration(days: 5));
+    DateTime fertileEnd = ovulationDate.add(const Duration(days: 1));
+
+    if (_isBeforeDay(fertileEnd, today)) {
+      // Current fertile window has passed — advance one full cycle
+      final nextCyclePeriod = nextPeriod.add(Duration(days: smartCycleLen));
+      ovulationDate = nextCyclePeriod.subtract(const Duration(days: 14));
+      fertileStart = ovulationDate.subtract(const Duration(days: 5));
+      fertileEnd = ovulationDate.add(const Duration(days: 1));
+    }
 
     final nextPeriodStr = fmt.format(nextPeriod);
-    final fertileStr =
-        '${fmt.format(fertileStart)}–${fmtShort.format(fertileEnd)}';
+
+    // Cross-month format: "Feb 25–Mar 3" when start and end are in different
+    // months. Without this it shows "Feb 25–3" which looks like February 3.
+    final fertileStr = fertileStart.month == fertileEnd.month
+        ? '${fmt.format(fertileStart)}–${fmtShort.format(fertileEnd)}'
+        : '${fmt.format(fertileStart)}–${fmt.format(fertileEnd)}';
     final ovulStr = fmt.format(ovulationDate);
 
     return Container(
@@ -695,6 +724,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
         ],
       ),
     );
+  }
+
+  /// Returns true if [date] is strictly before [reference] at day granularity.
+  /// Ignores time-of-day so "Mar 3 11pm" is NOT before "Mar 3 6am".
+  bool _isBeforeDay(DateTime date, DateTime reference) {
+    final d = DateTime(date.year, date.month, date.day);
+    final r = DateTime(reference.year, reference.month, reference.day);
+    return d.isBefore(r);
   }
 
   Widget _buildPredItem(

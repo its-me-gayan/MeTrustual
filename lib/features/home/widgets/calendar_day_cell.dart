@@ -10,15 +10,20 @@ import '../../../models/calendar_day_model.dart';
 /// │c14  (tiny)  │  ← cycle day badge, top-right, 6px, 40% opacity
 /// │             │
 /// │   ╔═══╗    │  ← colored bubble: ONLY wraps the day number
-/// │   ║ 14║    │    • period: rose fill (intensity-based opacity)
-/// │   ╚═══╝    │    • fertile: sage green fill
-/// │            │    • today: white bg + rose border circle
+/// │   ║ 14║    │    • period logged:    solid rose fill (intensity-based)
+/// │   ╚═══╝    │    • period confirmed: rose inner-ring + ✓ badge
+/// │            │    • period predicted: ghost fill + dashed border
 /// │    · · ·   │  ← symptom dots, 3.5px, below the bubble
 /// └─────────────┘
 ///
 /// Key: the background color is on the INNER bubble, not the outer cell.
-/// The outer cell is always transparent. This is why the old version
-/// looked like tall colored rectangles — it was coloring the full cell.
+/// The outer cell is always transparent.
+///
+/// DaySource visual mapping:
+///   logged          → solid rose fill (existing behaviour, unchanged)
+///   confirmedJourney→ rose inner ring + small checkmark badge (NEW — fixes
+///                     Feb-19 bug where journey anchor had no log entries)
+///   predicted       → ghost fill + dashed border (existing behaviour)
 class CalendarDayCell extends StatelessWidget {
   final CalendarDayModel day;
   final VoidCallback? onTap;
@@ -84,6 +89,14 @@ class CalendarDayCell extends StatelessWidget {
   }
 
   Widget _buildBubble(double size) {
+    // confirmedJourney uses a Stack to overlay the checkmark badge.
+    // All other states use a plain Container (unchanged).
+    if (day.type == DayType.period &&
+        day.daySource == DaySource.confirmedJourney &&
+        !day.isToday) {
+      return _buildConfirmedJourneyBubble(size);
+    }
+
     final bg = _bubbleColor();
     final border = _bubbleBorder();
     final textColor = _textColor();
@@ -116,6 +129,97 @@ class CalendarDayCell extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  /// Confirmed journey bubble: rose inner-ring + small checkmark badge.
+  ///
+  /// Visual language:
+  ///   The ring (not solid fill) signals "we know this happened but you
+  ///   didn't tap the log button for it".
+  ///   The ✓ badge signals "confirmed from your journey record".
+  ///
+  /// The badge is intentionally tiny (10×10 px) so it doesn't distract
+  /// from the calendar at a glance — it's a secondary detail for users
+  /// who notice the difference.
+  Widget _buildConfirmedJourneyBubble(double size) {
+    final badgeSize = size * 0.28; // ~10px on a 36px bubble
+    return SizedBox(
+      width: size + badgeSize / 2, // slight extra width for badge overflow
+      height: size + badgeSize / 2,
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          // ── Main bubble: inner ring, no solid fill ──
+          Positioned(
+            left: 0,
+            top: badgeSize / 2,
+            child: Container(
+              width: size,
+              height: size,
+              decoration: BoxDecoration(
+                // Light rose tint — clearly a period day, but visually
+                // distinguished from a solid logged period
+                color: _confirmedJourneyFillColor(),
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: AppColors.primaryRose.withOpacity(0.60),
+                  width: 1.5,
+                ),
+              ),
+              alignment: Alignment.center,
+              child: Text(
+                '${day.date.day}',
+                style: GoogleFonts.nunito(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w800,
+                  color: AppColors.primaryRose,
+                  height: 1,
+                ),
+              ),
+            ),
+          ),
+
+          // ── Checkmark badge — bottom-right corner ──
+          Positioned(
+            right: 0,
+            bottom: 0,
+            child: Container(
+              width: badgeSize,
+              height: badgeSize,
+              decoration: BoxDecoration(
+                color: AppColors.primaryRose,
+                shape: BoxShape.circle,
+                border: Border.all(color: Colors.white, width: 1.0),
+              ),
+              alignment: Alignment.center,
+              child: Icon(
+                Icons.check_rounded,
+                size: badgeSize * 0.65,
+                color: Colors.white,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Fill color for confirmedJourney bubble.
+  /// Scales with flow intensity (same opacity logic as logged, but lighter)
+  /// so heavy flow days are still visually heavier than spotting days.
+  Color _confirmedJourneyFillColor() {
+    switch (day.flowIntensity) {
+      case FlowIntensity.spotting:
+        return AppColors.primaryRose.withOpacity(0.10);
+      case FlowIntensity.light:
+        return AppColors.primaryRose.withOpacity(0.14);
+      case FlowIntensity.medium:
+        return AppColors.primaryRose.withOpacity(0.20);
+      case FlowIntensity.heavy:
+        return AppColors.primaryRose.withOpacity(0.28);
+      case null:
+        return AppColors.primaryRose.withOpacity(0.16);
+    }
   }
 
   Widget _buildDots() {
@@ -157,6 +261,7 @@ class CalendarDayCell extends StatelessWidget {
 
   // ─────────────────────────────────────────────────────
   //  Bubble color — only the inner circle, never the full cell
+  //  (confirmedJourney handled separately in _buildConfirmedJourneyBubble)
   // ─────────────────────────────────────────────────────
 
   Color _bubbleColor() {
@@ -183,9 +288,13 @@ class CalendarDayCell extends StatelessWidget {
 
   Color _periodBubbleColor() {
     if (day.isPredicted) {
-      // Predicted: very light, with a border (handled in _bubbleBorder)
-      return AppColors.primaryRose.withOpacity(0.08);
+      // Predicted: clearly visible ghost on the app's pink #FDF4F6 background.
+      // 0.08 was too faint — bumped to 0.20 so the predicted period days
+      // are legible without looking confirmed. The dashed border adds shape.
+      return AppColors.primaryRose.withOpacity(0.20);
     }
+    // confirmedJourney is handled in _buildConfirmedJourneyBubble —
+    // this path is only reached for logged (DaySource.logged) period days.
     switch (day.flowIntensity) {
       case FlowIntensity.spotting:
         return AppColors.primaryRose.withOpacity(0.18);
@@ -212,14 +321,15 @@ class CalendarDayCell extends StatelessWidget {
     if (day.isPredicted) {
       switch (day.type) {
         case DayType.period:
+          // Stronger border so ghost-pink period days show against pink bg
           return Border.all(
-            color: AppColors.primaryRose.withOpacity(0.35),
-            width: 1.2,
+            color: AppColors.primaryRose.withOpacity(0.55),
+            width: 1.4,
           );
         case DayType.fertile:
         case DayType.fertileHigh:
           return Border.all(
-            color: AppColors.sageGreen.withOpacity(0.35),
+            color: AppColors.sageGreen.withOpacity(0.45),
             width: 1.2,
           );
         default:
@@ -238,11 +348,13 @@ class CalendarDayCell extends StatelessWidget {
 
     switch (day.type) {
       case DayType.period:
-        if (!day.isPredicted && day.flowIntensity == FlowIntensity.heavy) {
+        if (!day.isPredicted &&
+            day.flowIntensity == FlowIntensity.heavy &&
+            day.daySource == DaySource.logged) {
           return Colors.white;
         }
         return day.isPredicted
-            ? AppColors.primaryRose.withOpacity(0.6)
+            ? AppColors.primaryRose.withOpacity(0.75)
             : AppColors.primaryRose;
       case DayType.fertile:
       case DayType.fertileHigh:
@@ -260,7 +372,8 @@ class CalendarDayCell extends StatelessWidget {
   FontWeight _textWeight() {
     if (day.isToday) return FontWeight.w900;
     if (day.type == DayType.period && !day.isPredicted) return FontWeight.w900;
-    if (day.type == DayType.fertileHigh && !day.isPredicted) return FontWeight.w800;
+    if (day.type == DayType.fertileHigh && !day.isPredicted)
+      return FontWeight.w800;
     return FontWeight.w700;
   }
 

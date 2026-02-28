@@ -123,12 +123,15 @@ final _monthDaysProvider =
 
       // Pass AI/smart prediction as nextPeriodOverride so swiped-to months
       // show the same fertile/period highlights as the prediction card.
+      // Pass confirmedFlow so confirmedJourney days display the real intensity
+      // from Firebase (e.g. 'heavy') rather than a hardcoded fallback.
       final engine = CalendarEngine(
         lastPeriodStart: lastPeriodStart,
         cycleLength: cycleLength,
         periodLength: periodLength,
         today: now,
         nextPeriodOverride: periodData?.nextPeriod,
+        confirmedFlow: periodData?.flow, // NEW — fixes confirmed-day intensity
       );
 
       return AsyncValue.data(engine.buildMonth(
@@ -179,13 +182,6 @@ class _MiniCalendarState extends ConsumerState<MiniCalendar> {
 
   @override
   Widget build(BuildContext context) {
-    // Each cell = (screenWidth - 44 padding) / 7 columns
-    // Cell height = day number bubble + cycle badge + dots ≈ same as width
-    // We use AspectRatio 1.0 per cell so the grid is perfectly square cells.
-    // Total height = header(34) + weekdays(20) + 6 rows of square cells
-    // Cell width ≈ (screenWidth - 44) / 7 ≈ ~44px on 375px screen → height per row ~44px
-    // So 6 rows = ~264px. We use LayoutBuilder to compute exactly.
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
@@ -194,12 +190,9 @@ class _MiniCalendarState extends ConsumerState<MiniCalendar> {
         _buildLegend(),
         const SizedBox(height: 8),
 
-        // ── Swipeable calendar — use LayoutBuilder so we can size precisely ──
+        // ── Swipeable calendar ──
         LayoutBuilder(builder: (context, constraints) {
           final cellSize = constraints.maxWidth / 7;
-          // Each cell row: cycle badge (10) + bubble (cellSize * 0.76) + dots (9)
-          // We'll use a fixed cell height = cellSize * 1.05 to keep it square-ish
-          // Header = 34, weekdays = 18, 6 rows of cells
           final rowH = cellSize * 1.08;
           final totalH = 34.0 + 18.0 + (6 * rowH);
 
@@ -238,6 +231,22 @@ class _MiniCalendarState extends ConsumerState<MiniCalendar> {
             ),
           ),
           'Period',
+        ),
+        // NEW legend item for confirmed-but-unlogged days
+        _legendItem(
+          Container(
+            width: 8,
+            height: 8,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: AppColors.primaryRose.withOpacity(0.20),
+              border: Border.all(
+                color: AppColors.primaryRose.withOpacity(0.60),
+                width: 1.2,
+              ),
+            ),
+          ),
+          'Confirmed',
         ),
         _legendItem(
           Container(
@@ -426,12 +435,6 @@ class _DayGrid extends StatelessWidget {
       padding: EdgeInsets.zero,
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 7,
-        // childAspectRatio > 1 = cell wider than tall (what we want for compact rows)
-        // We want each cell to be exactly rowHeight tall and cellWidth wide
-        // childAspectRatio = cellWidth / rowHeight
-        // Since cellWidth = totalWidth / 7, and we set rowHeight = cellWidth * 1.08,
-        // childAspectRatio = 1 / 1.08 ≈ 0.926
-        // But we pass rowHeight directly and compute from it.
         mainAxisExtent: rowHeight,
         crossAxisSpacing: 0,
         mainAxisSpacing: 0,

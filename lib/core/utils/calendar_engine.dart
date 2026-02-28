@@ -3,15 +3,22 @@ import '../../models/calendar_day_model.dart';
 
 /// Pure computation engine — no Flutter/Firestore dependencies.
 ///
-/// ═══ PAST DAYS — two rules, strictly separated ═══════════════════════
+/// ═══ PAST DAYS — three rules, in priority order ══════════════════════
 ///
-///  PERIOD colour (pink) ← ONLY if the user actually logged flow
-///  PHASE colour (green/follicular/luteal) ← ALWAYS from cycle math
+///  1. LOGGED flow (hasLoggedFlow)
+///     → DayType.period, DaySource.logged, flowIntensity from log
 ///
-///  Why separate? Because:
-///   • Period pink without a log = false data (Feb 19-22 bug)
-///   • Phase colours without a log = medically correct context
-///     (green fertile window on old months is valid even if nothing logged)
+///  2. CONFIRMED JOURNEY ANCHOR (daysSinceAnchor in [0, periodLength))
+///     → DayType.period, DaySource.confirmedJourney
+///     → flowIntensity from confirmedFlow param (real Firebase value)
+///     → Renders as inner-ring + checkmark badge (see CalendarDayCell)
+///     → Fixes the Feb-19 bug: lastPeriod stored in journey/period but
+///       user never logged daily entries for those days
+///
+///  3. PHASE COLOUR from cycle math (fallthrough)
+///     → DaySource.predicted (legacy, unchanged behaviour)
+///     → If math says DayType.period but no log/anchor → DayType.follicular
+///       (we cannot confirm period without evidence)
 ///
 /// ═══ FUTURE DAYS ═════════════════════════════════════════════════════
 ///
@@ -43,12 +50,19 @@ class CalendarEngine {
   /// Stored in Firebase as `aiPrediction.nextPeriod` — NEVER as `lastPeriod`.
   final DateTime? nextPeriodOverride;
 
+  /// The confirmed flow intensity from journey/period.flow in Firebase.
+  /// Used when rendering confirmedJourney days (no daily log entry exists).
+  /// Example: 'heavy' → FlowIntensity.heavy on Feb 19–22 cells.
+  /// Null = fall back to FlowIntensity.medium.
+  final String? confirmedFlow;
+
   const CalendarEngine({
     required this.lastPeriodStart,
     this.cycleLength = 28,
     this.periodLength = 5,
     required this.today,
     this.nextPeriodOverride,
+    this.confirmedFlow, // NEW — pass periodData.flow from the provider
   });
 
   // ─────────────────────────────────────────────────────
@@ -94,8 +108,7 @@ class CalendarEngine {
     //  PAST & TODAY
     // ──────────────────────────────────────────────────────────────────────
     if (!isFuture) {
-      // Rule 1: Period pink — ONLY for days with actual logged flow.
-      //         This prevents false pink on Feb 19-22 when user never logged.
+      // ── Rule 1: User logged flow → solid period bubble ─────────────────
       if (hasLoggedFlow) {
         return CalendarDayModel(
           date: date,
@@ -105,14 +118,53 @@ class CalendarEngine {
           cycleDay: cycleDay,
           flowIntensity: log!.flowIntensity,
           log: log,
+          daySource: DaySource.logged, // user-logged: solid fill
         );
       }
 
-      // Rule 2: Phase colour (fertile/follicular/luteal) — from cycle math.
-      //         Always show so navigating to old months shows meaningful context.
-      //         IMPORTANT: if math says DayType.period (cycle days 1–periodLen)
-      //         but there is no log, show as follicular instead — we cannot
-      //         confirm period without a log entry.
+      // ── Rule 2: Confirmed journey anchor window ─────────────────────────
+      //
+      // lastPeriodStart is the CONFIRMED period start from Firebase
+      // journey/period.lastPeriod. If this date falls within
+      // [lastPeriodStart, lastPeriodStart + periodLength), show it as period
+      // even though no daily log entry exists.
+      //
+      // This fixes the core bug: user sets lastPeriod=Feb 19 during
+      // onboarding (or CycleAnchorSync writes it), but never taps the log
+      // button for Feb 19-22 individually. Previously these showed as
+      // follicular (white). Now they show with the confirmedJourney style:
+      // rose inner-ring + checkmark badge.
+      //
+      // We use the ACTUAL flow from journey/period.flow (confirmedFlow param)
+      // so the intensity is clinically accurate, not a hardcoded guess.
+      //
+      // Guard: only apply to the CURRENT anchor window, not past cycles.
+      // The modulo _cycleDay() naturally handles multi-cycle history.
+      // We check direct day difference (not modulo) so only days within
+      // the exact [lastPeriodStart, lastPeriodStart+periodLength) window
+      // of the most recent confirmed period are affected.
+      final daysSinceAnchor = date.difference(lastPeriodStart).inDays;
+      if (daysSinceAnchor >= 0 && daysSinceAnchor < periodLength) {
+        return CalendarDayModel(
+          date: date,
+          type: DayType.period,
+          isPredicted: false,
+          isToday: isToday,
+          cycleDay: cycleDay,
+          // Use real flow from Firebase (journey/period.flow), not a hardcode.
+          // Falls back to medium if journey never stored a flow value.
+          flowIntensity: _flowFromString(confirmedFlow) ?? FlowIntensity.medium,
+          log: log,
+          daySource: DaySource.confirmedJourney, // ring + checkmark badge
+        );
+      }
+
+      // ── Rule 3: Phase colour from cycle math (unchanged fallthrough) ────
+      //
+      // IMPORTANT: if math says DayType.period (cycle days 1–periodLen)
+      // but there is no log AND this isn't the current confirmed anchor,
+      // show as follicular instead — we cannot confirm period without
+      // a log entry or confirmed anchor.
       final mathPhase = _phaseForCycleDay(cycleDay);
       final displayType =
           mathPhase == DayType.period ? DayType.follicular : mathPhase;
@@ -124,11 +176,12 @@ class CalendarEngine {
         isToday: isToday,
         cycleDay: cycleDay,
         log: log,
+        daySource: DaySource.predicted, // legacy non-logged past day
       );
     }
 
     // ──────────────────────────────────────────────────────────────────────
-    //  FUTURE
+    //  FUTURE (unchanged logic — only daySource added)
     // ──────────────────────────────────────────────────────────────────────
     DayType type;
     FlowIntensity? flowIntensity;
@@ -143,18 +196,20 @@ class CalendarEngine {
       type = _phaseForCycleDay(cd);
       if (type == DayType.period) flowIntensity = _defaultFlow(cd);
 
+      // Use override-based cycle day (cd) so the calendar label resets to
+      // c1 at the predicted period start, not the old anchor's count.
       return CalendarDayModel(
         date: date,
         type: type,
         isPredicted: true,
         isToday: false,
-        cycleDay: cd,
+        cycleDay: cd, // override-relative: c1 at predicted period start
         flowIntensity: flowIntensity,
         log: log,
+        daySource: DaySource.predicted,
       );
     } else if (override != null) {
       // ── Case B: between today and AI-predicted period ─────────────────────
-      // Back-calculate fertile window from override → matches prediction card.
       final ovulation = override.subtract(const Duration(days: 14));
       final fertileFrom = ovulation.subtract(const Duration(days: 5));
       final fertileTo = ovulation.add(const Duration(days: 1));
@@ -183,6 +238,7 @@ class CalendarEngine {
       cycleDay: cycleDay,
       flowIntensity: flowIntensity,
       log: log,
+      daySource: DaySource.predicted,
     );
   }
 
@@ -222,12 +278,30 @@ class CalendarEngine {
     return FlowIntensity.light;
   }
 
+  /// Converts Firebase flow string → FlowIntensity.
+  /// Returns null if the string is unrecognised or null.
+  FlowIntensity? _flowFromString(String? flow) {
+    switch (flow?.toLowerCase()) {
+      case 'heavy':
+        return FlowIntensity.heavy;
+      case 'medium':
+        return FlowIntensity.medium;
+      case 'light':
+        return FlowIntensity.light;
+      case 'spotting':
+        return FlowIntensity.spotting;
+      default:
+        return null;
+    }
+  }
+
   CalendarDayModel _emptyCell() => CalendarDayModel(
         date: DateTime(0),
         type: DayType.empty,
         isPredicted: false,
         isToday: false,
         cycleDay: 0,
+        daySource: DaySource.predicted,
       );
 
   bool _same(DateTime a, DateTime b) =>
