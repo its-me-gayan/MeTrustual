@@ -190,25 +190,50 @@ class _MiniCalendarState extends ConsumerState<MiniCalendar> {
         _buildLegend(),
         const SizedBox(height: 8),
 
-        // ── Swipeable calendar ──
+        // ── Swipeable calendar in a highlighted card ──
         LayoutBuilder(builder: (context, constraints) {
           final cellSize = constraints.maxWidth / 7;
           final rowH = cellSize * 1.08;
           final totalH = 34.0 + 18.0 + (6 * rowH);
 
-          return SizedBox(
-            height: totalH,
-            child: PageView.builder(
-              controller: _pageController,
-              itemBuilder: (context, page) {
-                final offset = page - _initialPage;
-                return _CalendarMonthPage(
-                  offset: offset,
-                  onNavigate: _navigate,
-                  cellSize: cellSize,
-                  rowHeight: rowH,
-                );
-              },
+          return Container(
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.82),
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(
+                color: AppColors.primaryRose.withOpacity(0.15),
+                width: 1.2,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.primaryRose.withOpacity(0.08),
+                  blurRadius: 16,
+                  spreadRadius: 0,
+                  offset: const Offset(0, 4),
+                ),
+                BoxShadow(
+                  color: Colors.white.withOpacity(0.6),
+                  blurRadius: 4,
+                  spreadRadius: 0,
+                  offset: const Offset(0, -1),
+                ),
+              ],
+            ),
+            padding: const EdgeInsets.fromLTRB(10, 10, 10, 12),
+            child: SizedBox(
+              height: totalH,
+              child: PageView.builder(
+                controller: _pageController,
+                itemBuilder: (context, page) {
+                  final offset = page - _initialPage;
+                  return _CalendarMonthPage(
+                    offset: offset,
+                    onNavigate: _navigate,
+                    cellSize: cellSize,
+                    rowHeight: rowH,
+                  );
+                },
+              ),
             ),
           );
         }),
@@ -339,82 +364,88 @@ class _CalendarMonthPage extends ConsumerWidget {
     final monthLabel = DateFormat('MMMM yyyy').format(displayMonth);
     final calendarAsync = ref.watch(_monthDaysProvider(offset));
 
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        // ── Month title + nav arrows ──
-        SizedBox(
-          height: 34,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              _NavArrow(
-                  icon: Icons.chevron_left_rounded,
-                  onTap: () => onNavigate(-1)),
-              Text(
-                monthLabel,
-                style: GoogleFonts.nunito(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w800,
-                  color: AppColors.textDark,
-                ),
-              ),
-              _NavArrow(
-                  icon: Icons.chevron_right_rounded,
-                  onTap: () => onNavigate(1)),
-            ],
-          ),
-        ),
+    // Current month is fully vivid; adjacent months are faded
+    final isCurrentMonth = offset == 0;
 
-        // ── Weekday headers ──
-        SizedBox(
-          height: 18,
-          child: Row(
-            children: _weekdays
-                .map((d) => Expanded(
-                      child: Center(
-                        child: Text(
-                          d,
-                          style: GoogleFonts.nunito(
-                            fontSize: 9,
-                            fontWeight: FontWeight.w800,
-                            color: const Color(0xFFD0A8B0),
-                            letterSpacing: 0.2,
+    return Opacity(
+      opacity: isCurrentMonth ? 1.0 : 0.85,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          // ── Month title + nav arrows ──
+          SizedBox(
+            height: 34,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                _NavArrow(
+                    icon: Icons.chevron_left_rounded,
+                    onTap: () => onNavigate(-1)),
+                Text(
+                  monthLabel,
+                  style: GoogleFonts.nunito(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w800,
+                    color: AppColors.textDark,
+                  ),
+                ),
+                _NavArrow(
+                    icon: Icons.chevron_right_rounded,
+                    onTap: () => onNavigate(1)),
+              ],
+            ),
+          ),
+
+          // ── Weekday headers ──
+          SizedBox(
+            height: 18,
+            child: Row(
+              children: _weekdays
+                  .map((d) => Expanded(
+                        child: Center(
+                          child: Text(
+                            d,
+                            style: GoogleFonts.nunito(
+                              fontSize: 9,
+                              fontWeight: FontWeight.w800,
+                              color: const Color(0xFFD0A8B0),
+                              letterSpacing: 0.2,
+                            ),
                           ),
                         ),
-                      ),
-                    ))
-                .toList(),
+                      ))
+                  .toList(),
+            ),
           ),
-        ),
 
-        // ── Grid ──
-        Expanded(
-          child: calendarAsync.when(
-            loading: () => const Center(
-              child: SizedBox(
-                width: 18,
-                height: 18,
-                child: CircularProgressIndicator(
-                  color: AppColors.primaryRose,
-                  strokeWidth: 1.8,
+          // ── Grid ──
+          Expanded(
+            child: calendarAsync.when(
+              loading: () => const Center(
+                child: SizedBox(
+                  width: 18,
+                  height: 18,
+                  child: CircularProgressIndicator(
+                    color: AppColors.primaryRose,
+                    strokeWidth: 1.8,
+                  ),
                 ),
               ),
-            ),
-            error: (_, __) => Center(
-              child: Text(
-                'Could not load calendar',
-                style: GoogleFonts.nunito(
-                  fontSize: 11,
-                  color: AppColors.textMuted,
+              error: (_, __) => Center(
+                child: Text(
+                  'Could not load calendar',
+                  style: GoogleFonts.nunito(
+                    fontSize: 11,
+                    color: AppColors.textMuted,
+                  ),
                 ),
               ),
+              data: (days) => _DayGrid(days: days, rowHeight: rowHeight),
             ),
-            data: (days) => _DayGrid(days: days, rowHeight: rowHeight),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }

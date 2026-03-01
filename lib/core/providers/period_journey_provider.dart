@@ -290,6 +290,7 @@ final periodHomeDataProvider = Provider.autoDispose<PeriodHomeData?>((ref) {
     lastPeriodStart: anchor,
     averageCycleLength: cycleLen,
     averagePeriodLength: periodLen,
+    nextPeriodDate: rebasedNextPeriod,
   );
 
   return PeriodHomeData(

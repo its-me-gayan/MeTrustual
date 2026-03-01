@@ -30,16 +30,17 @@ class PredictionEngine {
 
     final weights = List.generate(cycleLengths.length, (i) => i + 1.0);
     final totalWeight = weights.reduce((a, b) => a + b);
-    final weightedAvg = cycleLengths.asMap().entries
+    final weightedAvg = cycleLengths
+            .asMap()
+            .entries
             .map((e) => e.value * weights[e.key])
             .reduce((a, b) => a + b) /
         totalWeight;
 
     final mean = cycleLengths.reduce((a, b) => a + b) / cycleLengths.length;
-    final variance = cycleLengths
-            .map((x) => pow(x - mean, 2))
-            .reduce((a, b) => a + b) /
-        cycleLengths.length;
+    final variance =
+        cycleLengths.map((x) => pow(x - mean, 2)).reduce((a, b) => a + b) /
+            cycleLengths.length;
     final stdDev = sqrt(variance);
 
     final dataConfidence = min(cycleLengths.length / 6.0, 1.0);
@@ -64,16 +65,50 @@ class PredictionEngine {
     );
   }
 
+  /// Returns the current cycle phase.
+  ///
+  /// Pass [nextPeriodDate] (the predicted next period start) so the check
+  /// uses the REAL fertile window (ovulation − 5 → ovulation + 1, where
+  /// ovulation = nextPeriod − 14) instead of rough cycle-length thresholds.
+  /// If [nextPeriodDate] is null, falls back to the threshold-based logic.
   static CyclePhase getCurrentPhase({
     required DateTime lastPeriodStart,
     required int averageCycleLength,
     required int averagePeriodLength,
+    DateTime? nextPeriodDate,
   }) {
-    final daysSincePeriod = DateTime.now().difference(lastPeriodStart).inDays + 1;
+    final today = DateTime.now();
+    final todayDate = DateTime(today.year, today.month, today.day);
+    final daysSincePeriod = today.difference(lastPeriodStart).inDays + 1;
 
+    // 1. Period — always highest priority
     if (daysSincePeriod <= averagePeriodLength) return CyclePhase.menstruation;
-    if (daysSincePeriod <= (averageCycleLength / 2 - 2)) return CyclePhase.follicular;
-    if (daysSincePeriod <= (averageCycleLength / 2 + 2)) return CyclePhase.ovulation;
+
+    if (nextPeriodDate != null) {
+      final np = DateTime(
+          nextPeriodDate.year, nextPeriodDate.month, nextPeriodDate.day);
+
+      // 2. Fertile window: ovulation = nextPeriod − 14
+      //    Fertile = ovulation − 5  to  ovulation + 1
+      //            = nextPeriod − 19  to  nextPeriod − 13
+      final fertileStart = np.subtract(const Duration(days: 19));
+      final fertileEnd = np.subtract(const Duration(days: 13));
+      if (!todayDate.isBefore(fertileStart) && !todayDate.isAfter(fertileEnd)) {
+        return CyclePhase.ovulation;
+      }
+
+      // 3. Before ovulation = follicular, after = luteal
+      final ovulationDate = np.subtract(const Duration(days: 14));
+      return todayDate.isBefore(ovulationDate)
+          ? CyclePhase.follicular
+          : CyclePhase.luteal;
+    }
+
+    // Fallback: rough cycle-length thresholds when nextPeriodDate unavailable
+    if (daysSincePeriod <= (averageCycleLength / 2 - 2))
+      return CyclePhase.follicular;
+    if (daysSincePeriod <= (averageCycleLength / 2 + 2))
+      return CyclePhase.ovulation;
     return CyclePhase.luteal;
   }
 }

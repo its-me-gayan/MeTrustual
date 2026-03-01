@@ -63,7 +63,7 @@ class CalendarDayCell extends StatelessWidget {
                         style: GoogleFonts.nunito(
                           fontSize: 6,
                           fontWeight: FontWeight.w900,
-                          color: _cycleTagColor().withOpacity(0.45),
+                          color: _cycleTagColor().withOpacity(0.60),
                           height: 1,
                         ),
                       ),
@@ -363,7 +363,7 @@ class CalendarDayCell extends StatelessWidget {
             : const Color(0xFF3A8A5A);
       case DayType.follicular:
       case DayType.luteal:
-        return AppColors.textMuted;
+        return AppColors.textDark.withOpacity(0.55);
       case DayType.empty:
         return Colors.transparent;
     }

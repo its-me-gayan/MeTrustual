@@ -7,6 +7,8 @@ import '../../../core/providers/premium_provider.dart';
 import '../../../core/providers/mode_provider.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/providers/firebase_providers.dart';
+import '../../../core/services/premium_service.dart';
+import 'package:purchases_flutter/purchases_flutter.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 // ── Plan enum ───────────────────────────────────────────────
@@ -158,33 +160,56 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen>
     setState(() => _isLoading = true);
     HapticFeedback.mediumImpact();
     try {
-      await Future.delayed(const Duration(milliseconds: 500));
-
       final auth = ref.read(firebaseAuthProvider);
       final firestore = ref.read(firestoreProvider);
       final currentUser = auth.currentUser;
 
       if (currentUser == null) {
-        // No session at all — shouldn't happen, but guard anyway
         if (mounted) context.push('/signup?premium=true');
         return;
       }
 
-      if (!currentUser.isAnonymous) {
-        // ── Already logged in with a real account ──────────────────────
-        // No signup or login needed. Write isPremium directly and stay in
-        // the app. directPremiumUpgrade: true is the one-use flag that the
-        // Firestore rule checks to allow isPremium going true from a client.
-        await firestore.collection('users').doc(currentUser.uid).set({
-          'isPremium': true,
-          'premiumSince': FieldValue.serverTimestamp(),
-          'cancelledAt': null,
-          'directPremiumUpgrade': true,
-        }, SetOptions(merge: true));
-// ✅ ADD THIS RIGHT HERE
-        await firestore.collection('users').doc(currentUser.uid).update({
-          'directPremiumUpgrade': FieldValue.delete(),
-        });
+      // ── Fetch available offerings from RevenueCat ──────────────────
+      final offerings = await PremiumService.getOfferings();
+      if (offerings == null || offerings.current == null) {
+        throw Exception('No offerings available. Please try again.');
+      }
+
+      // Pick the package matching the selected plan
+      final selected = ref.read(_selectedPlanProvider);
+      final offering = offerings.current!;
+      Package? package;
+      switch (selected) {
+        case PremiumPlan.monthly:
+          package = offering.monthly;
+          break;
+        case PremiumPlan.yearly:
+          package = offering.annual;
+          break;
+        case PremiumPlan.lifetime:
+          package = offering.lifetime;
+          break;
+      }
+
+      // Fallback: use first available package if specific one not set up
+      package ??= offering.availablePackages.isNotEmpty
+          ? offering.availablePackages.first
+          : null;
+
+      if (package == null) {
+        throw Exception('Selected plan is not available.');
+      }
+
+      // ── Execute purchase via App Store / Play Store ────────────────
+      final result = await PremiumService.purchase(
+        packageToBuy: package,
+        uid: currentUser.uid,
+        firestore: firestore,
+      );
+
+      if (result.cancelled) return; // user tapped X — no error shown
+
+      if (result.success) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(SnackBar(
             content: Text('Welcome to Premium! ✨',
@@ -194,25 +219,16 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen>
             shape:
                 RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           ));
-          context.pop(); // go back to wherever they came from
+          context.pop();
         }
       } else {
-        // ── Anonymous user buying premium ──────────────────────────────
-        // Write isPremium to the anonymous account NOW so the migration
-        // service can transfer it — whether the user signs up fresh or
-        // logs into an existing account on the next screen.
-        await firestore.collection('users').doc(currentUser.uid).set({
-          'isPremium': true,
-          'premiumSince': FieldValue.serverTimestamp(),
-        }, SetOptions(merge: true));
-
-        if (mounted) context.push('/signup?premium=true');
+        throw Exception(result.errorMessage ?? 'Purchase failed');
       }
     } catch (e) {
-      debugPrint('❌ _handlePurchase error: $e');
+      debugPrint('❌ _handlePurchase error: \$e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text('Purchase failed: $e',
+          content: Text('Purchase failed: \$e',
               style: GoogleFonts.nunito(fontWeight: FontWeight.w700)),
           backgroundColor: _modeAccent(ref.read(modeProvider))[0],
           behavior: SnackBarBehavior.floating,
@@ -227,14 +243,66 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen>
 
   Future<void> _handleRestore() async {
     HapticFeedback.lightImpact();
-    if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-      content: Text('Checking for existing purchases…',
-          style: GoogleFonts.nunito(fontWeight: FontWeight.w700)),
-      backgroundColor: _green,
-      behavior: SnackBarBehavior.floating,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-    ));
+    setState(() => _isLoading = true);
+    try {
+      final auth = ref.read(firebaseAuthProvider);
+      final firestore = ref.read(firestoreProvider);
+      final uid = auth.currentUser?.uid;
+      if (uid == null) return;
+
+      final result = await PremiumService.restore(
+        uid: uid,
+        firestore: firestore,
+      );
+
+      if (!mounted) return;
+
+      if (result.errorMessage != null) throw Exception(result.errorMessage);
+
+      final status = result.status;
+      String message;
+      Color color;
+
+      if (result.found && status?.isActive == true) {
+        if (status?.isCancelledButActive == true &&
+            status?.expiryWarning != null) {
+          message = 'Restored! Note: ${status!.expiryWarning}';
+          color = _orange;
+        } else {
+          message = 'Purchase restored! Welcome back ✨';
+          color = _green;
+        }
+      } else if (result.found && status?.isCancelledButActive == true) {
+        message = status?.expiryWarning ?? 'Your subscription has ended.';
+        color = _orange;
+      } else {
+        message = 'No active purchases found.';
+        color = _textMid;
+      }
+
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text(message,
+            style: GoogleFonts.nunito(fontWeight: FontWeight.w700)),
+        backgroundColor: color,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      ));
+
+      if (status?.isActive == true && mounted) context.pop();
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text('Restore failed: \$e',
+              style: GoogleFonts.nunito(fontWeight: FontWeight.w700)),
+          backgroundColor: _textMid,
+          behavior: SnackBarBehavior.floating,
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        ));
+      }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
   }
 
   @override
