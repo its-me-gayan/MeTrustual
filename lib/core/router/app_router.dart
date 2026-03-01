@@ -1,13 +1,14 @@
 import 'package:Soluna/features/home/screens/luna_screen.dart';
 import 'package:go_router/go_router.dart';
-import '../../features/onboarding/screens/splash_screen.dart';
+import '../../features/onboarding/screens/splash_screen.dart'
+    show SplashScreen, PetalModel, FloatingPetal, RippleRing;
 import '../../features/onboarding/screens/onboarding_screen.dart';
 import '../../features/onboarding/screens/biometric_setup_screen.dart';
 import '../../features/onboarding/screens/mode_selection_screen.dart';
 import '../../features/onboarding/screens/journey_screen.dart';
 import '../../features/onboarding/screens/pin_verification_screen.dart';
 import '../../features/onboarding/screens/login_screen.dart';
-import '../../features/onboarding/screens/signup_screen.dart';
+import '../../features/onboarding/screens/signup_screen.dart' show SignupScreen;
 import '../../features/home/screens/home_screen.dart';
 import '../../features/logging/screens/log_screen.dart';
 import '../../features/insights/screens/insights_screen.dart';

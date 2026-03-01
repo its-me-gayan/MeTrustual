@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/providers/mode_provider.dart';
 import '../../../core/services/biometric_service.dart';
+import '../../../core/services/premium_service.dart';
 import '../../../core/providers/firebase_providers.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -70,6 +71,23 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
           if (user == null) {
             context.go('/onboarding');
             return;
+          }
+
+          // ── Verify premium status from device (App Store / Play Store) ──
+          // Source of truth is the store receipt — not Firestore.
+          // verifyAndSync writes the result to Firestore so premiumStatusProvider
+          // (and every PremiumGate) instantly reacts.
+          if (!user.isAnonymous) {
+            final firestore = ref.read(firestoreProvider);
+            await PremiumService.verifyAndSync(
+              uid: user.uid,
+              firestore: firestore,
+            );
+            // Ensure real-time listener is active for this session
+            PremiumService.startListening(
+              uid: user.uid,
+              firestore: firestore,
+            );
           }
 
           final biometricSetUp = await BiometricService.isBiometricSetUp();
