@@ -277,7 +277,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
 
                       const SizedBox(height: 28),
 
-                      // ── Loading Bar ──
+                      // ── Loading Bar
                       FadeTransition(
                         opacity: CurvedAnimation(
                           parent: _slideController,

@@ -1,465 +1,254 @@
-import 'dart:async';
-import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_colors.dart';
-import '../../../core/providers/mode_provider.dart';
-import '../../../core/services/biometric_service.dart';
-import '../../../core/services/premium_service.dart';
 import '../../../core/providers/firebase_providers.dart';
+import '../../../core/services/notification_service.dart';
+import '../../../core/services/uuid_persistence_service.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-class SplashScreen extends ConsumerStatefulWidget {
-  const SplashScreen({super.key});
+class SignupScreen extends ConsumerStatefulWidget {
+  final bool isPremiumFlow;
+  const SignupScreen({super.key, this.isPremiumFlow = false});
 
   @override
-  ConsumerState<SplashScreen> createState() => _SplashScreenState();
+  ConsumerState<SignupScreen> createState() => _SignupScreenState();
 }
 
-class _SplashScreenState extends ConsumerState<SplashScreen>
-    with TickerProviderStateMixin {
-  late AnimationController _logoController;
-  late AnimationController _barController;
-  late AnimationController _fadeController;
-  late AnimationController _slideController;
-
-  final List<PetalModel> _petals = List.generate(15, (index) => PetalModel());
-  final List<double> _ringDelays = [0.0, 0.7, 1.4];
-
-  @override
-  void initState() {
-    super.initState();
-
-    _logoController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 2500),
-    )..repeat(reverse: true);
-
-    _barController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 2200),
-    );
-
-    _fadeController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 600),
-    );
-
-    _slideController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 700),
-    );
-
-    // Start bar and slide animations after a short delay
-    Future.delayed(const Duration(milliseconds: 300), () {
-      if (mounted) {
-        _slideController.forward();
-        Future.delayed(const Duration(milliseconds: 500), () {
-          if (mounted) _barController.forward();
-        });
-      }
-    });
-
-    // Navigate after animation
-    Future.delayed(const Duration(milliseconds: 3200), () {
-      if (mounted) {
-        _fadeController.forward().then((_) async {
-          final auth = ref.read(firebaseAuthProvider);
-          final user = auth.currentUser;
-
-          if (user == null) {
-            context.go('/onboarding');
-            return;
-          }
-
-          // ── Verify premium status from device (App Store / Play Store) ──
-          // Source of truth is the store receipt — not Firestore.
-          // verifyAndSync writes the result to Firestore so premiumStatusProvider
-          // (and every PremiumGate) instantly reacts.
-          if (!user.isAnonymous) {
-            final firestore = ref.read(firestoreProvider);
-            await PremiumService.verifyAndSync(
-              uid: user.uid,
-              firestore: firestore,
-            );
-            // Ensure real-time listener is active for this session
-            PremiumService.startListening(
-              uid: user.uid,
-              firestore: firestore,
-            );
-          }
-
-          final biometricSetUp = await BiometricService.isBiometricSetUp();
-          if (biometricSetUp) {
-            context.go('/pin-verification');
-            return;
-          }
-
-          await ref.read(modeProvider.notifier).syncFromFirestore();
-          final hasCompleted =
-              ref.read(modeProvider.notifier).hasCompletedJourney;
-
-          if (hasCompleted) {
-            context.go('/home');
-          } else {
-            context.go('/onboarding');
-          }
-        });
-      }
-    });
-  }
+class _SignupScreenState extends ConsumerState<SignupScreen> {
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
+  bool _isLoading = false;
+  bool _obscurePassword = true;
 
   @override
   void dispose() {
-    _logoController.dispose();
-    _barController.dispose();
-    _fadeController.dispose();
-    _slideController.dispose();
+    _emailController.dispose();
+    _passwordController.dispose();
     super.dispose();
+  }
+
+  Future<void> _signup() async {
+    if (_emailController.text.isEmpty || _passwordController.text.isEmpty) {
+      NotificationService.showError(context, 'Please enter both email and password');
+      return;
+    }
+
+    setState(() => _isLoading = true);
+
+    try {
+      final auth = ref.read(firebaseAuthProvider);
+      
+      // Create user
+      final userCredential = await auth.createUserWithEmailAndPassword(
+        email: _emailController.text.trim(),
+        password: _passwordController.text,
+      );
+
+      final user = userCredential.user;
+      if (user != null) {
+        await UUIDPersistenceService.saveUUID(user.uid);
+        if (mounted) {
+          context.go('/biometric-setup/${user.uid}');
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        NotificationService.showError(context, 'Signup failed: ${e.toString()}');
+      }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    return FadeTransition(
-      opacity: Tween<double>(begin: 1.0, end: 0.0).animate(_fadeController),
-      child: ScaleTransition(
-        scale: Tween<double>(begin: 1.0, end: 1.06).animate(
-          CurvedAnimation(parent: _fadeController, curve: Curves.easeIn),
+    return Scaffold(
+      backgroundColor: AppColors.background,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios, color: AppColors.textDark),
+          onPressed: () => context.pop(),
         ),
-        child: Scaffold(
-          body: Container(
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  Color(0xFFFFF4F0),
-                  Color(0xFFFDE8F0),
-                  Color(0xFFEDE8FC),
-                  Color(0xFFE8EEFF),
-                ],
-                stops: [0.0, 0.35, 0.7, 1.0],
+      ),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SizedBox(height: 20),
+              Text('🌸', style: GoogleFonts.nunito(fontSize: 48)),
+              const SizedBox(height: 16),
+              Text(
+                'Create Account',
+                style: Theme.of(context).textTheme.displaySmall?.copyWith(
+                      fontWeight: FontWeight.w900,
+                      color: AppColors.textDark,
+                    ),
               ),
-            ),
-            child: Stack(
-              children: [
-                // ── Floating Flower Petals ──
-                ..._petals.map((petal) => FloatingPetal(petal: petal)),
-
-                // ── Ripple Rings ──
-                Center(
-                  child: Stack(
-                    alignment: Alignment.center,
-                    children: _ringDelays
-                        .map((delay) => RippleRing(delay: delay))
-                        .toList(),
-                  ),
+              const SizedBox(height: 8),
+              Text(
+                widget.isPremiumFlow
+                    ? 'Sign up to activate your premium features'
+                    : 'Join us to start your wellness journey',
+                style: GoogleFonts.nunito(
+                  fontSize: 14,
+                  color: AppColors.textMid,
+                  fontWeight: FontWeight.w600,
                 ),
-
-                // ── Centre Content ──
-                Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      // ── Flower Logo ──
-                      ScaleTransition(
-                        scale: Tween<double>(begin: 1.0, end: 1.07).animate(
-                          CurvedAnimation(
-                            parent: _logoController,
-                            curve: Curves.easeInOut,
-                          ),
-                        ),
-                        child: Container(
-                          width: 100,
-                          height: 100,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            // Warm peach-to-lavender: matches the Soluna brand
-                            gradient: const LinearGradient(
-                              colors: [Color(0xFFFDE8C8), Color(0xFFF0D8F4)],
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                            ),
-                            boxShadow: [
-                              // Halo ring
-                              BoxShadow(
-                                color: const Color(0xFFFDE8C8).withOpacity(0.4),
-                                blurRadius: 0,
-                                spreadRadius: 10,
-                              ),
-                              // Warm drop shadow
-                              BoxShadow(
-                                color:
-                                    const Color(0xFFD97B8A).withOpacity(0.22),
-                                blurRadius: 36,
-                                offset: const Offset(0, 12),
-                              ),
-                            ],
-                          ),
-                          child: RotationTransition(
-                            // Gentle sway
-                            turns: Tween<double>(begin: -0.014, end: 0.014)
-                                .animate(
-                              CurvedAnimation(
-                                parent: _logoController,
-                                curve: Curves.easeInOut,
-                              ),
-                            ),
-                            child: const Center(
-                              // 🌸 FLOWER — kept as requested
-                              child: Text('🌸', style: TextStyle(fontSize: 45)),
-                            ),
-                          ),
-                        ),
-                      ),
-
-                      const SizedBox(height: 14),
-
-                      // ── App Name + Tagline ──
-                      SlideTransition(
-                        position: Tween<Offset>(
-                          begin: const Offset(0, 0.5),
-                          end: Offset.zero,
-                        ).animate(
-                          CurvedAnimation(
-                            parent: _slideController,
-                            curve: const Cubic(0.2, 0.8, 0.4, 1.0),
-                          ),
-                        ),
-                        child: FadeTransition(
-                          opacity: _slideController,
-                          child: Column(
-                            children: [
-                              // "Sol" in warm amber  |  "una" in rose pink
-                              RichText(
-                                text: TextSpan(
-                                  style: GoogleFonts.nunito(
-                                    fontSize: 29,
-                                    fontWeight: FontWeight.w900,
-                                    letterSpacing: -0.5,
-                                  ),
-                                  children: [
-                                    TextSpan(
-                                      text: 'Sol',
-                                      style: GoogleFonts.nunito(
-                                        // Amber gold — the "sun" half
-                                        color: const Color(0xFFC97B3A),
-                                        fontWeight: FontWeight.w900,
-                                      ),
-                                    ),
-                                    TextSpan(
-                                      text: 'una',
-                                      style: GoogleFonts.nunito(
-                                        // Rose pink — the "moon" half
-                                        color: const Color(0xFFD97B8A),
-                                        fontWeight: FontWeight.w900,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-
-                              const SizedBox(height: 4),
-
-                              Text(
-                                'your light. your rhythm. 🌕',
-                                style: GoogleFonts.nunito(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w700,
-                                  color: const Color(0xFFB0909A),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-
-                      const SizedBox(height: 28),
-
-                      // ── Loading Bar ──
-                      FadeTransition(
-                        opacity: CurvedAnimation(
-                          parent: _slideController,
-                          curve: const Interval(0.5, 1.0),
-                        ),
-                        child: Container(
-                          width: 100,
-                          height: 4,
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFD97B8A).withOpacity(0.12),
-                            borderRadius: BorderRadius.circular(2),
-                          ),
-                          child: AnimatedBuilder(
-                            animation: _barController,
-                            builder: (context, child) {
-                              return FractionallySizedBox(
-                                alignment: Alignment.centerLeft,
-                                widthFactor: _barController.value,
-                                child: Container(
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(2),
-                                    // Sol gold → Luna rose → Moon mist
-                                    gradient: const LinearGradient(
-                                      colors: [
-                                        Color(0xFFF0C080), // Sol gold
-                                        Color(0xFFD97B8A), // Luna rose
-                                        Color(0xFF9070C0), // Moon mist
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              );
-                            },
-                          ),
-                        ),
+              ),
+              const SizedBox(height: 40),
+              _buildTextField(
+                controller: _emailController,
+                label: 'Email Address',
+                hint: 'your@email.com',
+                keyboardType: TextInputType.emailAddress,
+              ),
+              const SizedBox(height: 20),
+              _buildTextField(
+                controller: _passwordController,
+                label: 'Password',
+                hint: '••••••••',
+                obscureText: _obscurePassword,
+                suffixIcon: IconButton(
+                  icon: Icon(
+                    _obscurePassword ? Icons.visibility_off : Icons.visibility,
+                    color: AppColors.textMid,
+                  ),
+                  onPressed: () =>
+                      setState(() => _obscurePassword = !_obscurePassword),
+                ),
+              ),
+              const SizedBox(height: 40),
+              SizedBox(
+                width: double.infinity,
+                height: 56,
+                child: Container(
+                  decoration: BoxDecoration(
+                    gradient: AppColors.primaryGradient,
+                    borderRadius: BorderRadius.circular(18),
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppColors.primaryRose.withOpacity(0.35),
+                        offset: const Offset(0, 6),
+                        blurRadius: 18,
                       ),
                     ],
                   ),
+                  child: ElevatedButton(
+                    onPressed: _isLoading ? null : _signup,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.transparent,
+                      shadowColor: Colors.transparent,
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(18)),
+                    ),
+                    child: _isLoading
+                        ? const SizedBox(
+                            height: 20,
+                            width: 20,
+                            child: CircularProgressIndicator(
+                              valueColor:
+                                  AlwaysStoppedAnimation<Color>(Colors.white),
+                              strokeWidth: 2,
+                            ),
+                          )
+                        : Text(
+                            'Sign Up',
+                            style: GoogleFonts.nunito(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w900,
+                              color: Colors.white,
+                            ),
+                          ),
+                  ),
                 ),
-              ],
-            ),
+              ),
+              const SizedBox(height: 24),
+              Center(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      'Already have an account?',
+                      style: GoogleFonts.nunito(
+                          color: AppColors.textMid,
+                          fontWeight: FontWeight.w600),
+                    ),
+                    TextButton(
+                      onPressed: () => context.go('/login'),
+                      child: Text(
+                        'Log In',
+                        style: GoogleFonts.nunito(
+                          color: AppColors.primaryRose,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
         ),
       ),
     );
   }
-}
 
-// ═══════════════════════════════════════
-//  PETAL MODEL — flower emojis only 🌸
-// ═══════════════════════════════════════
-class PetalModel {
-  final double left = math.Random().nextDouble() * 100;
-  final double size = 12 + math.Random().nextDouble() * 14;
-  final Duration duration =
-      Duration(milliseconds: 4000 + math.Random().nextInt(3000));
-  final Duration delay = Duration(milliseconds: math.Random().nextInt(3000));
-
-  // Flower petals only — matching the website and onboarding
-  final String emoji = ['🌸', '✿', '🌺', '✾', '🌸'][math.Random().nextInt(5)];
-}
-
-// ═══════════════════════════════════════
-//  FLOATING PETAL WIDGET
-// ═══════════════════════════════════════
-class FloatingPetal extends StatefulWidget {
-  final PetalModel petal;
-  const FloatingPetal({super.key, required this.petal});
-
-  @override
-  State<FloatingPetal> createState() => _FloatingPetalState();
-}
-
-class _FloatingPetalState extends State<FloatingPetal>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller =
-        AnimationController(vsync: this, duration: widget.petal.duration);
-    Future.delayed(widget.petal.delay, () {
-      if (mounted) _controller.repeat();
-    });
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: _controller,
-      builder: (context, child) {
-        final progress = _controller.value;
-        final opacity = progress < 0.08
-            ? progress * 8.75
-            : (progress > 0.85 ? (1 - progress) * 2 : 0.7);
-        return Positioned(
-          left: MediaQuery.of(context).size.width * (widget.petal.left / 100),
-          bottom: MediaQuery.of(context).size.height * (progress * 1.1) - 50,
-          child: Opacity(
-            opacity: opacity.clamp(0.0, 1.0),
-            child: Transform.rotate(
-              angle: progress * math.pi * 2.2,
-              child: Text(
-                widget.petal.emoji,
-                style: TextStyle(fontSize: widget.petal.size),
+  Widget _buildTextField({
+    required TextEditingController controller,
+    required String label,
+    required String hint,
+    bool obscureText = false,
+    TextInputType? keyboardType,
+    Widget? suffixIcon,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: GoogleFonts.nunito(
+            fontSize: 14,
+            fontWeight: FontWeight.w700,
+            color: AppColors.textDark,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: AppColors.border, width: 1.5),
+          ),
+          child: TextField(
+            controller: controller,
+            obscureText: obscureText,
+            keyboardType: keyboardType,
+            style: GoogleFonts.nunito(
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+              color: AppColors.textDark,
+            ),
+            decoration: InputDecoration(
+              hintText: hint,
+              hintStyle: GoogleFonts.nunito(
+                color: AppColors.textMuted,
+                fontWeight: FontWeight.w500,
+              ),
+              suffixIcon: suffixIcon,
+              border: InputBorder.none,
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 18,
+                vertical: 16,
               ),
             ),
           ),
-        );
-      },
-    );
-  }
-}
-
-// ═══════════════════════════════════════
-//  RIPPLE RING WIDGET
-// ═══════════════════════════════════════
-class RippleRing extends StatefulWidget {
-  final double delay;
-  const RippleRing({super.key, required this.delay});
-
-  @override
-  State<RippleRing> createState() => _RippleRingState();
-}
-
-class _RippleRingState extends State<RippleRing>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 2800),
-    );
-    Future.delayed(
-      Duration(milliseconds: (widget.delay * 1000).toInt()),
-      () {
-        if (mounted) _controller.repeat();
-      },
-    );
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: _controller,
-      builder: (context, child) {
-        final progress = _controller.value;
-        return Opacity(
-          opacity: (1 - progress) * 0.9,
-          child: Transform.scale(
-            scale: 0.5 + progress * 1.0,
-            child: Container(
-              width: 250,
-              height: 250,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(
-                  // Rose pink ripple — matches the logo halo
-                  color: const Color(0xFFD97B8A).withOpacity(0.15),
-                  width: 1.5,
-                ),
-              ),
-            ),
-          ),
-        );
-      },
+        ),
+      ],
     );
   }
 }
