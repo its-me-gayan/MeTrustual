@@ -546,7 +546,7 @@ class _UpcomingRow extends StatelessWidget {
 }
 
 class _CycleLengthChart extends StatelessWidget {
-  final List<int> points;
+  final List<CycleChartPoint> points;
   final Color color;
 
   const _CycleLengthChart({required this.points, required this.color});
@@ -561,11 +561,12 @@ class _CycleLengthChart extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.end,
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: List.generate(points.length, (i) {
-              final h = (points[i] / 40 * 100).clamp(10.0, 100.0);
+              final val = points[i].length;
+              final h = (val / 40 * 100).clamp(10.0, 100.0);
               return Column(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                  Text('${points[i]}d',
+                  Text('${val}d',
                       style: GoogleFonts.nunito(
                           fontSize: 10,
                           fontWeight: FontWeight.w700,
