@@ -1,0 +1,75 @@
+{
+  "users": {
+    "test_user_id": {
+      "displayName": "Test User",
+      "ageGroup": "adult",
+      "region": "global",
+      "language": "en",
+      "createdAt": "2026-01-01T00:00:00Z",
+      "lifeStage": "period",
+      "isPremium": true,
+      "premiumSince": "2026-01-01T00:00:00Z",
+      "journey": {
+        "period": {
+          "lastPeriod": "2026-02-15T00:00:00Z",
+          "cycleLen": 28,
+          "periodLen": 5,
+          "flow": "medium",
+          "symptoms": ["cramps", "fatigue"]
+        }
+      },
+      "cycles": {
+        "cycle_1": {
+          "startDate": "2026-01-18T00:00:00Z",
+          "endDate": "2026-01-23T00:00:00Z",
+          "length": 28,
+          "notes": "Normal cycle"
+        },
+        "cycle_2": {
+          "startDate": "2025-12-21T00:00:00Z",
+          "endDate": "2025-12-26T00:00:00Z",
+          "length": 28
+        }
+      },
+      "logs": {
+        "period": {
+          "entries": {
+            "2026-02-15": {
+              "date": "2026-02-15T00:00:00Z",
+              "flow": "heavy",
+              "mood": "low",
+              "symptoms": ["cramps", "backache"],
+              "painLevel": 3,
+              "waterGlasses": 8,
+              "sleepHours": 7
+            },
+            "2026-02-16": {
+              "date": "2026-02-16T00:00:00Z",
+              "flow": "heavy",
+              "mood": "okay",
+              "symptoms": ["cramps"],
+              "painLevel": 2,
+              "waterGlasses": 6,
+              "sleepHours": 8
+            },
+            "2026-02-17": {
+              "date": "2026-02-17T00:00:00Z",
+              "flow": "medium",
+              "mood": "happy",
+              "symptoms": ["fatigue"],
+              "painLevel": 1,
+              "waterGlasses": 7,
+              "sleepHours": 9
+            }
+          }
+        }
+      }
+    }
+  },
+  "config": {
+    "appConfig": {
+      "maxFailedAttempts": 5,
+      "lockoutDurationMinutes": 15
+    }
+  }
+}

@@ -129,11 +129,15 @@ class _InsightsBody extends ConsumerWidget {
   // ── Period Mode ────────────────────────────────────────────────────────────
   List<Widget> _periodContent(InsightsData d, Color accent) {
     final today = DateTime.now();
+    final hasData = d.nextPeriodDate != null;
+
     return [
       _HeroCard(
-          emoji: d.heroEmoji,
-          title: d.heroTitle,
-          subtitle: d.heroSubtitle,
+          emoji: hasData ? d.heroEmoji : '✨',
+          title: hasData ? d.heroTitle : 'Welcome to your story',
+          subtitle: hasData 
+              ? d.heroSubtitle 
+              : 'Start logging your period to see personalized insights and predictions here.',
           accentColor: accent),
       const SizedBox(height: 20),
 
@@ -144,7 +148,7 @@ class _InsightsBody extends ConsumerWidget {
           title:
               '📊 Cycle Length — Last ${d.cycleChart.length > 0 ? d.cycleChart.length : 6} Cycles',
           child: d.cycleChart.isEmpty
-              ? _empty('Log more cycles to see your chart')
+              ? _empty('Not enough data to show trends yet')
               : _CycleLengthChart(points: d.cycleChart, color: accent),
         ),
       ),
@@ -183,14 +187,14 @@ class _InsightsBody extends ConsumerWidget {
               value: (d.fertileWindowStart != null &&
                       d.fertileWindowEnd != null)
                   ? '${DateFormat('MMM d').format(d.fertileWindowStart!)}–${DateFormat('d').format(d.fertileWindowEnd!)}'
-                  : 'Calculating...',
+                  : 'Predictions will appear after logging',
               color: AppColors.sageGreen,
             ),
             _UpcomingRow(
               label: '◎ Ovulation',
               value: d.ovulationDate != null
                   ? _ovulLabel(d.ovulationDate!, today)
-                  : 'Calculating...',
+                  : 'Predictions will appear after logging',
               color: AppColors.lavender,
             ),
           ],
@@ -200,16 +204,18 @@ class _InsightsBody extends ConsumerWidget {
 
       _InsightCard(
         title: '💭 Mood by phase',
-        child: Column(
-          children: d.moodByPhase
-              .map((m) => _BarRow(
-                    label: m.phase,
-                    fill: m.score,
-                    color: _phaseColor(m.phase),
-                    trailing: m.emoji,
-                  ))
-              .toList(),
-        ),
+        child: d.moodByPhase.isEmpty
+            ? _empty('Track your mood to see phase trends')
+            : Column(
+                children: d.moodByPhase
+                    .map((m) => _BarRow(
+                          label: m.phase,
+                          fill: m.score,
+                          color: _phaseColor(m.phase),
+                          trailing: m.emoji,
+                        ))
+                    .toList(),
+              ),
       ),
     ];
   }
@@ -238,15 +244,19 @@ class _InsightsBody extends ConsumerWidget {
   // ── Ovulation Mode ──────────────────────────────────────────────────────────
   List<Widget> _ovulContent(InsightsData d, Color accent) {
     final today = DateTime.now();
+    final hasData = d.cycleChart.isNotEmpty;
+
     return [
       _HeroCard(
-        emoji: '🎯',
-        title: d.cycleChart.length >= 3
-            ? 'Your pattern is consistent!'
-            : 'Building your fertility profile...',
-        subtitle: d.predictionAccuracy > 0
-            ? 'Prediction accuracy: ${(d.predictionAccuracy * 100).round()}% — keep logging 🌿'
-            : 'Log your cycles to unlock fertility predictions 🌿',
+        emoji: hasData ? '🎯' : '✨',
+        title: hasData 
+            ? (d.cycleChart.length >= 3 ? 'Your pattern is consistent!' : 'Building your fertility profile...')
+            : 'Welcome to your journey',
+        subtitle: hasData 
+            ? (d.predictionAccuracy > 0
+                ? 'Prediction accuracy: ${(d.predictionAccuracy * 100).round()}% — keep logging 🌿'
+                : 'Log your cycles to unlock fertility predictions 🌿')
+            : 'Log your cycles to see personalized fertility insights and predictions.',
         accentColor: accent,
       ),
       const SizedBox(height: 20),
@@ -256,7 +266,7 @@ class _InsightsBody extends ConsumerWidget {
           title:
               '📊 Cycle Length — Last ${d.cycleChart.length > 0 ? d.cycleChart.length : 6} Cycles',
           child: d.cycleChart.isEmpty
-              ? _empty('Log more cycles to see your pattern')
+              ? _empty('Not enough data to show trends yet')
               : _CycleLengthChart(points: d.cycleChart, color: accent),
         ),
       ),
@@ -277,14 +287,14 @@ class _InsightsBody extends ConsumerWidget {
               label: '◎ Ovulation',
               value: d.ovulationDate != null
                   ? _ovulLabel(d.ovulationDate!, today)
-                  : 'Calculating...',
+                  : 'Predictions will appear after logging',
               color: AppColors.lavender,
             ),
             _UpcomingRow(
               label: '🩸 Next period',
               value: d.nextPeriodDate != null
                   ? '${DateFormat('MMM d').format(d.nextPeriodDate!)} · ${(d.nextPeriodConfidence * 100).round()}%'
-                  : 'Calculating...',
+                  : 'Predictions will appear after logging',
               color: AppColors.primaryRose,
             ),
           ],
@@ -301,7 +311,7 @@ class _InsightsBody extends ConsumerWidget {
                   return _BarRow(
                       label: s.name,
                       fill: s.ratio,
-                      color: accent,
+                      color: symptomColor(i),
                       trailing: '${s.count}×');
                 }),
               ),
@@ -310,114 +320,107 @@ class _InsightsBody extends ConsumerWidget {
   }
 
   // ── Helpers ────────────────────────────────────────────────────────────────
-  static String _ovulLabel(DateTime date, DateTime today) {
-    final diff =
-        date.difference(DateTime(today.year, today.month, today.day)).inDays;
-    final label = DateFormat('MMM d').format(date);
-    if (diff == 0) return '$label (today!)';
-    if (diff == 1) return '$label (tomorrow)';
-    return label;
+
+  String _title(String mode) {
+    if (mode == 'preg') return 'Your Journey 💙';
+    if (mode == 'ovul') return 'Your Fertility 🌿';
+    return 'Your Story ✨';
   }
 
-  static Color _phaseColor(String phase) {
-    switch (phase.toLowerCase()) {
-      case 'follicular':
-      case 'ovulation':
-        return AppColors.sageGreen;
-      case 'luteal':
-        return AppColors.lavender;
-      default:
-        return AppColors.primaryRose;
-    }
+  String _sub(String mode, InsightsData d) {
+    if (mode == 'preg') return 'Week 24 of 40';
+    if (mode == 'ovul') return '${d.cycleChart.length} cycles tracked';
+    return '${d.cycleChart.length} months of data';
   }
 
-  static Widget _empty(String msg) => Padding(
-        padding: const EdgeInsets.symmetric(vertical: 10),
-        child: Text(msg,
-            textAlign: TextAlign.center,
-            style: GoogleFonts.nunito(
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
-                color: AppColors.textMuted)),
-      );
-
-  static String _title(String mode) {
-    switch (mode) {
-      case 'period':
-        return 'Your Story ✨';
-      case 'preg':
-        return 'Your Journey 💙';
-      case 'ovul':
-        return 'Your Fertility 🌿';
-      default:
-        return 'Insights';
-    }
+  String _ovulLabel(DateTime date, DateTime today) {
+    final diff = date.difference(today).inDays;
+    final formatted = DateFormat('MMM d').format(date);
+    if (diff == 0) return '$formatted (today!)';
+    if (diff == 1) return '$formatted (tomorrow)';
+    return formatted;
   }
 
-  static String _sub(String mode, InsightsData d) {
-    if (d.cyclesTracked == 0) return 'No cycles logged yet';
-    final n = d.cyclesTracked;
-    final label = '$n cycle${n == 1 ? '' : 's'}';
-    switch (mode) {
-      case 'period':
-        return '$label of data';
-      case 'ovul':
-        return '$label tracked';
-      default:
-        return 'Daily wellness tracking';
-    }
+  Color symptomColor(int i) {
+    const colors = [
+      AppColors.primaryRose,
+      Color(0xFFA880C8),
+      Color(0xFF6A9E7A),
+      Color(0xFF5A80C0)
+    ];
+    return colors[i % colors.length];
+  }
+
+  Color _phaseColor(String phase) {
+    if (phase.toLowerCase().contains('menst')) return AppColors.primaryRose;
+    if (phase.toLowerCase().contains('foll')) return const Color(0xFF6A9E7A);
+    if (phase.toLowerCase().contains('ovul')) return const Color(0xFF6A9E7A);
+    return const Color(0xFFA880C8);
+  }
+
+  Widget _empty(String msg) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 20),
+      child: Center(
+        child: Column(
+          children: [
+            Icon(Icons.analytics_outlined,
+                color: AppColors.textMuted.withOpacity(0.3), size: 32),
+            const SizedBox(height: 8),
+            Text(
+              msg,
+              textAlign: TextAlign.center,
+              style: GoogleFonts.nunito(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.textMuted),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }
 
-// ═══════════════════════════════════════════════════════════════════════════
-// SHARED WIDGETS
-// ═══════════════════════════════════════════════════════════════════════════
+// ─── Reusable Components ────────────────────────────────────────────────────
 
 class _HeroCard extends StatelessWidget {
   final String emoji, title, subtitle;
   final Color accentColor;
 
-  const _HeroCard({
-    required this.emoji,
-    required this.title,
-    required this.subtitle,
-    required this.accentColor,
-  });
+  const _HeroCard(
+      {required this.emoji,
+      required this.title,
+      required this.subtitle,
+      required this.accentColor});
 
   @override
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(22),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(22),
-        border: Border.all(color: AppColors.border, width: 1.5),
-        boxShadow: [
-          BoxShadow(
-              color: accentColor.withOpacity(0.10),
-              offset: const Offset(0, 4),
-              blurRadius: 14)
-        ],
+        color: accentColor.withOpacity(0.08),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: accentColor.withOpacity(0.15)),
       ),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(emoji, style: const TextStyle(fontSize: 46)),
+          Text(emoji, style: const TextStyle(fontSize: 32)),
           const SizedBox(height: 12),
           Text(title,
-              textAlign: TextAlign.center,
               style: GoogleFonts.nunito(
-                  fontSize: 20,
-                  fontWeight: FontWeight.w900,
+                  fontSize: 18,
+                  fontWeight: FontWeight.w800,
                   color: AppColors.textDark)),
-          const SizedBox(height: 8),
+          const SizedBox(height: 6),
           Text(subtitle,
-              textAlign: TextAlign.center,
               style: GoogleFonts.nunito(
                   fontSize: 13,
                   fontWeight: FontWeight.w600,
-                  color: AppColors.textMuted,
-                  height: 1.5)),
+                  color: AppColors.textDark.withOpacity(0.7),
+                  height: 1.4)),
         ],
       ),
     );
@@ -434,16 +437,15 @@ class _InsightCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(18),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(22),
-        border: Border.all(color: AppColors.border, width: 1.5),
+        borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-              color: Colors.black.withOpacity(0.04),
-              offset: const Offset(0, 4),
-              blurRadius: 12)
+              color: Colors.black.withOpacity(0.03),
+              blurRadius: 10,
+              offset: const Offset(0, 4))
         ],
       ),
       child: Column(
@@ -451,8 +453,8 @@ class _InsightCard extends StatelessWidget {
         children: [
           Text(title,
               style: GoogleFonts.nunito(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w900,
+                  fontSize: 15,
+                  fontWeight: FontWeight.w800,
                   color: AppColors.textDark)),
           const SizedBox(height: 16),
           child,
@@ -463,16 +465,16 @@ class _InsightCard extends StatelessWidget {
 }
 
 class _BarRow extends StatelessWidget {
-  final String label, trailing;
+  final String label;
   final double fill;
   final Color color;
+  final String trailing;
 
-  const _BarRow({
-    required this.label,
-    required this.fill,
-    required this.color,
-    required this.trailing,
-  });
+  const _BarRow(
+      {required this.label,
+      required this.fill,
+      required this.color,
+      required this.trailing});
 
   @override
   Widget build(BuildContext context) {
@@ -481,7 +483,7 @@ class _BarRow extends StatelessWidget {
       child: Row(
         children: [
           SizedBox(
-              width: 82,
+              width: 80,
               child: Text(label,
                   style: GoogleFonts.nunito(
                       fontSize: 13,
@@ -491,29 +493,24 @@ class _BarRow extends StatelessWidget {
             child: Container(
               height: 8,
               decoration: BoxDecoration(
-                  color: color.withOpacity(0.15),
+                  color: color.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(4)),
               child: FractionallySizedBox(
                 alignment: Alignment.centerLeft,
-                widthFactor: fill.clamp(0.0, 1.0),
+                widthFactor: fill.clamp(0.05, 1.0),
                 child: Container(
                   decoration: BoxDecoration(
-                    gradient:
-                        LinearGradient(colors: [color.withOpacity(0.5), color]),
-                    borderRadius: BorderRadius.circular(4),
-                  ),
+                      gradient: LinearGradient(
+                          colors: [color.withOpacity(0.6), color]),
+                      borderRadius: BorderRadius.circular(4)),
                 ),
               ),
             ),
           ),
-          SizedBox(
-              width: 38,
-              child: Text(trailing,
-                  textAlign: TextAlign.right,
-                  style: GoogleFonts.nunito(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w700,
-                      color: color))),
+          const SizedBox(width: 12),
+          Text(trailing,
+              style: GoogleFonts.nunito(
+                  fontSize: 13, fontWeight: FontWeight.w700, color: color)),
         ],
       ),
     );
@@ -549,75 +546,58 @@ class _UpcomingRow extends StatelessWidget {
 }
 
 class _CycleLengthChart extends StatelessWidget {
-  final List<CycleChartPoint> points;
+  final List<int> points;
   final Color color;
 
   const _CycleLengthChart({required this.points, required this.color});
 
   @override
   Widget build(BuildContext context) {
-    if (points.isEmpty) return const SizedBox();
-    final maxLen = points.map((p) => p.length).reduce((a, b) => a > b ? a : b);
-    final minLen = points.map((p) => p.length).reduce((a, b) => a < b ? a : b);
-    final range = (maxLen - minLen).clamp(1, 100);
-
     return Column(
       children: [
         SizedBox(
-          height: 90,
+          height: 100,
           child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
             crossAxisAlignment: CrossAxisAlignment.end,
-            children: points.map((p) {
-              final norm =
-                  0.25 + 0.75 * ((p.length - minLen) / range).clamp(0.0, 1.0);
-              final isLast = p == points.last;
-              return Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 3),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      Text('${p.length}d',
-                          style: GoogleFonts.nunito(
-                              fontSize: 9,
-                              fontWeight: FontWeight.w700,
-                              color: isLast ? color : AppColors.textMuted)),
-                      const SizedBox(height: 3),
-                      Container(
-                        height: 68 * norm,
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            begin: Alignment.bottomCenter,
-                            end: Alignment.topCenter,
-                            colors: [
-                              color,
-                              color.withOpacity(isLast ? 0.85 : 0.55)
-                            ],
-                          ),
-                          borderRadius: BorderRadius.circular(5),
-                        ),
-                      ),
-                    ],
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: List.generate(points.length, (i) {
+              final h = (points[i] / 40 * 100).clamp(10.0, 100.0);
+              return Column(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  Text('${points[i]}d',
+                      style: GoogleFonts.nunito(
+                          fontSize: 10,
+                          fontWeight: FontWeight.w700,
+                          color: color)),
+                  const SizedBox(height: 4),
+                  Container(
+                    width: 24,
+                    height: h,
+                    decoration: BoxDecoration(
+                        color: color.withOpacity(i == points.length - 1 ? 1 : 0.3),
+                        borderRadius: BorderRadius.circular(6)),
                   ),
-                ),
+                ],
               );
-            }).toList(),
+            }),
           ),
         ),
         const SizedBox(height: 8),
         Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: points
-              .map((p) => Expanded(
-                    child: Text(p.label,
-                        textAlign: TextAlign.center,
-                        style: GoogleFonts.nunito(
-                            fontSize: 10,
-                            fontWeight: FontWeight.w700,
-                            color: AppColors.textMuted)),
-                  ))
-              .toList(),
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text('Oldest',
+                style: GoogleFonts.nunito(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.textMuted)),
+            Text('Latest',
+                style: GoogleFonts.nunito(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.textMuted)),
+          ],
         ),
       ],
     );
@@ -630,49 +610,22 @@ class _SimpleBarChart extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final h = [0.55, 0.72, 0.60, 0.85, 0.68, 0.75, 0.62];
-    final l = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-    return Column(
-      children: [
-        SizedBox(
-          height: 80,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: List.generate(
-                7,
-                (i) => Expanded(
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 3),
-                        child: Container(
-                          height: 68 * h[i],
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              begin: Alignment.bottomCenter,
-                              end: Alignment.topCenter,
-                              colors: [color, color.withOpacity(0.5)],
-                            ),
-                            borderRadius: BorderRadius.circular(5),
-                          ),
-                        ),
-                      ),
-                    )),
-          ),
-        ),
-        const SizedBox(height: 8),
-        Row(
-          children: l
-              .map((x) => Expanded(
-                    child: Text(x,
-                        textAlign: TextAlign.center,
-                        style: GoogleFonts.nunito(
-                            fontSize: 10,
-                            fontWeight: FontWeight.w700,
-                            color: AppColors.textMuted)),
-                  ))
-              .toList(),
-        ),
-      ],
+    return SizedBox(
+      height: 80,
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.end,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: List.generate(7, (i) {
+          final h = [40, 60, 30, 80, 50, 70, 45][i];
+          return Container(
+            width: 30,
+            height: h.toDouble(),
+            decoration: BoxDecoration(
+                color: color.withOpacity(0.3),
+                borderRadius: BorderRadius.circular(6)),
+          );
+        }),
+      ),
     );
   }
 }

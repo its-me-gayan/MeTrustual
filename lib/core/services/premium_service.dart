@@ -78,7 +78,13 @@ class PremiumStatus {
 // ─────────────────────────────────────────────────────────────────────────────
 class PremiumService {
   // ── Init — call once from main() before runApp() ──────────────────────────
+  static const bool _useMock = kDebugMode; // Enable mock in debug mode
+
   static Future<void> init({String? uid}) async {
+    if (_useMock) {
+      debugPrint('🚀 PremiumService: Running in MOCK mode');
+      return;
+    }
     try {
       await Purchases.setLogLevel(
         kDebugMode ? LogLevel.debug : LogLevel.error,
@@ -114,6 +120,7 @@ class PremiumService {
     required String uid,
     required FirebaseFirestore firestore,
   }) {
+    if (_useMock) return;
     Purchases.addCustomerInfoUpdateListener((customerInfo) async {
       debugPrint('🔔 RevenueCat CustomerInfo updated — syncing to Firestore');
       final status = _statusFromCustomerInfo(customerInfo);
@@ -136,6 +143,19 @@ class PremiumService {
     required String uid,
     required FirebaseFirestore firestore,
   }) async {
+    if (_useMock) {
+      final doc = await firestore.collection('users').doc(uid).get();
+      final data = doc.data() ?? {};
+      return PremiumStatus(
+        isActive: data['isPremium'] == true,
+        isCancelledButActive: data['premiumCancelled'] == true,
+        isInBillingGracePeriod: data['premiumBillingIssue'] == true,
+        expiresAt: data['premiumExpiresAt'] != null
+            ? DateTime.tryParse(data['premiumExpiresAt'] as String)
+            : null,
+        isLifetime: data['premiumIsLifetime'] == true,
+      );
+    }
     try {
       // Make sure RevenueCat knows which user this is
       final currentInfo = await Purchases.getCustomerInfo();
@@ -181,6 +201,18 @@ class PremiumService {
     required String uid,
     required FirebaseFirestore firestore,
   }) async {
+    if (_useMock) {
+      final status = PremiumStatus(
+        isActive: true,
+        expiresAt: DateTime.now().add(const Duration(days: 30)),
+      );
+      await _writeStatusToFirestore(
+          uid: uid, firestore: firestore, status: status);
+      await firestore.collection('users').doc(uid).set({
+        'premiumSince': FieldValue.serverTimestamp(),
+      }, SetOptions(merge: true));
+      return PurchaseResult(success: true, status: status);
+    }
     try {
       final customerInfo = await Purchases.purchasePackage(packageToBuy);
       final status = _statusFromCustomerInfo(customerInfo);
@@ -213,6 +245,15 @@ class PremiumService {
     required String uid,
     required FirebaseFirestore firestore,
   }) async {
+    if (_useMock) {
+      final status = PremiumStatus(
+        isActive: true,
+        expiresAt: DateTime.now().add(const Duration(days: 30)),
+      );
+      await _writeStatusToFirestore(
+          uid: uid, firestore: firestore, status: status);
+      return RestoreResult(found: true, status: status);
+    }
     try {
       final customerInfo = await Purchases.restorePurchases();
       final status = _statusFromCustomerInfo(customerInfo);
@@ -231,6 +272,7 @@ class PremiumService {
 
   // ── Fetch offerings for the paywall ──────────────────────────────────────
   static Future<Offerings?> getOfferings() async {
+    if (_useMock) return null; // In real app, you'd need to mock Offerings object if needed for UI
     try {
       return await Purchases.getOfferings();
     } catch (e) {
