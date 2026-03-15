@@ -1,75 +1,59 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:easy_localization/easy_localization.dart';
-import '../../../core/theme/app_colors.dart';
-import '../../../core/widgets/premium_gate.dart';
-import '../../../core/widgets/app_bottom_nav.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:intl/intl.dart';
 
-class InsightsScreen extends ConsumerStatefulWidget {
+import '../../../core/theme/app_colors.dart';
+import '../../../core/providers/mode_provider.dart';
+import '../../../core/widgets/app_bottom_nav.dart';
+import '../../../core/widgets/premium_gate.dart';
+import '../providers/insights_provider.dart';
+
+class InsightsScreen extends ConsumerWidget {
   const InsightsScreen({super.key});
 
   @override
-  ConsumerState<InsightsScreen> createState() => _InsightsScreenState();
-}
+  Widget build(BuildContext context, WidgetRef ref) {
+    final mode = ref.watch(modeProvider);
+    final insightsAsync = ref.watch(insightsDataProvider);
 
-class _InsightsScreenState extends ConsumerState<InsightsScreen> {
-  String currentMode =
-      'period'; // This should ideally come from user settings/onboarding
-
-  @override
-  Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppColors.background,
       extendBody: true,
       body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(22, 20, 22, 120),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  IconButton(
-                    icon: const Icon(Icons.arrow_back_ios,
-                        color: AppColors.textDark, size: 20),
-                    onPressed: () => context.go('/home'),
-                  ),
-                  Text(
-                    _getPageTitle(),
-                    style: Theme.of(context).textTheme.titleLarge,
-                  ),
-                ],
-              ),
-              const SizedBox(height: 4),
-              Text(
-                _getPageSub(),
+        child: insightsAsync.when(
+          loading: () => const Center(
+              child: CircularProgressIndicator(
+                  color: AppColors.primaryRose, strokeWidth: 2)),
+          error: (e, _) => Center(
+            child: Padding(
+              padding: const EdgeInsets.all(32),
+              child: Text(
+                'Could not load insights.\nPlease try again.',
+                textAlign: TextAlign.center,
                 style: GoogleFonts.nunito(
-                  fontSize: 11.5,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.textMuted,
-                ),
+                    color: AppColors.textMuted,
+                    fontWeight: FontWeight.w600,
+                    fontSize: 14),
               ),
-              const SizedBox(height: 20),
-              _buildModeSpecificInsightsContent(),
-            ],
+            ),
           ),
+          data: (data) => _InsightsBody(mode: mode, data: data),
         ),
       ),
-      bottomNavigationBar:
-          AppBottomNav(activeIndex: _getNavIndex(_currentRoute)),
+      bottomNavigationBar: AppBottomNav(
+          activeIndex: _navIndex(GoRouter.of(context)
+              .routerDelegate
+              .currentConfiguration
+              .uri
+              .path)),
       floatingActionButton: const AppFAB(),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
     );
   }
 
-  String get _currentRoute {
-    final String? location =
-        GoRouter.of(context).routerDelegate.currentConfiguration.uri.path;
-    return location ?? '/home';
-  }
-
-  int _getNavIndex(String route) {
+  static int _navIndex(String? route) {
     switch (route) {
       case '/home':
         return 0;
@@ -80,12 +64,285 @@ class _InsightsScreenState extends ConsumerState<InsightsScreen> {
       case '/care':
         return 3;
       default:
-        return 0;
+        return 1;
+    }
+  }
+}
+
+// ─── Body ───────────────────────────────────────────────────────────────────
+
+class _InsightsBody extends ConsumerWidget {
+  final String mode;
+  final InsightsData data;
+
+  const _InsightsBody({required this.mode, required this.data});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final accentColor = AppColors.getModeColor(mode);
+
+    return RefreshIndicator(
+      color: accentColor,
+      onRefresh: () async => ref.invalidate(insightsDataProvider),
+      child: SingleChildScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: const EdgeInsets.fromLTRB(20, 12, 20, 120),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Header
+            Row(
+              children: [
+                IconButton(
+                  icon: const Icon(Icons.arrow_back_ios,
+                      color: AppColors.textDark, size: 20),
+                  onPressed: () => context.go('/home'),
+                ),
+                Text(_title(mode),
+                    style: Theme.of(context).textTheme.titleLarge),
+              ],
+            ),
+            Padding(
+              padding: const EdgeInsets.only(left: 16, bottom: 20),
+              child: Text(
+                _sub(mode, data),
+                style: GoogleFonts.nunito(
+                  fontSize: 11.5,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.textMuted,
+                ),
+              ),
+            ),
+
+            // Content
+            ...(mode == 'preg'
+                ? _pregContent(accentColor)
+                : mode == 'ovul'
+                    ? _ovulContent(data, accentColor)
+                    : _periodContent(data, accentColor)),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ── Period Mode ────────────────────────────────────────────────────────────
+  List<Widget> _periodContent(InsightsData d, Color accent) {
+    final today = DateTime.now();
+    return [
+      _HeroCard(
+          emoji: d.heroEmoji,
+          title: d.heroTitle,
+          subtitle: d.heroSubtitle,
+          accentColor: accent),
+      const SizedBox(height: 20),
+
+      // Cycle chart — premium gated
+      PremiumGate(
+        message: 'Unlock Cycle Analytics',
+        child: _InsightCard(
+          title:
+              '📊 Cycle Length — Last ${d.cycleChart.length > 0 ? d.cycleChart.length : 6} Cycles',
+          child: d.cycleChart.isEmpty
+              ? _empty('Log more cycles to see your chart')
+              : _CycleLengthChart(points: d.cycleChart, color: accent),
+        ),
+      ),
+      const SizedBox(height: 20),
+
+      _InsightCard(
+        title: '🌸 Most common symptoms',
+        child: d.topSymptoms.isEmpty
+            ? _empty('Log symptoms to see patterns')
+            : Column(
+                children: List.generate(d.topSymptoms.length, (i) {
+                  final s = d.topSymptoms[i];
+                  return _BarRow(
+                      label: s.name,
+                      fill: s.ratio,
+                      color: symptomColor(i),
+                      trailing: '${s.count}×');
+                }),
+              ),
+      ),
+      const SizedBox(height: 20),
+
+      _InsightCard(
+        title: '🔮 What\'s coming up',
+        child: Column(
+          children: [
+            _UpcomingRow(
+              label: '🩸 Next period',
+              value: d.nextPeriodDate != null
+                  ? '${DateFormat('MMM d').format(d.nextPeriodDate!)} · ${(d.nextPeriodConfidence * 100).round()}%'
+                  : 'Log more data',
+              color: accent,
+            ),
+            _UpcomingRow(
+              label: '🌿 Fertile window',
+              value: (d.fertileWindowStart != null &&
+                      d.fertileWindowEnd != null)
+                  ? '${DateFormat('MMM d').format(d.fertileWindowStart!)}–${DateFormat('d').format(d.fertileWindowEnd!)}'
+                  : 'Calculating...',
+              color: AppColors.sageGreen,
+            ),
+            _UpcomingRow(
+              label: '◎ Ovulation',
+              value: d.ovulationDate != null
+                  ? _ovulLabel(d.ovulationDate!, today)
+                  : 'Calculating...',
+              color: AppColors.lavender,
+            ),
+          ],
+        ),
+      ),
+      const SizedBox(height: 20),
+
+      _InsightCard(
+        title: '💭 Mood by phase',
+        child: Column(
+          children: d.moodByPhase
+              .map((m) => _BarRow(
+                    label: m.phase,
+                    fill: m.score,
+                    color: _phaseColor(m.phase),
+                    trailing: m.emoji,
+                  ))
+              .toList(),
+        ),
+      ),
+    ];
+  }
+
+  // ── Pregnancy Mode ─────────────────────────────────────────────────────────
+  List<Widget> _pregContent(Color accent) {
+    return [
+      _HeroCard(
+        emoji: '💙',
+        title: 'You\'re doing amazing!',
+        subtitle:
+            'Keep logging daily to track your wellness journey. Your dedication is beautiful 💕',
+        accentColor: accent,
+      ),
+      const SizedBox(height: 20),
+      PremiumGate(
+        message: 'Unlock Wellness Analytics',
+        child: _InsightCard(
+          title: '📊 Activity — Last 7 Days',
+          child: _SimpleBarChart(color: accent),
+        ),
+      ),
+    ];
+  }
+
+  // ── Ovulation Mode ──────────────────────────────────────────────────────────
+  List<Widget> _ovulContent(InsightsData d, Color accent) {
+    final today = DateTime.now();
+    return [
+      _HeroCard(
+        emoji: '🎯',
+        title: d.cycleChart.length >= 3
+            ? 'Your pattern is consistent!'
+            : 'Building your fertility profile...',
+        subtitle: d.predictionAccuracy > 0
+            ? 'Prediction accuracy: ${(d.predictionAccuracy * 100).round()}% — keep logging 🌿'
+            : 'Log your cycles to unlock fertility predictions 🌿',
+        accentColor: accent,
+      ),
+      const SizedBox(height: 20),
+      PremiumGate(
+        message: 'Unlock Fertile Window History',
+        child: _InsightCard(
+          title:
+              '📊 Cycle Length — Last ${d.cycleChart.length > 0 ? d.cycleChart.length : 6} Cycles',
+          child: d.cycleChart.isEmpty
+              ? _empty('Log more cycles to see your pattern')
+              : _CycleLengthChart(points: d.cycleChart, color: accent),
+        ),
+      ),
+      const SizedBox(height: 20),
+      _InsightCard(
+        title: '🔮 Upcoming predictions',
+        child: Column(
+          children: [
+            _UpcomingRow(
+              label: '🌿 Fertile window',
+              value: (d.fertileWindowStart != null &&
+                      d.fertileWindowEnd != null)
+                  ? '${DateFormat('MMM d').format(d.fertileWindowStart!)}–${DateFormat('d').format(d.fertileWindowEnd!)}'
+                  : 'Log more data',
+              color: accent,
+            ),
+            _UpcomingRow(
+              label: '◎ Ovulation',
+              value: d.ovulationDate != null
+                  ? _ovulLabel(d.ovulationDate!, today)
+                  : 'Calculating...',
+              color: AppColors.lavender,
+            ),
+            _UpcomingRow(
+              label: '🩸 Next period',
+              value: d.nextPeriodDate != null
+                  ? '${DateFormat('MMM d').format(d.nextPeriodDate!)} · ${(d.nextPeriodConfidence * 100).round()}%'
+                  : 'Calculating...',
+              color: AppColors.primaryRose,
+            ),
+          ],
+        ),
+      ),
+      const SizedBox(height: 20),
+      _InsightCard(
+        title: '🌸 Most logged symptoms',
+        child: d.topSymptoms.isEmpty
+            ? _empty('Log symptoms to see patterns')
+            : Column(
+                children: List.generate(d.topSymptoms.length, (i) {
+                  final s = d.topSymptoms[i];
+                  return _BarRow(
+                      label: s.name,
+                      fill: s.ratio,
+                      color: accent,
+                      trailing: '${s.count}×');
+                }),
+              ),
+      ),
+    ];
+  }
+
+  // ── Helpers ────────────────────────────────────────────────────────────────
+  static String _ovulLabel(DateTime date, DateTime today) {
+    final diff =
+        date.difference(DateTime(today.year, today.month, today.day)).inDays;
+    final label = DateFormat('MMM d').format(date);
+    if (diff == 0) return '$label (today!)';
+    if (diff == 1) return '$label (tomorrow)';
+    return label;
+  }
+
+  static Color _phaseColor(String phase) {
+    switch (phase.toLowerCase()) {
+      case 'follicular':
+      case 'ovulation':
+        return AppColors.sageGreen;
+      case 'luteal':
+        return AppColors.lavender;
+      default:
+        return AppColors.primaryRose;
     }
   }
 
-  String _getPageTitle() {
-    switch (currentMode) {
+  static Widget _empty(String msg) => Padding(
+        padding: const EdgeInsets.symmetric(vertical: 10),
+        child: Text(msg,
+            textAlign: TextAlign.center,
+            style: GoogleFonts.nunito(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                color: AppColors.textMuted)),
+      );
+
+  static String _title(String mode) {
+    switch (mode) {
       case 'period':
         return 'Your Story ✨';
       case 'preg':
@@ -97,269 +354,86 @@ class _InsightsScreenState extends ConsumerState<InsightsScreen> {
     }
   }
 
-  String _getPageSub() {
-    switch (currentMode) {
+  static String _sub(String mode, InsightsData d) {
+    if (d.cyclesTracked == 0) return 'No cycles logged yet';
+    final n = d.cyclesTracked;
+    final label = '$n cycle${n == 1 ? '' : 's'}';
+    switch (mode) {
       case 'period':
-        return '6 months of data';
-      case 'preg':
-        return 'Week 24 of 40';
+        return '$label of data';
       case 'ovul':
-        return '6 cycles tracked';
+        return '$label tracked';
       default:
-        return 'Overview';
+        return 'Daily wellness tracking';
     }
   }
+}
 
-  Widget _buildModeSpecificInsightsContent() {
-    switch (currentMode) {
-      case 'period':
-        return Column(
-          children: [
-            _buildBigInsight(
-              emoji: '🌿',
-              title: 'You\'re beautifully regular!',
-              subtitle:
-                  'Your cycles have stayed between 27–29 days for 6 months. Your AI model is 92% accurate for your body 💕',
-              accentColor: AppColors.primaryRose,
-            ),
-            const SizedBox(height: 20),
-            PremiumGate(
-              message: 'Unlock Cycle Analytics',
-              child: _buildInsightCard(
-                title: '📊 Cycle Length — Last 6 Months',
-                content: _buildMiniChartPeriod(),
-              ),
-            ),
-            const SizedBox(height: 20),
-            _buildInsightCard(
-              title: '🌸 Most common symptoms',
-              content: Column(
-                children: [
-                  _buildBarRow('Cramps', 0.80, AppColors.primaryRose),
-                  _buildBarRow('Fatigue', 0.58, const Color(0xFFA880C8)),
-                  _buildBarRow('Headache', 0.38, const Color(0xFF6A9E7A)),
-                  _buildBarRow('Bloating', 0.28, const Color(0xFF5A80C0)),
-                ],
-              ),
-            ),
-            const SizedBox(height: 20),
-            _buildInsightCard(
-              title: '🔮 What\'s coming up',
-              content: Column(
-                children: [
-                  _buildUpcomingRow(
-                      '🩸 Next period', 'Mar 6 · 92%', AppColors.primaryRose),
-                  _buildUpcomingRow('🌿 Fertile window', 'Feb 18–23',
-                      const Color(0xFF6A9E7A)),
-                  _buildUpcomingRow('◎ Ovulation', 'Feb 21 (today!)',
-                      const Color(0xFF9870C0)),
-                ],
-              ),
-            ),
-            const SizedBox(height: 20),
-            _buildInsightCard(
-              title: '💭 Mood by phase',
-              content: Column(
-                children: [
-                  _buildBarRow('Menstrual', 0.30, AppColors.primaryRose,
-                      emoji: '😔'),
-                  _buildBarRow('Follicular', 0.90, const Color(0xFF6A9E7A),
-                      emoji: '🥰'),
-                  _buildBarRow('Ovulation', 0.85, const Color(0xFF6A9E7A),
-                      emoji: '😊'),
-                  _buildBarRow('Luteal', 0.50, const Color(0xFFA880C8),
-                      emoji: '😐'),
-                ],
-              ),
-            ),
-          ],
-        );
-      case 'preg':
-        return Column(
-          children: [
-            _buildBigInsight(
-              emoji: '💙',
-              title: 'You\'re doing amazing!',
-              subtitle:
-                  'Week 24 — you\'ve completed 60% of your pregnancy. Baby is developing beautifully and you\'ve been consistent with logging 💕',
-              accentColor: const Color(0xFF4A70B0),
-            ),
-            const SizedBox(height: 20),
-            PremiumGate(
-              message: 'Unlock Kick Count Analytics',
-              child: _buildInsightCard(
-                title: '📊 Kick Count — Last 7 Days',
-                content: _buildMiniChartPregnancy(),
-              ),
-            ),
-            const SizedBox(height: 20),
-            _buildInsightCard(
-              title: '⚖️ Weight Gain Progress',
-              content: Column(
-                children: [
-                  _buildBarRow('Current', 0.60, const Color(0xFF4A70B0),
-                      value: '+7 kg'),
-                  _buildBarRow('Recommended', 0.68, const Color(0xFF6A9E7A),
-                      value: '+8 kg'),
-                  Padding(
-                    padding: const EdgeInsets.only(top: 8.0),
-                    child: Text(
-                      '✅ You\'re within the healthy range for week 24',
-                      style: GoogleFonts.nunito(
-                          fontSize: 11,
-                          color: const Color(0xFF7090B0),
-                          fontWeight: FontWeight.w600),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 20),
-            _buildInsightCard(
-              title: '🗓️ Upcoming milestones',
-              content: Column(
-                children: [
-                  _buildUpcomingRow(
-                      '🩺 Glucose screening', 'Mar 3', const Color(0xFF4A70B0)),
-                  _buildUpcomingRow('👶 3rd trimester begins', 'Week 28',
-                      const Color(0xFF4A70B0)),
-                  _buildUpcomingRow('🏥 Birth class starts', 'Mar 20',
-                      const Color(0xFF4A70B0)),
-                  _buildUpcomingRow(
-                      '🎁 Due date', 'Jun 5', const Color(0xFF4A70B0)),
-                ],
-              ),
-            ),
-            const SizedBox(height: 20),
-            _buildInsightCard(
-              title: '🌡️ Common symptoms this trimester',
-              content: Column(
-                children: [
-                  _buildBarRow('Fatigue', 0.72, const Color(0xFF4A70B0),
-                      value: '9d'),
-                  _buildBarRow('Back pain', 0.55, const Color(0xFF4A70B0),
-                      value: '7d'),
-                  _buildBarRow('Heartburn', 0.38, const Color(0xFF4A70B0),
-                      value: '5d'),
-                ],
-              ),
-            ),
-          ],
-        );
-      case 'ovul':
-        return Column(
-          children: [
-            _buildBigInsight(
-              emoji: '🎯',
-              title: 'Ovulation confirmed today!',
-              subtitle:
-                  'Your BBT rise + egg-white mucus + high OPK confirms ovulation on Day 14. Your pattern is very consistent — 89% prediction accuracy 🌿',
-              accentColor: const Color(0xFF5A8E6A),
-            ),
-            const SizedBox(height: 20),
-            PremiumGate(
-              message: 'Unlock BBT Charting',
-              child: _buildInsightCard(
-                title: '🌡️ BBT Chart — Last 14 Days',
-                content: _buildBBTChart(),
-              ),
-            ),
-            const SizedBox(height: 20),
-            _buildInsightCard(
-              title: '📊 Fertile Window — Last 6 Cycles',
-              content: Column(
-                children: [
-                  _buildBarRow('Oct', 0.60, const Color(0xFF5A8E6A),
-                      value: 'Day 13'),
-                  _buildBarRow('Nov', 0.65, const Color(0xFF5A8E6A),
-                      value: 'Day 14'),
-                  _buildBarRow('Dec', 0.60, const Color(0xFF5A8E6A),
-                      value: 'Day 13'),
-                  _buildBarRow('Jan', 0.65, const Color(0xFF5A8E6A),
-                      value: 'Day 14'),
-                  _buildBarRow('Feb', 0.65, const Color(0xFF5A8E6A),
-                      value: 'Day 14'),
-                ],
-              ),
-            ),
-            const SizedBox(height: 20),
-            _buildInsightCard(
-              title: '🔮 Upcoming predictions',
-              content: Column(
-                children: [
-                  _buildUpcomingRow('🟢 Fertile window closes', 'Feb 23',
-                      const Color(0xFF5A8E6A)),
-                  _buildUpcomingRow(
-                      '🩸 Next period due', 'Mar 6', AppColors.primaryRose),
-                  _buildUpcomingRow('🌿 Next fertile window', 'Mar 18–24',
-                      const Color(0xFF5A8E6A)),
-                  _buildUpcomingRow(
-                      '◎ Next ovulation', 'Mar 21', const Color(0xFF9870C0)),
-                ],
-              ),
-            ),
-          ],
-        );
-      default:
-        return const SizedBox();
-    }
-  }
+// ═══════════════════════════════════════════════════════════════════════════
+// SHARED WIDGETS
+// ═══════════════════════════════════════════════════════════════════════════
 
-  Widget _buildBigInsight({
-    required String emoji,
-    required String title,
-    required String subtitle,
-    required Color accentColor,
-  }) {
+class _HeroCard extends StatelessWidget {
+  final String emoji, title, subtitle;
+  final Color accentColor;
+
+  const _HeroCard({
+    required this.emoji,
+    required this.title,
+    required this.subtitle,
+    required this.accentColor,
+  });
+
+  @override
+  Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(20),
+      width: double.infinity,
+      padding: const EdgeInsets.all(22),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(22),
         border: Border.all(color: AppColors.border, width: 1.5),
         boxShadow: [
           BoxShadow(
-            color: accentColor.withOpacity(0.08),
-            offset: const Offset(0, 4),
-            blurRadius: 12,
-          ),
+              color: accentColor.withOpacity(0.10),
+              offset: const Offset(0, 4),
+              blurRadius: 14)
         ],
       ),
       child: Column(
         children: [
-          Text(emoji, style: GoogleFonts.nunito(fontSize: 48)),
+          Text(emoji, style: const TextStyle(fontSize: 46)),
           const SizedBox(height: 12),
-          Text(
-            title,
-            textAlign: TextAlign.center,
-            style: GoogleFonts.nunito(
-              fontSize: 20,
-              fontWeight: FontWeight.w900,
-              color: AppColors.textDark,
-            ),
-          ),
+          Text(title,
+              textAlign: TextAlign.center,
+              style: GoogleFonts.nunito(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w900,
+                  color: AppColors.textDark)),
           const SizedBox(height: 8),
-          Text(
-            subtitle,
-            textAlign: TextAlign.center,
-            style: GoogleFonts.nunito(
-              fontSize: 13,
-              fontWeight: FontWeight.w600,
-              color: AppColors.textMuted.withOpacity(0.8),
-              height: 1.5,
-            ),
-          ),
+          Text(subtitle,
+              textAlign: TextAlign.center,
+              style: GoogleFonts.nunito(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.textMuted,
+                  height: 1.5)),
         ],
       ),
     );
   }
+}
 
-  Widget _buildInsightCard({
-    required String title,
-    required Widget content,
-    Color? accentColor,
-  }) {
+class _InsightCard extends StatelessWidget {
+  final String title;
+  final Widget child;
+
+  const _InsightCard({required this.title, required this.child});
+
+  @override
+  Widget build(BuildContext context) {
     return Container(
+      width: double.infinity,
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
         color: Colors.white,
@@ -367,209 +441,61 @@ class _InsightsScreenState extends ConsumerState<InsightsScreen> {
         border: Border.all(color: AppColors.border, width: 1.5),
         boxShadow: [
           BoxShadow(
-            color: (accentColor ?? Colors.black).withOpacity(0.04),
-            offset: const Offset(0, 4),
-            blurRadius: 12,
-          ),
+              color: Colors.black.withOpacity(0.04),
+              offset: const Offset(0, 4),
+              blurRadius: 12)
         ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            title,
-            style: GoogleFonts.nunito(
-              fontSize: 13,
-              fontWeight: FontWeight.w900,
-              color: AppColors.textDark,
-            ),
-          ),
+          Text(title,
+              style: GoogleFonts.nunito(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w900,
+                  color: AppColors.textDark)),
           const SizedBox(height: 16),
-          content,
+          child,
         ],
       ),
     );
   }
+}
 
-  Widget _buildMiniChartPeriod() {
-    final List<double> heights = [0.70, 0.80, 0.73, 0.85, 0.76, 0.78];
-    final List<String> labels = ['Sep', 'Oct', 'Nov', 'Dec', 'Jan', 'Feb'];
-    return Column(
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: List.generate(heights.length, (index) {
-            return Container(
-              width: 16,
-              height: 80 * heights[index],
-              decoration: BoxDecoration(
-                color: index == 3
-                    ? AppColors.primaryRose
-                    : AppColors.primaryRose.withOpacity(0.7),
-                borderRadius: BorderRadius.circular(4),
-              ),
-            );
-          }),
-        ),
-        const SizedBox(height: 8),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: labels
-              .map((label) => Text(
-                    label,
-                    style: GoogleFonts.nunito(
-                        fontSize: 10,
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.textMuted),
-                  ))
-              .toList(),
-        ),
-      ],
-    );
-  }
+class _BarRow extends StatelessWidget {
+  final String label, trailing;
+  final double fill;
+  final Color color;
 
-  Widget _buildMiniChartPregnancy() {
-    final List<double> heights = [0.60, 0.75, 0.65, 0.90, 0.80, 0.70, 0.85];
-    final List<String> labels = [
-      'Sat',
-      'Sun',
-      'Mon',
-      'Tue',
-      'Wed',
-      'Thu',
-      'Fri'
-    ];
-    final Color accentColor = const Color(0xFF4A70B0);
-    return Column(
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: List.generate(heights.length, (index) {
-            return Container(
-              width: 16,
-              height: 80 * heights[index],
-              decoration: BoxDecoration(
-                color: index == 3 || index == 6
-                    ? accentColor
-                    : accentColor.withOpacity(0.7),
-                borderRadius: BorderRadius.circular(4),
-              ),
-            );
-          }),
-        ),
-        const SizedBox(height: 8),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: labels
-              .map((label) => Text(
-                    label,
-                    style: GoogleFonts.nunito(
-                        fontSize: 10,
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.textMuted),
-                  ))
-              .toList(),
-        ),
-      ],
-    );
-  }
+  const _BarRow({
+    required this.label,
+    required this.fill,
+    required this.color,
+    required this.trailing,
+  });
 
-  Widget _buildBBTChart() {
-    final List<double> bbtValues = [
-      30, 35, 32, 28, 33, // Pre-ovulation
-      38, 42, 40, 45, 48, 46, 52, 55, // Post-ovulation
-      80 // Peak
-    ];
-    final Color accentColor = const Color(0xFF5A8E6A);
-
-    return Column(
-      children: [
-        Stack(
-          alignment: Alignment.bottomCenter,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: List.generate(bbtValues.length, (index) {
-                return Container(
-                  width: 12,
-                  height: bbtValues[index],
-                  decoration: BoxDecoration(
-                    color: index < 5
-                        ? accentColor.withOpacity(0.5)
-                        : (index == bbtValues.length - 1
-                            ? accentColor
-                            : accentColor.withOpacity(0.7)),
-                    borderRadius: BorderRadius.circular(3),
-                  ),
-                );
-              }),
-            ),
-            Positioned(
-              right: MediaQuery.of(context).size.width *
-                  0.08, // Approximate position
-              bottom: 0,
-              top: 0,
-              child: Container(
-                width: 2,
-                color: accentColor.withOpacity(0.5),
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 8),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text('Day 1',
-                style: GoogleFonts.nunito(
-                    fontSize: 10,
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.textMuted)),
-            Text('Ovulation ↑',
-                style: GoogleFonts.nunito(
-                    fontSize: 10,
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.textMuted)),
-            Text('Today',
-                style: GoogleFonts.nunito(
-                    fontSize: 10,
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.textMuted)),
-          ],
-        ),
-      ],
-    );
-  }
-
-  Widget _buildBarRow(String name, double fillFactor, Color color,
-      {String? emoji, String? value}) {
+  @override
+  Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6.0),
+      padding: const EdgeInsets.symmetric(vertical: 6),
       child: Row(
         children: [
           SizedBox(
-            width: 80,
-            child: Text(
-              name,
-              style: GoogleFonts.nunito(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.textDark),
-            ),
-          ),
+              width: 82,
+              child: Text(label,
+                  style: GoogleFonts.nunito(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.textDark))),
           Expanded(
             child: Container(
               height: 8,
               decoration: BoxDecoration(
-                color: color.withOpacity(0.2),
-                borderRadius: BorderRadius.circular(4),
-              ),
+                  color: color.withOpacity(0.15),
+                  borderRadius: BorderRadius.circular(4)),
               child: FractionallySizedBox(
                 alignment: Alignment.centerLeft,
-                widthFactor: fillFactor,
+                widthFactor: fill.clamp(0.0, 1.0),
                 child: Container(
                   decoration: BoxDecoration(
                     gradient:
@@ -581,41 +507,172 @@ class _InsightsScreenState extends ConsumerState<InsightsScreen> {
             ),
           ),
           SizedBox(
-            width: 40,
-            child: Align(
-              alignment: Alignment.centerRight,
-              child: Text(
-                emoji ?? value ?? '${(fillFactor * 10).round()}×',
-                style: GoogleFonts.nunito(
-                    fontSize: 13, fontWeight: FontWeight.w700, color: color),
-              ),
-            ),
-          ),
+              width: 38,
+              child: Text(trailing,
+                  textAlign: TextAlign.right,
+                  style: GoogleFonts.nunito(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                      color: color))),
         ],
       ),
     );
   }
+}
 
-  Widget _buildUpcomingRow(String label, String value, Color color) {
+class _UpcomingRow extends StatelessWidget {
+  final String label, value;
+  final Color color;
+
+  const _UpcomingRow(
+      {required this.label, required this.value, required this.color});
+
+  @override
+  Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      padding: const EdgeInsets.symmetric(vertical: 8),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(
-            label,
-            style: GoogleFonts.nunito(
-                fontSize: 14,
-                fontWeight: FontWeight.w700,
-                color: AppColors.textDark),
-          ),
-          Text(
-            value,
-            style: GoogleFonts.nunito(
-                fontSize: 14, fontWeight: FontWeight.w700, color: color),
-          ),
+          Text(label,
+              style: GoogleFonts.nunito(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.textDark)),
+          Text(value,
+              style: GoogleFonts.nunito(
+                  fontSize: 14, fontWeight: FontWeight.w700, color: color)),
         ],
       ),
+    );
+  }
+}
+
+class _CycleLengthChart extends StatelessWidget {
+  final List<CycleChartPoint> points;
+  final Color color;
+
+  const _CycleLengthChart({required this.points, required this.color});
+
+  @override
+  Widget build(BuildContext context) {
+    if (points.isEmpty) return const SizedBox();
+    final maxLen = points.map((p) => p.length).reduce((a, b) => a > b ? a : b);
+    final minLen = points.map((p) => p.length).reduce((a, b) => a < b ? a : b);
+    final range = (maxLen - minLen).clamp(1, 100);
+
+    return Column(
+      children: [
+        SizedBox(
+          height: 90,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: points.map((p) {
+              final norm =
+                  0.25 + 0.75 * ((p.length - minLen) / range).clamp(0.0, 1.0);
+              final isLast = p == points.last;
+              return Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 3),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      Text('${p.length}d',
+                          style: GoogleFonts.nunito(
+                              fontSize: 9,
+                              fontWeight: FontWeight.w700,
+                              color: isLast ? color : AppColors.textMuted)),
+                      const SizedBox(height: 3),
+                      Container(
+                        height: 68 * norm,
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.bottomCenter,
+                            end: Alignment.topCenter,
+                            colors: [
+                              color,
+                              color.withOpacity(isLast ? 0.85 : 0.55)
+                            ],
+                          ),
+                          borderRadius: BorderRadius.circular(5),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            }).toList(),
+          ),
+        ),
+        const SizedBox(height: 8),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: points
+              .map((p) => Expanded(
+                    child: Text(p.label,
+                        textAlign: TextAlign.center,
+                        style: GoogleFonts.nunito(
+                            fontSize: 10,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.textMuted)),
+                  ))
+              .toList(),
+        ),
+      ],
+    );
+  }
+}
+
+class _SimpleBarChart extends StatelessWidget {
+  final Color color;
+  const _SimpleBarChart({required this.color});
+
+  @override
+  Widget build(BuildContext context) {
+    final h = [0.55, 0.72, 0.60, 0.85, 0.68, 0.75, 0.62];
+    final l = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+    return Column(
+      children: [
+        SizedBox(
+          height: 80,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: List.generate(
+                7,
+                (i) => Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 3),
+                        child: Container(
+                          height: 68 * h[i],
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.bottomCenter,
+                              end: Alignment.topCenter,
+                              colors: [color, color.withOpacity(0.5)],
+                            ),
+                            borderRadius: BorderRadius.circular(5),
+                          ),
+                        ),
+                      ),
+                    )),
+          ),
+        ),
+        const SizedBox(height: 8),
+        Row(
+          children: l
+              .map((x) => Expanded(
+                    child: Text(x,
+                        textAlign: TextAlign.center,
+                        style: GoogleFonts.nunito(
+                            fontSize: 10,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.textMuted)),
+                  ))
+              .toList(),
+        ),
+      ],
     );
   }
 }
