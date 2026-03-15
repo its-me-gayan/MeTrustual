@@ -111,15 +111,23 @@ class _InsightsScreenState extends ConsumerState<InsightsScreen> {
   }
 
   Widget _buildModeSpecificInsightsContent() {
+    final periodData = ref.watch(periodHomeDataProvider);
+    final hasData = periodData != null && periodData.lastPeriod != null;
+
     switch (currentMode) {
       case 'period':
         return Column(
           children: [
             _buildBigInsight(
-              emoji: '🌿',
-              title: 'You\'re beautifully regular!',
-              subtitle:
-                  'Your cycles have stayed between 27–29 days for 6 months. Your AI model is 92% accurate for your body 💕',
+              emoji: hasData ? '🌿' : '✨',
+              title: hasData
+                  ? (periodData.confidence > 0.8
+                      ? 'You\'re beautifully regular!'
+                      : 'We\'re learning your rhythm')
+                  : 'Welcome to your story',
+              subtitle: hasData
+                  ? 'Your AI model is ${(periodData.confidence * 100).round()}% accurate for your body 💕'
+                  : 'Start logging your period to see personalized insights and predictions here.',
               accentColor: AppColors.primaryRose,
             ),
             const SizedBox(height: 20),
@@ -127,50 +135,65 @@ class _InsightsScreenState extends ConsumerState<InsightsScreen> {
               message: 'Unlock Cycle Analytics',
               child: _buildInsightCard(
                 title: '📊 Cycle Length — Last 6 Months',
-                content: _buildMiniChartPeriod(),
+                content: hasData
+                    ? _buildMiniChartPeriod()
+                    : _buildEmptyState('Not enough data to show trends yet'),
               ),
             ),
             const SizedBox(height: 20),
             _buildInsightCard(
               title: '🌸 Most common symptoms',
-              content: Column(
-                children: [
-                  _buildBarRow('Cramps', 0.80, AppColors.primaryRose),
-                  _buildBarRow('Fatigue', 0.58, const Color(0xFFA880C8)),
-                  _buildBarRow('Headache', 0.38, const Color(0xFF6A9E7A)),
-                  _buildBarRow('Bloating', 0.28, const Color(0xFF5A80C0)),
-                ],
-              ),
+              content: hasData
+                  ? Column(
+                      children: [
+                        _buildBarRow('Cramps', 0.80, AppColors.primaryRose),
+                        _buildBarRow('Fatigue', 0.58, const Color(0xFFA880C8)),
+                        _buildBarRow('Headache', 0.38, const Color(0xFF6A9E7A)),
+                        _buildBarRow('Bloating', 0.28, const Color(0xFF5A80C0)),
+                      ],
+                    )
+                  : _buildEmptyState('Log symptoms to see your patterns'),
             ),
             const SizedBox(height: 20),
             _buildInsightCard(
               title: '🔮 What\'s coming up',
-              content: Column(
-                children: [
-                  _buildUpcomingRow(
-                      '🩸 Next period', 'Mar 6 · 92%', AppColors.primaryRose),
-                  _buildUpcomingRow('🌿 Fertile window', 'Feb 18–23',
-                      const Color(0xFF6A9E7A)),
-                  _buildUpcomingRow('◎ Ovulation', 'Feb 21 (today!)',
-                      const Color(0xFF9870C0)),
-                ],
-              ),
+              content: hasData && periodData.nextPeriod != null
+                  ? Column(
+                      children: [
+                        _buildUpcomingRow(
+                            '🩸 Next period',
+                            '${DateFormat('MMM d').format(periodData.nextPeriod!)} · ${(periodData.confidence * 100).round()}%',
+                            AppColors.primaryRose),
+                        _buildUpcomingRow(
+                            '🌿 Fertile window',
+                            '${DateFormat('MMM d').format(periodData.nextPeriod!.subtract(const Duration(days: 14)))}–${DateFormat('d').format(periodData.nextPeriod!.subtract(const Duration(days: 9)))}',
+                            const Color(0xFF6A9E7A)),
+                        _buildUpcomingRow(
+                            '◎ Ovulation',
+                            DateFormat('MMM d').format(
+                                periodData.nextPeriod!.subtract(const Duration(days: 14))),
+                            const Color(0xFF9870C0)),
+                      ],
+                    )
+                  : _buildEmptyState('Predictions will appear after logging'),
             ),
             const SizedBox(height: 20),
             _buildInsightCard(
               title: '💭 Mood by phase',
-              content: Column(
-                children: [
-                  _buildBarRow('Menstrual', 0.30, AppColors.primaryRose,
-                      emoji: '😔'),
-                  _buildBarRow('Follicular', 0.90, const Color(0xFF6A9E7A),
-                      emoji: '🥰'),
-                  _buildBarRow('Ovulation', 0.85, const Color(0xFF6A9E7A),
-                      emoji: '😊'),
-                  _buildBarRow('Luteal', 0.50, const Color(0xFFA880C8),
-                      emoji: '😐'),
-                ],
-              ),
+              content: hasData
+                  ? Column(
+                      children: [
+                        _buildBarRow('Menstrual', 0.30, AppColors.primaryRose,
+                            emoji: '😔'),
+                        _buildBarRow('Follicular', 0.90, const Color(0xFF6A9E7A),
+                            emoji: '🥰'),
+                        _buildBarRow('Ovulation', 0.85, const Color(0xFF6A9E7A),
+                            emoji: '😊'),
+                        _buildBarRow('Luteal', 0.50, const Color(0xFFA880C8),
+                            emoji: '😐'),
+                      ],
+                    )
+                  : _buildEmptyState('Track your mood to see phase trends'),
             ),
           ],
         );
@@ -615,6 +638,30 @@ class _InsightsScreenState extends ConsumerState<InsightsScreen> {
                 fontSize: 14, fontWeight: FontWeight.w700, color: color),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildEmptyState(String message) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 20),
+      child: Center(
+        child: Column(
+          children: [
+            Icon(Icons.analytics_outlined,
+                color: AppColors.textMuted.withOpacity(0.3), size: 32),
+            const SizedBox(height: 8),
+            Text(
+              message,
+              textAlign: TextAlign.center,
+              style: GoogleFonts.nunito(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                color: AppColors.textMuted,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
