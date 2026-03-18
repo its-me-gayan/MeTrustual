@@ -21,7 +21,7 @@ void main() async {
   // so any purchases they made are associated with their account from launch.
   final currentUser = FirebaseAuth.instance.currentUser;
   await PremiumService.init(uid: currentUser?.uid);
-
+  print('🔑 Current UID: ${FirebaseAuth.instance.currentUser?.uid}');
   // Start real-time entitlement listener for signed-in non-anonymous users.
   // This fires whenever the store reports a change (renewal, expiry, refund)
   // and writes the result to Firestore, which premiumStatusProvider reacts to.

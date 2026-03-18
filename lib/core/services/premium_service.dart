@@ -80,6 +80,10 @@ class PremiumService {
   // ── Init — call once from main() before runApp() ──────────────────────────
   static const bool _useMock = kDebugMode; // Enable mock in debug mode
 
+  // ── Public getter so screens can branch without importing dart:foundation ─
+  // TODO: Set to false (or remove) before shipping to production.
+  static bool get isMock => _useMock;
+
   static Future<void> init({String? uid}) async {
     if (_useMock) {
       debugPrint('🚀 PremiumService: Running in MOCK mode');
@@ -107,15 +111,6 @@ class PremiumService {
   }
 
   // ── Start listening for real-time entitlement changes ─────────────────────
-  //
-  // RevenueCat fires this callback whenever the store reports a change:
-  //   • Subscription renews successfully
-  //   • Subscription expires after cancellation
-  //   • Refund is processed
-  //   • Billing grace period starts/ends
-  //
-  // Because premiumStatusProvider already streams from Firestore, writing
-  // here is enough — every PremiumGate in the app instantly reacts.
   static void startListening({
     required String uid,
     required FirebaseFirestore firestore,
@@ -135,10 +130,6 @@ class PremiumService {
   }
 
   // ── Verify on splash / app resume ────────────────────────────────────────
-  //
-  // Asks the store for current entitlement status and syncs to Firestore.
-  // Falls back to existing Firestore value on network error (don't punish
-  // offline users by revoking access they legitimately paid for).
   static Future<PremiumStatus> verifyAndSync({
     required String uid,
     required FirebaseFirestore firestore,
@@ -157,7 +148,6 @@ class PremiumService {
       );
     }
     try {
-      // Make sure RevenueCat knows which user this is
       final currentInfo = await Purchases.getCustomerInfo();
       if (currentInfo.originalAppUserId != uid) {
         await Purchases.logIn(uid);
@@ -176,7 +166,6 @@ class PremiumService {
     } catch (e) {
       debugPrint(
           '⚠️  PremiumService.verifyAndSync error: $e — using cached value');
-      // Network / store unavailable: read from Firestore rather than revoking
       try {
         final doc = await firestore.collection('users').doc(uid).get();
         final data = doc.data() ?? {};
@@ -220,7 +209,6 @@ class PremiumService {
       if (status.isActive) {
         await _writeStatusToFirestore(
             uid: uid, firestore: firestore, status: status);
-        // Also stamp premiumSince on first purchase
         await firestore.collection('users').doc(uid).set({
           'premiumSince': FieldValue.serverTimestamp(),
         }, SetOptions(merge: true));
@@ -237,10 +225,35 @@ class PremiumService {
     }
   }
 
+  // ── Mock-only direct purchase — no Package object needed ──────────────────
+  // Called by PremiumScreen when isMock == true so it can bypass the
+  // offerings fetch entirely. Safe to call only in debug mode.
+  // TODO: Remove this method (or leave it — it's a no-op in release) once
+  //       RevenueCat is fully configured and isMock is set to false.
+  static Future<PurchaseResult> mockDirectPurchase({
+    required String uid,
+    required FirebaseFirestore firestore,
+    bool isLifetime = false,
+  }) async {
+    assert(_useMock, 'mockDirectPurchase must only be called in mock mode');
+    final status = PremiumStatus(
+      isActive: true,
+      isLifetime: isLifetime,
+      expiresAt:
+          isLifetime ? null : DateTime.now().add(const Duration(days: 365)),
+    );
+    // Write to Firestore so premiumProvider stream picks up the change
+    // and all PremiumGate widgets across the app react immediately.
+    await _writeStatusToFirestore(
+        uid: uid, firestore: firestore, status: status, isMockGrant: true);
+    await firestore.collection('users').doc(uid).set({
+      'premiumSince': FieldValue.serverTimestamp(),
+    }, SetOptions(merge: true));
+    debugPrint('🚧 mockDirectPurchase: granted premium (lifetime=$isLifetime)');
+    return PurchaseResult(success: true, status: status);
+  }
+
   // ── Restore purchases ─────────────────────────────────────────────────────
-  //
-  // Called when user taps "Restore Purchase" — hits the store receipt
-  // directly, not RevenueCat cache. Syncs result to Firestore.
   static Future<RestoreResult> restore({
     required String uid,
     required FirebaseFirestore firestore,
@@ -250,8 +263,10 @@ class PremiumService {
         isActive: true,
         expiresAt: DateTime.now().add(const Duration(days: 30)),
       );
+      // Write to Firestore so premiumProvider stream picks up the change.
       await _writeStatusToFirestore(
-          uid: uid, firestore: firestore, status: status);
+          uid: uid, firestore: firestore, status: status, isMockGrant: true);
+      debugPrint('🚧 mockRestore: granted premium');
       return RestoreResult(found: true, status: status);
     }
     try {
@@ -271,8 +286,10 @@ class PremiumService {
   }
 
   // ── Fetch offerings for the paywall ──────────────────────────────────────
+  // Returns null in mock mode — callers should check PremiumService.isMock
+  // and call mockDirectPurchase() instead of going through the offerings flow.
   static Future<Offerings?> getOfferings() async {
-    if (_useMock) return null; // In real app, you'd need to mock Offerings object if needed for UI
+    if (_useMock) return null;
     try {
       return await Purchases.getOfferings();
     } catch (e) {
@@ -306,15 +323,9 @@ class PremiumService {
         ? DateTime.tryParse(entitlement.expirationDate!)
         : null;
 
-    // Lifetime: no expiry date and active
     final isLifetime = isActive && expiresAt == null;
-
-    // Cancelled but still in paid period:
-    // entitlement is active but willRenew is false
     final isCancelledButActive =
         isActive && !entitlement.willRenew && !isLifetime;
-
-    // Billing issue: Apple/Google billing grace period
     final isInBillingGracePeriod =
         info.entitlements.active.containsKey(_kPremiumEntitlement) &&
             entitlement.billingIssueDetectedAt != null;
@@ -332,6 +343,8 @@ class PremiumService {
     required String uid,
     required FirebaseFirestore firestore,
     required PremiumStatus status,
+    bool isMockGrant =
+        false, // TODO: Remove param (and usages) before production
   }) async {
     await firestore.collection('users').doc(uid).set({
       'isPremium': status.isActive,
@@ -340,6 +353,10 @@ class PremiumService {
       'premiumBillingIssue': status.isInBillingGracePeriod,
       'premiumExpiresAt': status.expiresAt?.toIso8601String(),
       'premiumIsLifetime': status.isLifetime,
+      // mockPremiumGrant satisfies the isPremiumSafe() rule in debug mode.
+      // Only written when isMockGrant=true — never set in the real purchase flow.
+      // TODO: Remove this field and the isPremiumSafe() rule condition before production.
+      if (isMockGrant) 'mockPremiumGrant': true,
     }, SetOptions(merge: true));
   }
 }

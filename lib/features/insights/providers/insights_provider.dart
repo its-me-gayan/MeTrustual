@@ -1,11 +1,54 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../core/providers/firebase_providers.dart';
 import '../../../core/utils/prediction_engine.dart';
 import '../../../features/home/providers/home_provider.dart';
 import '../../../features/logging/providers/log_provider.dart';
 import '../../../models/cycle_model.dart';
 import '../../../models/daily_log_model.dart';
+
+// ─── Symptom config model ────────────────────────────────────────────────────
+
+class SymptomConfig {
+  final String key;
+  final String label;
+  final String icon;
+  const SymptomConfig({
+    required this.key,
+    required this.label,
+    required this.icon,
+  });
+}
+
+// ─── Symptom config provider — reads config/data from Firestore ──────────────
+
+final symptomConfigProvider =
+    FutureProvider<Map<String, SymptomConfig>>((ref) async {
+  final firestore = ref.read(firestoreProvider);
+  try {
+    final doc = await firestore.collection('config').doc('data').get();
+    final data = doc.data();
+    if (data == null) return {};
+
+    final list = List<Map<String, dynamic>>.from(
+      (data['symptoms'] as List<dynamic>? ?? [])
+          .map((e) => Map<String, dynamic>.from(e as Map)),
+    );
+
+    return {
+      for (final item in list)
+        item['key'] as String: SymptomConfig(
+          key: item['key'] as String,
+          label: item['label'] as String,
+          icon: item['icon'] as String,
+        )
+    };
+  } catch (e) {
+    debugPrint('⚠️  symptomConfigProvider error: $e');
+    return {};
+  }
+});
 
 // ─── Data Models ────────────────────────────────────────────────────────────
 
@@ -17,9 +60,10 @@ class CycleChartPoint {
 
 class SymptomStat {
   final String name;
+  final String icon; // emoji from Firestore config
   final int count;
   final double ratio; // 0-1 relative to max
-  SymptomStat(this.name, this.count, this.ratio);
+  SymptomStat(this.name, this.icon, this.count, this.ratio);
 }
 
 class MoodPhaseStat {
@@ -81,6 +125,14 @@ final insightsDataProvider =
   final cyclesAsync = ref.watch(cycleListProvider);
   final logNotifier = ref.read(logProvider.notifier);
 
+  // Watch symptom config — Firestore fetch, cached by Riverpod
+  final symptomConfigAsync = ref.watch(symptomConfigProvider);
+  final symptomConfig = symptomConfigAsync.when(
+    data: (c) => c,
+    loading: () => <String, SymptomConfig>{},
+    error: (_, __) => <String, SymptomConfig>{},
+  );
+
   final cycles = cyclesAsync.when(
     data: (c) => c,
     loading: () => <CycleModel>[],
@@ -89,12 +141,16 @@ final insightsDataProvider =
 
   final logs = await logNotifier.getLogs();
 
-  return _compute(cycles, logs);
+  return _compute(cycles, logs, symptomConfig);
 });
 
 // ─── Computation ─────────────────────────────────────────────────────────────
 
-InsightsData _compute(List<CycleModel> cycles, List<DailyLog> logs) {
+InsightsData _compute(
+  List<CycleModel> cycles,
+  List<DailyLog> logs,
+  Map<String, SymptomConfig> symptomConfig,
+) {
   // --- Cycle lengths -------------------------------------------------------
   final completedCycles = cycles
       .where((c) => c.length != null && c.length! > 15 && c.length! < 60)
@@ -111,7 +167,7 @@ InsightsData _compute(List<CycleModel> cycles, List<DailyLog> logs) {
       ? completedCycles.sublist(completedCycles.length - 6)
       : completedCycles;
 
-  final monthNames = [
+  const monthNames = [
     'Jan',
     'Feb',
     'Mar',
@@ -123,7 +179,7 @@ InsightsData _compute(List<CycleModel> cycles, List<DailyLog> logs) {
     'Sep',
     'Oct',
     'Nov',
-    'Dec'
+    'Dec',
   ];
   final cycleChart = chartCycles
       .map((c) => CycleChartPoint(
@@ -154,7 +210,7 @@ InsightsData _compute(List<CycleModel> cycles, List<DailyLog> logs) {
     ovulation = nextPeriod.subtract(const Duration(days: 14));
   }
 
-  // --- Symptoms from logs --------------------------------------------------
+  // --- Symptoms from logs — resolved via Firestore config ------------------
   final symptomCounts = <String, int>{};
   for (final log in logs) {
     for (final s in log.symptoms) {
@@ -165,17 +221,16 @@ InsightsData _compute(List<CycleModel> cycles, List<DailyLog> logs) {
     ..sort((a, b) => b.value.compareTo(a.value));
 
   final maxCount = sortedSymptoms.isEmpty ? 1 : sortedSymptoms.first.value;
-  final topSymptoms = sortedSymptoms
-      .take(4)
-      .map((e) => SymptomStat(
-            _formatSymptomName(e.key),
-            e.value,
-            e.value / maxCount,
-          ))
-      .toList();
+  final topSymptoms = sortedSymptoms.take(4).map((e) {
+    final config = symptomConfig[e.key];
+    // Use Firestore label if available, fall back to formatted key
+    final label = config?.label ?? _formatSymptomName(e.key);
+    // Use Firestore icon if available, fall back to generic dot
+    final icon = config?.icon ?? '•';
+    return SymptomStat(label, icon, e.value, e.value / maxCount);
+  }).toList();
 
   // --- Mood by phase -------------------------------------------------------
-  // Map mood strings → score 0-1
   final moodScore = {
     'happy': 1.0,
     'great': 1.0,
@@ -203,7 +258,6 @@ InsightsData _compute(List<CycleModel> cycles, List<DailyLog> logs) {
       if (log.mood.isEmpty || log.mood == 'none') continue;
       final score = moodScore[log.mood.toLowerCase()] ?? 0.5;
 
-      // Determine phase for this log date
       final lastCycleStart = cycles.first.startDate;
       final avgLen = prediction?.averageLength ?? 28;
 
@@ -293,8 +347,7 @@ String _phaseToKey(CyclePhase phase) {
 
 MoodPhaseStat _buildMoodStat(String label, List<double> scores, String emoji) {
   if (scores.isEmpty) {
-    // sensible OB/GYN-based defaults when no data
-    final defaults = {
+    const defaults = {
       'Menstrual': 0.30,
       'Follicular': 0.90,
       'Ovulation': 0.85,
@@ -308,7 +361,6 @@ MoodPhaseStat _buildMoodStat(String label, List<double> scores, String emoji) {
 
 String _formatSymptomName(String raw) {
   if (raw.isEmpty) return raw;
-  // Convert snake_case or camelCase to Title Case
   final spaced = raw.replaceAllMapped(
       RegExp(r'_([a-z])'), (m) => ' ${m.group(1)!.toUpperCase()}');
   return spaced[0].toUpperCase() + spaced.substring(1);

@@ -33,35 +33,18 @@ class _FeatureItem {
 
 // ─────────────────────────────────────────────────────────────
 //  Mode → accent palette  [base, light, soft-bg]
-//
-//  period  → rose   (matches home screen / PIN)
-//  preg    → blue   (matches pregnancy CycleCircle)
-//  ovul    → green  (matches ovulation CycleCircle)
 // ─────────────────────────────────────────────────────────────
 List<Color> _modeAccent(String mode) {
   switch (mode) {
     case 'preg':
-      return const [
-        Color(0xFF5878B8), // base
-        Color(0xFF7898CC), // light
-        Color(0xFFECF0FA), // soft bg
-      ];
+      return const [Color(0xFF5878B8), Color(0xFF7898CC), Color(0xFFECF0FA)];
     case 'ovul':
-      return const [
-        Color(0xFF5A8E6A), // base
-        Color(0xFF7AAE8A), // light
-        Color(0xFFECF6EE), // soft bg
-      ];
-    default: // 'period'
-      return const [
-        Color(0xFFD4849A), // base
-        Color(0xFFE8A0B0), // light
-        Color(0xFFFCEEF0), // soft bg
-      ];
+      return const [Color(0xFF5A8E6A), Color(0xFF7AAE8A), Color(0xFFECF6EE)];
+    default:
+      return const [Color(0xFFD4849A), Color(0xFFE8A0B0), Color(0xFFFCEEF0)];
   }
 }
 
-/// Slightly deeper variant used as the button gradient's trailing stop.
 Color _modeAccentDeep(String mode) {
   switch (mode) {
     case 'preg':
@@ -90,7 +73,6 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen>
 
   bool _isLoading = false;
 
-  // ── Mode-independent tokens ──────────────────────────────────
   static const _textDark = Color(0xFF3D2828);
   static const _textMid = Color(0xFFB8A0A8);
   static const _textSub = Color(0xFFC8AEB8);
@@ -159,6 +141,63 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen>
   Future<void> _handlePurchase() async {
     setState(() => _isLoading = true);
     HapticFeedback.mediumImpact();
+
+    // ── MOCK FAST-PATH ────────────────────────────────────────────────────────
+    // Active when PremiumService.isMock == true (kDebugMode).
+    // Bypasses the RevenueCat offerings fetch so the paywall works locally
+    // without any App Store / Play Store setup.
+    // TODO: Remove this block once RevenueCat offerings are configured and
+    //       PremiumService._useMock is set to false for production.
+    if (PremiumService.isMock) {
+      try {
+        final auth = ref.read(firebaseAuthProvider);
+        final firestore = ref.read(firestoreProvider);
+        final currentUser = auth.currentUser;
+
+        if (currentUser == null) {
+          if (mounted) context.push('/signup?premium=true');
+          return;
+        }
+
+        final selected = ref.read(_selectedPlanProvider);
+        final result = await PremiumService.mockDirectPurchase(
+          uid: currentUser.uid,
+          firestore: firestore,
+          isLifetime: selected == PremiumPlan.lifetime,
+        );
+
+        if (result.success && mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: Text(
+              '🚧 Mock: Welcome to Premium! ✨',
+              style: GoogleFonts.nunito(fontWeight: FontWeight.w700),
+            ),
+            backgroundColor: _modeAccent(ref.read(modeProvider))[0],
+            behavior: SnackBarBehavior.floating,
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          ));
+          context.pop();
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: Text('Mock purchase failed: $e',
+                style: GoogleFonts.nunito(fontWeight: FontWeight.w700)),
+            backgroundColor: _modeAccent(ref.read(modeProvider))[0],
+            behavior: SnackBarBehavior.floating,
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          ));
+        }
+      } finally {
+        if (mounted) setState(() => _isLoading = false);
+      }
+      return; // exit early — real flow below never runs in mock mode
+    }
+    // ── END MOCK FAST-PATH ────────────────────────────────────────────────────
+
+    // ── REAL REVENUECAT FLOW (untouched) ─────────────────────────────────────
     try {
       final auth = ref.read(firebaseAuthProvider);
       final firestore = ref.read(firestoreProvider);
@@ -169,7 +208,7 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen>
         return;
       }
 
-      // ── Fetch available offerings from RevenueCat ──────────────────
+      // Fetch available offerings from RevenueCat
       final offerings = await PremiumService.getOfferings();
       if (offerings == null || offerings.current == null) {
         throw Exception('No offerings available. Please try again.');
@@ -200,7 +239,7 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen>
         throw Exception('Selected plan is not available.');
       }
 
-      // ── Execute purchase via App Store / Play Store ────────────────
+      // Execute purchase via App Store / Play Store
       final result = await PremiumService.purchase(
         packageToBuy: package,
         uid: currentUser.uid,
@@ -225,10 +264,10 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen>
         throw Exception(result.errorMessage ?? 'Purchase failed');
       }
     } catch (e) {
-      debugPrint('❌ _handlePurchase error: \$e');
+      debugPrint('❌ _handlePurchase error: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text('Purchase failed: \$e',
+          content: Text('Purchase failed: $e',
               style: GoogleFonts.nunito(fontWeight: FontWeight.w700)),
           backgroundColor: _modeAccent(ref.read(modeProvider))[0],
           behavior: SnackBarBehavior.floating,
@@ -244,6 +283,54 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen>
   Future<void> _handleRestore() async {
     HapticFeedback.lightImpact();
     setState(() => _isLoading = true);
+
+    // ── MOCK FAST-PATH ────────────────────────────────────────────────────────
+    // In mock mode, restore always succeeds so you can test the post-restore UI.
+    // TODO: Remove this block when going to production.
+    if (PremiumService.isMock) {
+      try {
+        final auth = ref.read(firebaseAuthProvider);
+        final firestore = ref.read(firestoreProvider);
+        final uid = auth.currentUser?.uid;
+        if (uid == null) return;
+
+        final result =
+            await PremiumService.restore(uid: uid, firestore: firestore);
+        if (!mounted) return;
+
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(
+            result.found
+                ? '🚧 Mock restore: Purchase restored! Welcome back ✨'
+                : '🚧 Mock restore: No active purchases found.',
+            style: GoogleFonts.nunito(fontWeight: FontWeight.w700),
+          ),
+          backgroundColor: result.found ? _green : _textMid,
+          behavior: SnackBarBehavior.floating,
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        ));
+
+        if (result.found && mounted) context.pop();
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: Text('Mock restore failed: $e',
+                style: GoogleFonts.nunito(fontWeight: FontWeight.w700)),
+            backgroundColor: _textMid,
+            behavior: SnackBarBehavior.floating,
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          ));
+        }
+      } finally {
+        if (mounted) setState(() => _isLoading = false);
+      }
+      return; // exit early — real flow below never runs in mock mode
+    }
+    // ── END MOCK FAST-PATH ────────────────────────────────────────────────────
+
+    // ── REAL REVENUECAT FLOW (untouched) ─────────────────────────────────────
     try {
       final auth = ref.read(firebaseAuthProvider);
       final firestore = ref.read(firestoreProvider);
@@ -292,7 +379,7 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen>
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text('Restore failed: \$e',
+          content: Text('Restore failed: $e',
               style: GoogleFonts.nunito(fontWeight: FontWeight.w700)),
           backgroundColor: _textMid,
           behavior: SnackBarBehavior.floating,
@@ -309,7 +396,7 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen>
   Widget build(BuildContext context) {
     final plan = ref.watch(_selectedPlanProvider);
     final mode = ref.watch(modeProvider);
-    final accent = _modeAccent(mode); // [base, light, soft]
+    final accent = _modeAccent(mode);
 
     return Scaffold(
       backgroundColor: Colors.transparent,
@@ -322,7 +409,6 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen>
           decoration: const BoxDecoration(gradient: _backgroundGradient),
           child: Stack(
             children: [
-              // ── Ambient glow orbs — hue follows mode ──
               Positioned(
                 top: -70,
                 right: -70,
@@ -339,8 +425,6 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen>
                 child: _GlowOrb(
                     size: 180, color: const Color(0xFFA090C8), opacity: 0.04),
               ),
-
-              // ── Floating deco ──
               _FloatingDeco(
                   emoji: '🌸',
                   topFraction: 0.06,
@@ -365,8 +449,6 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen>
                   rightFraction: 0.05,
                   anim: _floatAnim,
                   delay: 0.20),
-
-              // ── Content ──
               SafeArea(
                 child: SingleChildScrollView(
                   physics: const BouncingScrollPhysics(),
@@ -386,8 +468,6 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen>
                   ),
                 ),
               ),
-
-              // ── Close button ──
               Positioned(
                 top: MediaQuery.of(context).padding.top + 12,
                 right: 14,
@@ -424,16 +504,13 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen>
     );
   }
 
-  // ── Hero ──────────────────────────────────────────────────────
   Widget _buildHero(List<Color> accent) {
     return Column(
       children: [
         const SizedBox(height: 8),
-        // Premium badge
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 5),
           decoration: BoxDecoration(
-            // Always rose — not mode-dependent
             color: const Color(0xFFFCEEF0).withOpacity(0.80),
             border:
                 Border.all(color: const Color(0xFFD4849A).withOpacity(0.22)),
@@ -454,8 +531,6 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen>
           ),
         ),
         const SizedBox(height: 14),
-
-        // Breathing logo orb
         AnimatedBuilder(
           animation: _floatAnim,
           builder: (_, __) => Transform.scale(
@@ -465,7 +540,6 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen>
               height: 76,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                // Always warm rose/cream — not mode-dependent
                 gradient: const LinearGradient(
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
@@ -488,7 +562,6 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen>
           ),
         ),
         const SizedBox(height: 14),
-
         RichText(
           textAlign: TextAlign.center,
           text: TextSpan(
@@ -517,7 +590,6 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen>
     );
   }
 
-  // ── Features ──────────────────────────────────────────────────
   Widget _buildFeatures(List<Color> accent) {
     return Column(
       children: _features
@@ -573,7 +645,6 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen>
                           ],
                         ),
                       ),
-                      // Tick — mode-tinted
                       Container(
                         width: 20,
                         height: 20,
@@ -597,7 +668,6 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen>
     );
   }
 
-  // ── Plan selector ─────────────────────────────────────────────
   Widget _buildPlanSelector(
       PremiumPlan selected, String mode, List<Color> accent) {
     return Row(
@@ -634,7 +704,6 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen>
     );
   }
 
-  // ── Trust strip ───────────────────────────────────────────────
   Widget _buildTrustStrip() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
@@ -659,7 +728,6 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen>
         ],
       );
 
-  // ── CTA ───────────────────────────────────────────────────────
   Widget _buildCTA(PremiumPlan plan, String mode, List<Color> accent) {
     final isLifetime = plan == PremiumPlan.lifetime;
     final btnLabel =
@@ -748,9 +816,7 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen>
       );
 }
 
-// ══════════════════════════════════════════════════════════════
-//  Ambient glow orb
-// ══════════════════════════════════════════════════════════════
+// ── Ambient glow orb ──────────────────────────────────────────
 class _GlowOrb extends StatelessWidget {
   final double size;
   final Color color;
@@ -823,7 +889,7 @@ class _PlanCard extends StatelessWidget {
   final String unit;
   final String? badge;
   final String? savingLabel;
-  final List<Color> accent; // [base, light, soft]
+  final List<Color> accent;
   final ValueChanged<PremiumPlan> onTap;
 
   static const _textDark = Color(0xFF3D2828);
@@ -860,7 +926,6 @@ class _PlanCard extends StatelessWidget {
           curve: Curves.easeOut,
           padding: EdgeInsets.fromLTRB(8, badge != null ? 18 : 14, 8, 14),
           decoration: BoxDecoration(
-            // Selected: soft mode-tinted wash; unselected: plain frosted white
             color: isSelected
                 ? soft.withOpacity(0.55)
                 : Colors.white.withOpacity(0.75),
@@ -934,7 +999,6 @@ class _PlanCard extends StatelessWidget {
                   ],
                 ],
               ),
-              // Badge chip — mode-tinted
               if (badge != null)
                 Positioned(
                   top: -26,

@@ -135,8 +135,8 @@ class _InsightsBody extends ConsumerWidget {
       _HeroCard(
           emoji: hasData ? d.heroEmoji : '✨',
           title: hasData ? d.heroTitle : 'Welcome to your story',
-          subtitle: hasData 
-              ? d.heroSubtitle 
+          subtitle: hasData
+              ? d.heroSubtitle
               : 'Start logging your period to see personalized insights and predictions here.',
           accentColor: accent),
       const SizedBox(height: 20),
@@ -165,7 +165,8 @@ class _InsightsBody extends ConsumerWidget {
                       label: s.name,
                       fill: s.ratio,
                       color: symptomColor(i),
-                      trailing: '${s.count}×');
+                      trailing: '${s.count}×',
+                      icon: s.icon);
                 }),
               ),
       ),
@@ -187,14 +188,14 @@ class _InsightsBody extends ConsumerWidget {
               value: (d.fertileWindowStart != null &&
                       d.fertileWindowEnd != null)
                   ? '${DateFormat('MMM d').format(d.fertileWindowStart!)}–${DateFormat('d').format(d.fertileWindowEnd!)}'
-                  : 'Predictions will appear after logging',
+                  : 'Log more cycles',
               color: AppColors.sageGreen,
             ),
             _UpcomingRow(
               label: '◎ Ovulation',
               value: d.ovulationDate != null
                   ? _ovulLabel(d.ovulationDate!, today)
-                  : 'Predictions will appear after logging',
+                  : 'Log more cycles',
               color: AppColors.lavender,
             ),
           ],
@@ -249,10 +250,12 @@ class _InsightsBody extends ConsumerWidget {
     return [
       _HeroCard(
         emoji: hasData ? '🎯' : '✨',
-        title: hasData 
-            ? (d.cycleChart.length >= 3 ? 'Your pattern is consistent!' : 'Building your fertility profile...')
+        title: hasData
+            ? (d.cycleChart.length >= 3
+                ? 'Your pattern is consistent!'
+                : 'Building your fertility profile...')
             : 'Welcome to your journey',
-        subtitle: hasData 
+        subtitle: hasData
             ? (d.predictionAccuracy > 0
                 ? 'Prediction accuracy: ${(d.predictionAccuracy * 100).round()}% — keep logging 🌿'
                 : 'Log your cycles to unlock fertility predictions 🌿')
@@ -287,14 +290,14 @@ class _InsightsBody extends ConsumerWidget {
               label: '◎ Ovulation',
               value: d.ovulationDate != null
                   ? _ovulLabel(d.ovulationDate!, today)
-                  : 'Predictions will appear after logging',
+                  : 'Log more cycles',
               color: AppColors.lavender,
             ),
             _UpcomingRow(
               label: '🩸 Next period',
               value: d.nextPeriodDate != null
                   ? '${DateFormat('MMM d').format(d.nextPeriodDate!)} · ${(d.nextPeriodConfidence * 100).round()}%'
-                  : 'Predictions will appear after logging',
+                  : 'Log more cycles',
               color: AppColors.primaryRose,
             ),
           ],
@@ -312,7 +315,8 @@ class _InsightsBody extends ConsumerWidget {
                       label: s.name,
                       fill: s.ratio,
                       color: symptomColor(i),
-                      trailing: '${s.count}×');
+                      trailing: '${s.count}×',
+                      icon: s.icon);
                 }),
               ),
       ),
@@ -469,12 +473,15 @@ class _BarRow extends StatelessWidget {
   final double fill;
   final Color color;
   final String trailing;
+  final String? icon; // emoji icon from Firestore config (optional)
 
-  const _BarRow(
-      {required this.label,
-      required this.fill,
-      required this.color,
-      required this.trailing});
+  const _BarRow({
+    required this.label,
+    required this.fill,
+    required this.color,
+    required this.trailing,
+    this.icon,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -482,13 +489,39 @@ class _BarRow extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 6),
       child: Row(
         children: [
-          SizedBox(
+          // Icon bubble (shown only for symptom rows that have a config icon)
+          if (icon != null && icon != '•') ...[
+            Container(
+              width: 26,
+              height: 26,
+              decoration: BoxDecoration(
+                color: color.withOpacity(0.10),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Center(
+                child: Text(icon!, style: const TextStyle(fontSize: 13)),
+              ),
+            ),
+            const SizedBox(width: 6),
+            SizedBox(
+              width: 74,
+              child: Text(label,
+                  overflow: TextOverflow.ellipsis,
+                  style: GoogleFonts.nunito(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.textDark)),
+            ),
+          ] else ...[
+            SizedBox(
               width: 80,
               child: Text(label,
                   style: GoogleFonts.nunito(
                       fontSize: 13,
                       fontWeight: FontWeight.w700,
-                      color: AppColors.textDark))),
+                      color: AppColors.textDark)),
+            ),
+          ],
           Expanded(
             child: Container(
               height: 8,
@@ -517,6 +550,8 @@ class _BarRow extends StatelessWidget {
   }
 }
 
+// ── FIX: Wrapped value Text in Flexible so it wraps instead of overflowing.
+//        Label is given a fixed width; value right-aligns within remaining space.
 class _UpcomingRow extends StatelessWidget {
   final String label, value;
   final Color color;
@@ -529,16 +564,28 @@ class _UpcomingRow extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(label,
+          // Fixed-width label so it never bleeds into the value side
+          SizedBox(
+            width: 130,
+            child: Text(
+              label,
               style: GoogleFonts.nunito(
                   fontSize: 14,
                   fontWeight: FontWeight.w700,
-                  color: AppColors.textDark)),
-          Text(value,
+                  color: AppColors.textDark),
+            ),
+          ),
+          // Value wraps freely in whatever space is left
+          Flexible(
+            child: Text(
+              value,
+              textAlign: TextAlign.end,
               style: GoogleFonts.nunito(
-                  fontSize: 14, fontWeight: FontWeight.w700, color: color)),
+                  fontSize: 14, fontWeight: FontWeight.w700, color: color),
+            ),
+          ),
         ],
       ),
     );
@@ -576,7 +623,8 @@ class _CycleLengthChart extends StatelessWidget {
                     width: 24,
                     height: h,
                     decoration: BoxDecoration(
-                        color: color.withOpacity(i == points.length - 1 ? 1 : 0.3),
+                        color:
+                            color.withOpacity(i == points.length - 1 ? 1 : 0.3),
                         borderRadius: BorderRadius.circular(6)),
                   ),
                 ],
