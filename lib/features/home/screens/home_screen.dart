@@ -4,61 +4,16 @@ import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/services/notification_service.dart';
-import '../../../core/widgets/premium_gate.dart';
 import '../../../core/providers/mode_provider.dart';
-import '../widgets/cycle_circle.dart';
-import '../widgets/mini_calendar.dart';
-import '../widgets/next_period_card.dart';
+import '../models/home_mode_config.dart';
 import '../providers/home_provider.dart';
 import '../../../core/providers/period_journey_provider.dart';
 import '../../../core/providers/firebase_providers.dart';
 import '../../../core/widgets/app_bottom_nav.dart';
+import '../widgets/period_home_content.dart';
+import '../widgets/pregnancy_home_content.dart';
+import '../widgets/ovulation_home_content.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:intl/intl.dart';
-
-Color modeColor(String mode) {
-  switch (mode) {
-    case 'preg':
-      return const Color(0xFF4A70B0);
-    case 'ovul':
-      return const Color(0xFF5A8E6A);
-    default:
-      return AppColors.primaryRose;
-  }
-}
-
-List<Color> _modeFabGradient(String mode) {
-  switch (mode) {
-    case 'preg':
-      return [const Color(0xFF7AA0E0), const Color(0xFF4A70B0)];
-    case 'ovul':
-      return [const Color(0xFF78C890), const Color(0xFF5A8E6A)];
-    default:
-      return [const Color(0xFFE8789A), const Color(0xFFC95678)];
-  }
-}
-
-Color _modeFabShadow(String mode) {
-  switch (mode) {
-    case 'preg':
-      return const Color(0xFF4A70B0);
-    case 'ovul':
-      return const Color(0xFF5A8E6A);
-    default:
-      return const Color(0xFFC95678);
-  }
-}
-
-Color _modeFabRing(String mode) {
-  switch (mode) {
-    case 'preg':
-      return const Color(0xFFC8DCF8);
-    case 'ovul':
-      return const Color(0xFFBEE6CD);
-    default:
-      return const Color(0xFFFCDCE6);
-  }
-}
 
 final _logsCountProvider = StreamProvider<int>((ref) {
   final auth = ref.watch(firebaseAuthProvider);
@@ -161,13 +116,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
   Widget build(BuildContext context) {
     final homeData = ref.watch(homeDataProvider);
     final currentMode = ref.watch(modeProvider);
-    final themeColor = modeColor(currentMode);
+    final modeConfig = HomeModeConfig.fromMode(currentMode);
 
-    // ── Silently sync cycle anchor to Firebase whenever logs change ──────────
-    // Handles two cases:
-    //   1. User skipped "last period" during onboarding → writes first detected start
-    //   2. A new period appears in logs that is newer than what Firebase has
-    //      → updates lastPeriod, cycleLen, periodLen so predictions stay accurate
+    // Silently sync cycle anchor to Firebase whenever logs change
     ref.watch(cycleAnchorSyncProvider);
 
     return Scaffold(
@@ -201,7 +152,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _buildTopRow(themeColor),
+                    _buildTopRow(modeConfig.primaryColor),
                     const SizedBox(height: 30),
                     _buildModeSpecificContent(currentMode, homeData),
                     const SizedBox(height: 16),
@@ -211,7 +162,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
               ),
             ),
             Positioned(
-                bottom: 92, right: 18, child: _buildLunaFab(currentMode)),
+                bottom: 92, right: 18, child: _buildLunaFab(modeConfig)),
           ],
         ),
       ),
@@ -222,11 +173,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     );
   }
 
-  Widget _buildLunaFab(String mode) {
-    final gradientColors = _modeFabGradient(mode);
-    final shadowColor = _modeFabShadow(mode);
-    final ringColor = _modeFabRing(mode);
-
+  Widget _buildLunaFab(HomeModeConfig config) {
     return AnimatedBuilder(
       animation: _lunaPulse,
       builder: (context, child) {
@@ -244,15 +191,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
               gradient: LinearGradient(
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
-                colors: gradientColors,
+                colors: config.fabGradient,
               ),
               boxShadow: [
                 BoxShadow(
-                    color: shadowColor.withOpacity(shadowOpacity),
+                    color: config.fabShadow.withOpacity(shadowOpacity),
                     blurRadius: 20,
                     offset: const Offset(0, 6)),
                 BoxShadow(
-                    color: ringColor.withOpacity(ringOpacity),
+                    color: config.fabRing.withOpacity(ringOpacity),
                     blurRadius: 0,
                     spreadRadius: ringSpread),
               ],
@@ -415,540 +362,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     final logsCount = ref.watch(_logsCountProvider).valueOrNull ?? 0;
 
     switch (currentMode) {
-      // ── PERIOD ── circle → pills → calendar → next period card ──
       case 'period':
-        final journey = ref.watch(periodHomeDataProvider);
-        final cycleDay = journey?.cycleDay ?? 0;
-        final phaseLabel = journey?.phaseLabel ?? 'Loading… 🌸';
-        final cycleLen = journey?.cycleLen ?? 28;
-        final periodLen = journey?.periodLen ?? 5;
-
-        return Column(
-          children: [
-            Center(child: CycleCircle(day: cycleDay, phase: phaseLabel)),
-            const SizedBox(height: 16),
-            _buildPillsRow(
-              {
-                'value': cycleLen.toString(),
-                'label': 'Avg Cycle',
-                'color': AppColors.primaryRose
-              },
-              {
-                'value': periodLen.toString(),
-                'label': 'Period Days',
-                'color': const Color(0xFFC9A0D0)
-              },
-              third: {
-                'value': logsCount.toString(),
-                'label': 'Logged',
-                'color': const Color(0xFF8AB88A)
-              },
-            ),
-            const SizedBox(height: 16),
-            _buildPredictionBanner(journey, cycleDay, cycleLen),
-            const SizedBox(height: 16),
-            const PremiumGate(
-              message: 'Unlock Advanced Calendar',
-              child: MiniCalendar(),
-            ),
-          ],
-        );
-
-      // ── PREGNANCY ──────────────────────────────────────────────
+        return PeriodHomeContent(logsCount: logsCount);
       case 'preg':
-        return Column(
-          children: [
-            const Center(
-              child: CycleCircle(
-                  day: 24,
-                  phase: '2nd Trimester 💙',
-                  color: Color(0xFF4A70B0),
-                  label: 'Weeks'),
-            ),
-            const SizedBox(height: 16),
-            _buildPillsRow(
-              {
-                'value': '113',
-                'label': 'Days to Go',
-                'color': const Color(0xFF4A70B0)
-              },
-              {
-                'value': 'Jun 5',
-                'label': 'Due Date',
-                'color': const Color(0xFF9870C0)
-              },
-              third: {
-                'value': logsCount.toString(),
-                'label': 'Logs',
-                'color': const Color(0xFF8AB88A)
-              },
-            ),
-            const SizedBox(height: 24),
-            PremiumGate(
-                message: 'Unlock Weekly Baby Updates', child: _buildBabyCard()),
-            const SizedBox(height: 24),
-            _buildNextBanner(
-              title: 'Next Appointment',
-              value: 'Mar 3 🩺',
-              sub: '28-week glucose screen',
-              color: const Color(0xFF4A70B0),
-              icon: '🗓️',
-            ),
-          ],
-        );
-
-      // ── OVULATION ──────────────────────────────────────────────
+        return PregnancyHomeContent(logsCount: logsCount);
       case 'ovul':
-        final avgCycleOvul = homeData?['prediction']?.averageLength ?? 28;
-        return Column(
-          children: [
-            const Center(
-              child: CycleCircle(
-                  day: 14,
-                  phase: '🎯 Peak Fertile',
-                  color: Color(0xFF5A8E6A),
-                  label: 'Cycle Day'),
-            ),
-            const SizedBox(height: 16),
-            _buildPillsRow(
-              {
-                'value': 'Today',
-                'label': 'Ovulation',
-                'color': const Color(0xFF5A8E6A)
-              },
-              {
-                'value': 'Mar 6',
-                'label': 'Next Period',
-                'color': AppColors.primaryRose
-              },
-              third: {
-                'value': avgCycleOvul.toString(),
-                'label': 'Cycle Len',
-                'color': const Color(0xFF8AB88A)
-              },
-            ),
-            const SizedBox(height: 24),
-            PremiumGate(
-                message: 'Unlock Fertile Window Analysis',
-                child: _buildFertileBar()),
-            const SizedBox(height: 24),
-            _buildNextBanner(
-              title: 'Ovulation Prediction',
-              value: 'Today, Feb 21 🎯',
-              sub: '89% confidence · Log BBT to confirm',
-              color: const Color(0xFF5A8E6A),
-              percentage: 89,
-            ),
-          ],
-        );
-
+        return OvulationHomeContent(logsCount: logsCount, homeData: homeData);
       default:
         return const SizedBox();
     }
-  }
-
-  Widget _buildPredictionBanner(
-      PeriodHomeData? journey, int cycleDay, int cycleLen) {
-    final fmt = DateFormat('MMM d');
-    final fmtShort = DateFormat('d');
-
-    // ── 1. Best source: real AI prediction from AiPredictionService ────────
-    final aiResult = journey?.aiResult;
-
-    // ── 2. Fallback: use the same nextPeriod that CalendarEngine receives ──────
-    //    journey?.nextPeriod is now rebased from the resolved anchor in
-    //    periodHomeDataProvider, so the banner and the calendar always agree.
-    //    The old local formula (today + cycleLen − cycleDay) is kept only as
-    //    an absolute last-resort guard when journey is null (e.g., first load).
-    final smartCycleLen = journey?.cycleLen ?? cycleLen; // blended by engine
-    final daysUntilPeriod = (smartCycleLen - cycleDay).clamp(0, smartCycleLen);
-    final absoluteFallback =
-        DateTime.now().add(Duration(days: daysUntilPeriod));
-
-    // Pick the best available next period date — priority order:
-    //   1. AI result (most accurate)
-    //   2. periodHomeDataProvider.nextPeriod (anchor-rebased math, same as calendar)
-    //   3. Local formula (absolute fallback, only when journey not loaded yet)
-    final nextPeriod =
-        aiResult?.nextPeriod ?? journey?.nextPeriod ?? absoluteFallback;
-
-    // Confidence: use AI value if available, otherwise from PeriodHomeData
-    final confidencePct = aiResult?.confidencePct ??
-        ((journey?.learningProgress ?? 0.35) * 100).round();
-
-    // Source label under next period
-    final isAi = aiResult != null;
-    final aiLoading = journey?.aiLoading ?? false;
-    final periodSub = aiLoading ? 'Calculating…' : '±2 days · $confidencePct%';
-
-    // ── 3. Fertile window — always derived from nextPeriod (biology) ───────
-    //    Ovulation ≈ 14 days before next period (luteal phase is fixed ~14d)
-    //    Fertile window = ovulation −5 → ovulation +1
-    //
-    //    Roll-forward rule: if the fertile window end has already passed today,
-    //    advance to the NEXT cycle's fertile window so the card never shows
-    //    expired dates. This happens when today is in the luteal phase or
-    //    when we've crossed into a new month past the old ovulation date.
-    //    Example: today=Mar 1, nextPeriod=Mar 16, fertileTo=Mar 3 → still valid.
-    //             today=Mar 5, nextPeriod=Mar 16, fertileTo=Mar 3 → ROLL FORWARD
-    //             → show next cycle: nextPeriod+cycleLen=Apr 11, fertileTo=Mar 30
-    final today = DateTime.now();
-    DateTime ovulationDate = nextPeriod.subtract(const Duration(days: 14));
-    DateTime fertileStart = ovulationDate.subtract(const Duration(days: 5));
-    DateTime fertileEnd = ovulationDate.add(const Duration(days: 1));
-
-    if (_isBeforeDay(fertileEnd, today)) {
-      // Current fertile window has passed — advance one full cycle
-      final nextCyclePeriod = nextPeriod.add(Duration(days: smartCycleLen));
-      ovulationDate = nextCyclePeriod.subtract(const Duration(days: 14));
-      fertileStart = ovulationDate.subtract(const Duration(days: 5));
-      fertileEnd = ovulationDate.add(const Duration(days: 1));
-    }
-
-    final nextPeriodStr = fmt.format(nextPeriod);
-
-    // Cross-month format: "Feb 25–Mar 3" when start and end are in different
-    // months. Without this it shows "Feb 25–3" which looks like February 3.
-    final fertileStr = fertileStart.month == fertileEnd.month
-        ? '${fmt.format(fertileStart)}–${fmtShort.format(fertileEnd)}'
-        : '${fmt.format(fertileStart)}–${fmt.format(fertileEnd)}';
-    final ovulStr = fmt.format(ovulationDate);
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFFFFF5F8), Color(0xFFFDE8F4)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: const Color(0xFFF0C0D0), width: 1.5),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Title row — shows AI vs math source
-          Row(
-            children: [
-              Text(
-                aiLoading
-                    ? '✨ Calculating…'
-                    : isAi
-                        ? '🤖 AI Predictions'
-                        : '🔮 Predictions',
-                style: GoogleFonts.nunito(
-                    fontSize: 10,
-                    fontWeight: FontWeight.w900,
-                    color: const Color(0xFFC080A0),
-                    letterSpacing: 0.5),
-              ),
-              const Spacer(),
-              if (isAi && !aiLoading)
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF9B7FC7).withOpacity(0.12),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Text('AI-powered',
-                      style: GoogleFonts.nunito(
-                          fontSize: 8,
-                          fontWeight: FontWeight.w800,
-                          color: const Color(0xFF9B7FC7))),
-                ),
-            ],
-          ),
-          const SizedBox(height: 8),
-
-          // Two-column pred items
-          aiLoading
-              ? const SizedBox(
-                  height: 40,
-                  child: Center(
-                    child: SizedBox(
-                        width: 16,
-                        height: 16,
-                        child: CircularProgressIndicator(
-                            strokeWidth: 2, color: Color(0xFFC080A0))),
-                  ),
-                )
-              : IntrinsicHeight(
-                  child: Row(
-                    children: [
-                      Expanded(
-                          child: _buildPredItem(
-                              label: '🩸 Next period',
-                              value: nextPeriodStr,
-                              sub: periodSub)),
-                      Container(
-                          width: 1,
-                          color: const Color(0xFFF0D8E0),
-                          margin: const EdgeInsets.symmetric(horizontal: 10)),
-                      Expanded(
-                          child: _buildPredItem(
-                              label: '🌿 Fertile window',
-                              value: fertileStr,
-                              sub: 'Ovulation ~$ovulStr')),
-                    ],
-                  ),
-                ),
-
-          // AI insight (only when AI result has one)
-          if (isAi && aiResult!.insight.isNotEmpty) ...[
-            const SizedBox(height: 8),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
-              decoration: BoxDecoration(
-                color: const Color(0xFF9B7FC7).withOpacity(0.07),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text('✨', style: TextStyle(fontSize: 11)),
-                  const SizedBox(width: 6),
-                  Expanded(
-                    child: Text(aiResult.insight,
-                        style: GoogleFonts.nunito(
-                            fontSize: 10,
-                            fontWeight: FontWeight.w600,
-                            color: const Color(0xFF7B5FC7),
-                            height: 1.4)),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ],
-      ),
-    );
-  }
-
-  /// Returns true if [date] is strictly before [reference] at day granularity.
-  /// Ignores time-of-day so "Mar 3 11pm" is NOT before "Mar 3 6am".
-  bool _isBeforeDay(DateTime date, DateTime reference) {
-    final d = DateTime(date.year, date.month, date.day);
-    final r = DateTime(reference.year, reference.month, reference.day);
-    return d.isBefore(r);
-  }
-
-  Widget _buildPredItem(
-      {required String label, required String value, required String sub}) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(label,
-            style: GoogleFonts.nunito(
-                fontSize: 10,
-                fontWeight: FontWeight.w700,
-                color: const Color(0xFFD0A0B8))),
-        const SizedBox(height: 2),
-        Text(value,
-            style: GoogleFonts.nunito(
-                fontSize: 13,
-                fontWeight: FontWeight.w900,
-                color: AppColors.textDark)),
-        const SizedBox(height: 1),
-        Text(sub,
-            style: GoogleFonts.nunito(
-                fontSize: 10,
-                fontWeight: FontWeight.w600,
-                color: const Color(0xFFD0A0B8))),
-      ],
-    );
-  }
-
-  Widget _buildPillsRow(Map<String, dynamic> pill1, Map<String, dynamic> pill2,
-      {Map<String, dynamic>? third}) {
-    return Row(
-      children: [
-        _buildStatPill(pill1['value'], pill1['label'], color: pill1['color']),
-        const SizedBox(width: 8),
-        _buildStatPill(pill2['value'], pill2['label'], color: pill2['color']),
-        if (third != null) ...[
-          const SizedBox(width: 8),
-          _buildStatPill(third['value'], third['label'], color: third['color']),
-        ],
-      ],
-    );
-  }
-
-  Widget _buildStatPill(String value, String label, {Color? color}) {
-    return Expanded(
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 12),
-        decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.88),
-          borderRadius: BorderRadius.circular(18),
-          border: Border.all(color: AppColors.border, width: 1.5),
-        ),
-        child: Column(
-          children: [
-            Text(value,
-                style: GoogleFonts.nunito(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w900,
-                    color: color ?? AppColors.primaryRose)),
-            const SizedBox(height: 2),
-            Text(label,
-                style: GoogleFonts.nunito(
-                    fontSize: 10,
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.textMuted,
-                    letterSpacing: 0.3)),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildBabyCard() {
-    return Container(
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.88),
-        borderRadius: BorderRadius.circular(22),
-        border: Border.all(color: AppColors.border, width: 1.5),
-        boxShadow: [
-          BoxShadow(
-              color: const Color(0xFF4A70B0).withOpacity(0.08),
-              offset: const Offset(0, 4),
-              blurRadius: 16)
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text('👶 Baby Updates',
-              style: GoogleFonts.nunito(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w900,
-                  color: AppColors.textDark)),
-          const SizedBox(height: 12),
-          Text('Week 24: Baby is about the size of a papaya!',
-              style: GoogleFonts.nunito(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.textMid)),
-          const SizedBox(height: 12),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            decoration: BoxDecoration(
-              color: const Color(0xFF4A70B0).withOpacity(0.08),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Text('Baby weight: ~600g • Length: ~30cm',
-                style: GoogleFonts.nunito(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w700,
-                    color: const Color(0xFF4A70B0))),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildFertileBar() {
-    return Container(
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.88),
-        borderRadius: BorderRadius.circular(22),
-        border: Border.all(color: AppColors.border, width: 1.5),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text('🌱 Fertile Window',
-              style: GoogleFonts.nunito(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w900,
-                  color: AppColors.textDark)),
-          const SizedBox(height: 12),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(8),
-            child: LinearProgressIndicator(
-              value: 0.5,
-              minHeight: 8,
-              backgroundColor: const Color(0xFF5A8E6A).withOpacity(0.1),
-              valueColor:
-                  const AlwaysStoppedAnimation<Color>(Color(0xFF5A8E6A)),
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text('Peak fertility: Today & Tomorrow',
-              style: GoogleFonts.nunito(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.textMuted)),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildNextBanner({
-    required String title,
-    required String value,
-    required String sub,
-    required Color color,
-    String? icon,
-    int? percentage,
-  }) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: color.withOpacity(0.08),
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: color.withOpacity(0.2), width: 1.5),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(title,
-                  style: GoogleFonts.nunito(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w800,
-                      color: color,
-                      letterSpacing: 0.5)),
-              if (icon != null)
-                Text(icon, style: const TextStyle(fontSize: 16)),
-              if (percentage != null)
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                  decoration: BoxDecoration(
-                    color: color.withOpacity(0.2),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Text('$percentage%',
-                      style: GoogleFonts.nunito(
-                          fontSize: 10,
-                          fontWeight: FontWeight.w900,
-                          color: color)),
-                ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          Text(value,
-              style: GoogleFonts.nunito(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w900,
-                  color: AppColors.textDark)),
-          const SizedBox(height: 2),
-          Text(sub,
-              style: GoogleFonts.nunito(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.textMid)),
-        ],
-      ),
-    );
   }
 
   Widget _buildSwitchModeCard(String currentMode) {
